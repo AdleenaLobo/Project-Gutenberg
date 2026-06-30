@@ -1,6 +1,7 @@
-import ChapterSidebar from "../components/ChapterSidebar";
 import React, { useState, useEffect, useRef } from "react";
 import { parseBook } from "../utils/ebookParser";
+import ReaderControls from "../components/ReaderControls";
+import ReaderSidePanel from "../components/ReaderSidePanel";
 import {
   Bookmark,
   NotebookPen,
@@ -10,6 +11,8 @@ import {
   BookOpen,
   X,
 } from "lucide-react";
+import ReaderContent from "../components/ReaderContent";
+import ChapterSidebar from "../components/ChapterSidebar";
 
 const CHARS_PER_PAGE = 8000; // Increased characters per page to fill the screen
 function paginateText(text, charsPerPage = 5000) {
@@ -53,7 +56,7 @@ export function EbookReader({ book, client }) {
   const textRef = useRef(null);
 
   // ---- Collaborative room state -------------------------------------------
-  const [showPanel, setShowPanel] = useState(null); // "notes" | "bookmarks" | "room"
+  const [showPanel, setShowPanel] = useState("room");
   const [rooms, setRooms] = useState([]);
   const [activeRoom, setActiveRoom] = useState(null);
   const [roomData, setRoomData] = useState(null);
@@ -268,340 +271,83 @@ const actualBookText =
   );
   const currentPage = pages[pageIndex] || "";
   const totalPages = pages.length;
-
-  return (
-    <div style={{}}>
-      <div className="reader-shell monochrome">
-        <button
-          onClick={() => setShowChapters(true)}
-          style={{
-            position: "fixed",
-            top: 20,
-            left: 20,
-            zIndex: 1000,
-            padding: "10px 18px",
-            borderRadius: "8px",
-            border: "1px solid #ddd",
-            background: "#fff",
-            cursor: "pointer",
-            fontWeight: 600,
-          }}
-        >
-          ☰ Chapters
-        </button>
+return (
+  <div>
+    <div className="reader-shell monochrome">
+      <div
+        style={{
+          display: "flex",
+          height: "calc(100vh - 80px)",
+          width: "100%",
+          marginTop: "5px",
+        }}
+      >
+        {/* Main reader area */}
         <div
           style={{
+            flex: 1,
             display: "flex",
-            flexDirection: "row",
-            justifyContent: "space-between",
-            flex: "1",
-            maxHeight: "calc(100vh - 80px)",
-            marginTop: "5px",
+            justifyContent: "center",
+            alignItems: "stretch",
           }}
         >
-          <button
-            className="nav-btn prev-btn"
-            disabled={pageIndex === 0}
-            onClick={() => setPageIndex((p) => p - 1)}
-            aria-label="Previous page"
-          >
-            <ChevronLeft size={24} />
-          </button>
-          <div
-            // className="reader-container"
-            style={{
-              width: "100%",
-              maxWidth: "900px",
-              margin: "0 auto",
-            }}
-          >
-            {/* Main reading area */}
-            <div
-              className="book-page-content"
-              style={{
-                width: "100%",
-                maxWidth: "900px",
-                height: "calc(100vh - 90px)", // fills the viewport
-                margin: "0 auto",
-                padding: "40px 55px",
-                background: "#fff",
-                display: "flex",
-                flexDirection: "column",
-                overflow: "hidden", // prevents scrolling
-                boxSizing: "border-box",
-              }}
-            >
-              {/* Book page */}
-
-              <div>
-                <div>
-                  <div />
-                  <div ref={textRef}>
-                    <div />
-                    <p
-                      style={{
-                        whiteSpace: "pre-wrap",
-                        lineHeight: "2",
-                        fontSize: "20px",
-                        maxWidth: "800px",
-                        margin: "0 auto",
-                        color: "#222",
-                        textAlign: "justify",
-                        fontFamily: "Georgia, serif",
-                      }}
-                    >
-                      {currentPage}
-                    </p>
-                    <div />
-                    <div>
-                      <span>{book.author}</span>
-                      <span>{book.ebook_source}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Side panel – notes, bookmarks, or room management */}
-
-              {showPanel && (
-                <aside>
-                  <div>
-                    <h3>
-                      {showPanel === "room" && "Reading rooms"}
-                      {showPanel === "notes" && "Notes"}
-                      {showPanel === "bookmarks" && "Bookmarks"}
-                    </h3>
-                    <button onClick={() => setShowPanel(null)}>
-                      <X size={16} />
-                    </button>
-                  </div>
-
-                  {msg && <p>{msg}</p>}
-
-                  {/* Room creation / management */}
-                  {showPanel === "room" && (
-                    <div>
-                      {/* If not yet joined, show join/create UI */}
-                      {!activeRoom ? (
-                        <>
-                          <p>
-                            Join or start a room to take notes and add bookmarks
-                            with others.
-                          </p>
-                          <button onClick={createRoom}>
-                            + Start room for this book
-                          </button>
-                          {bookRooms.length > 0 && (
-                            <>
-                              <p>Existing rooms</p>
-                              {bookRooms.map((r) => (
-                                <button
-                                  key={r.id}
-                                  onClick={() => joinRoom(r.id)}
-                                >
-                                  <span>{r.name}</span>
-                                  <span>{r.member_count} readers</span>
-                                </button>
-                              ))}
-                            </>
-                          )}
-                        </>
-                      ) : (
-                        <div>
-                          {/* Inside a joined room – show members, notes, invites */}
-                          <div>
-                            <Users size={14} />
-                            {roomData && roomData.members
-                              ? roomData.members.map((m) => m.name).join(", ")
-                              : "Loading..."}
-                          </div>
-                          <p>You are in a collaborative reading room.</p>
-                          {/* Invite creation UI */}
-                          <div style={{ marginTop: "12px" }}>
-                            <input
-                              placeholder="Invitee email"
-                              value={inviteEmail}
-                              onChange={(e) => setInviteEmail(e.target.value)}
-                              style={{ marginRight: "8px" }}
-                            />
-                            <button onClick={createInvite}>
-                              Create Invite
-                            </button>
-                            {inviteToken && (
-                              <div
-                                style={{
-                                  marginTop: "8px",
-                                  wordBreak: "break-all",
-                                }}
-                              >
-                                <strong>Invite token:</strong> {inviteToken}
-                              </div>
-                            )}
-                          </div>
-                          <button
-                            onClick={() => {
-                              setActiveRoom(null);
-                              setRoomData(null);
-                            }}
-                          >
-                            Leave room
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Notes UI */}
-                  {showPanel === "notes" && activeRoom && (
-                    <div>
-                      <form onSubmit={addNote}>
-                        <p>New note — Page {pageIndex + 1}</p>
-                        <textarea
-                          rows="3"
-                          placeholder="Write a note about this page..."
-                          value={noteBody}
-                          onChange={(e) => setNoteBody(e.target.value)}
-                        />
-                        <button>
-                          <NotebookPen size={14} /> Save note
-                        </button>
-                      </form>
-                      <p>All notes</p>
-                      {roomData?.notes?.length === 0 && <p>No notes yet.</p>}
-                      {roomData?.notes?.map((n) => (
-                        <div key={n.id}>
-                          <span>{n.location}</span>
-                          <p>{n.body}</p>
-                          <span>— {n.user_name}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Bookmarks UI */}
-                  {showPanel === "bookmarks" && activeRoom && (
-                    <div>
-                      <form onSubmit={addBookmark}>
-                        <p>Bookmark page {pageIndex + 1}</p>
-                        <input
-                          placeholder="Label for this bookmark"
-                          value={bookmarkLabel}
-                          onChange={(e) => setBookmarkLabel(e.target.value)}
-                        />
-                        <button>
-                          <Bookmark size={14} /> Add bookmark
-                        </button>
-                      </form>
-                      <p>All bookmarks</p>
-                      {roomData?.bookmarks?.length === 0 && (
-                        <p>No bookmarks yet.</p>
-                      )}
-                      {roomData?.bookmarks?.map((b) => (
-                        <div key={b.id}>
-                          <span>{b.location}</span>
-                          <p>{b.label}</p>
-                          <span>— {b.user_name}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </aside>
-              )}
-              {chapters.length > 0 && (
-                <aside className="chapter-index absolute top-0 right-0 h-full w-48 overflow-y-auto bg-white shadow-lg p-2 z-10">
-                  <h3 className="font-medium mb-2">Chapters</h3>
-                  <ul className="space-y-1">
-                    {chapters.map((c, i) => (
-                      <li key={i}>
-                        <button
-                          className={`text-left w-full text-sm ${pageIndex === c.pageIndex ? "font-bold" : ""}`}
-                          onClick={() => setPageIndex(c.pageIndex)}
-                        >
-                          {c.title}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </aside>
-              )}
-            </div>
-          </div>
-
-          <button
-            className="nav-btn next-btn"
-            disabled={pageIndex >= totalPages - 1}
-            onClick={() => setPageIndex((p) => p + 1)}
-            aria-label="Next page"
-          >
-            <ChevronRight size={24} />
-          </button>
+          <ReaderContent
+            currentPage={currentPage}
+            pageIndex={pageIndex}
+            totalPages={totalPages}
+            onPrevious={() => setPageIndex((p) => p - 1)}
+            onNext={() => setPageIndex((p) => p + 1)}
+          />
         </div>
-        <footer className="page-footer">
-          Page {pageIndex + 1} of {totalPages}
-        </footer>
-        {showChapters && (
-          <>
-            <div
-              onClick={() => setShowChapters(false)}
-              style={{
-                position: "fixed",
-                inset: 0,
-                background: "rgba(0,0,0,.35)",
-                zIndex: 99,
-              }}
-            />
 
-            <aside
-              style={{
-                position: "fixed",
-                left: 0,
-                top: 0,
-                width: "320px",
-                height: "100vh",
-                background: "#fff",
-                zIndex: 100,
-                overflowY: "auto",
-                borderRight: "1px solid #ddd",
-                boxShadow: "2px 0 20px rgba(0,0,0,.15)",
-              }}
-            >
-
-              {chapters.map((chapter, i) => (
-                <button
-                  key={i}
-                  onClick={() => {
-                    setPageIndex(chapter.pageIndex);
-                    setShowChapters(false);
-                  }}
-                  style={{
-                    color:"black",
-                    width: "100%",
-                    padding: "16px 20px",
-                    textAlign: "left",
-                    border: "none",
-                    background:
-                      pageIndex === chapter.pageIndex ? "#f3f3f3" : "#fff",
-                    borderBottom: "1px solid #eee",
-                    cursor: "pointer",
-                  }}
-                >
-                  <div style={{ fontWeight: 600 }}>{chapter.title}</div>
-
-                  <div
-                    style={{
-                      fontSize: 12,
-                      color: "#777",
-                      marginTop: 4,
-                    }}
-                  >
-                    Page {chapter.pageIndex + 1}
-                  </div>
-                </button>
-              ))}
-            </aside>
-          </>
-        )}
+        {/* Sidebar */}
+        <ReaderSidePanel
+          showPanel={showPanel}
+          setShowPanel={setShowPanel}
+          msg={msg}
+          activeRoom={activeRoom}
+          roomData={roomData}
+          rooms={rooms}
+          bookRooms={bookRooms}
+          createRoom={createRoom}
+          joinRoom={joinRoom}
+          inviteEmail={inviteEmail}
+          setInviteEmail={setInviteEmail}
+          inviteToken={inviteToken}
+          createInvite={createInvite}
+          inviteTokenInput={inviteTokenInput}
+          setInviteTokenInput={setInviteTokenInput}
+          acceptInvite={acceptInvite}
+          noteBody={noteBody}
+          setNoteBody={setNoteBody}
+          addNote={addNote}
+          bookmarkLabel={bookmarkLabel}
+          setBookmarkLabel={setBookmarkLabel}
+          addBookmark={addBookmark}
+          pageIndex={pageIndex}
+          setActiveRoom={setActiveRoom}
+          setRoomData={setRoomData}
+        />
       </div>
+
+      {showChapters && (
+        <>
+          <ChapterSidebar
+            open={showChapters}
+            chapters={chapters}
+            pageIndex={pageIndex}
+            onClose={() => setShowChapters(false)}
+            onSelectChapter={(page) => setPageIndex(page)}
+          />
+        </>
+      )}
+
+      <ReaderControls
+        pageIndex={pageIndex}
+        totalPages={totalPages}
+        onPrevious={() => setPageIndex((p) => p - 1)}
+        onNext={() => setPageIndex((p) => p + 1)}
+      />
     </div>
-  );
-}
+  </div>
+);};
