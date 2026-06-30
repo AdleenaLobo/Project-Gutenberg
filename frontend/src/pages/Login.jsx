@@ -63,7 +63,6 @@ export function Login({ onLogin }) {
         </form>
 
         <div className="login-hint">
-          <p>Admin: admin@library.test / admin123</p>
           <p>Reader: reader@library.test / reader123</p>
         </div>
       </div>

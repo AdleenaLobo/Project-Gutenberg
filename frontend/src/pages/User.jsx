@@ -1,27 +1,42 @@
 import React, { useState, useEffect } from "react";
-import { BookOpen, Bookmark, Users, ArrowRight, RefreshCw } from "lucide-react";
-import { EbookReader } from "./EbookReader";
+import { ArrowRight, RefreshCw, Search } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+// import { EbookReader } from "./EbookReader"; // EbookReader moved to separate route
+import { CategoryFilters } from "../components/CategoryFilters";
+import { CategoryFiltersSkeleton } from "../components/CategoryFiltersSkeleton";
+import { SearchBarSkeleton } from "../components/SearchBarSkeleton";
+import { BookGrid } from "../components/BookGrid";
 
 export function User({ client }) {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
   const [books, setBooks] = useState([]);
-  const [leases, setLeases] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [msg, setMsg] = useState("");
-  const [openBook, setOpenBook] = useState(null);
   const [activeTab, setActiveTab] = useState("ebooks");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+
+  // ── New State for Search Filter ──
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Handler to navigate to book detail route
+  const handleSelectBook = (book) => {
+    navigate(`/books/${book.id}`);
+  };
 
   async function load() {
+    setLoading(true);
     try {
-      const [b, l, r] = await Promise.all([
+      const [b, r] = await Promise.all([
         client.request("/books"),
-        client.request("/my-leases"),
         client.request("/rooms"),
       ]);
       setBooks(b);
-      setLeases(l);
       setRooms(r);
     } catch (e) {
       setMsg(e.message);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -29,46 +44,33 @@ export function User({ client }) {
     load();
   }, []);
 
-  async function lease(id) {
-    try {
-      await client.request("/leases", {
-        method: "POST",
-        body: JSON.stringify({ book_id: id }),
-      });
-      setMsg("Book leased.");
-      await load();
-    } catch (e) {
-      setMsg(e.message);
-    }
-  }
 
-  async function ret(id) {
-    try {
-      await client.request("/leases/" + id + "/return", { method: "POST" });
-      await load();
-    } catch (e) {
-      setMsg(e.message);
-    }
-  }
-
-  if (openBook) {
-    return (
-      <EbookReader
-        book={openBook}
-        client={client}
-        onBack={() => setOpenBook(null)}
-      />
-    );
-  }
-
+  
+  // ── Derived Data Layouts ──
   const ebooks = books.filter((b) => b.type === "ebook");
-  const hardcovers = books.filter((b) => b.type === "hardcover");
-  const activeLeases = leases.filter((l) => !l.returned_at);
+
+  // Helper to check match on title or author
+  const matchesSearch = (b) => {
+    const query = searchQuery.toLowerCase().trim();
+    if (!query) return true;
+    return (
+      b.title.toLowerCase().includes(query) ||
+      b.author.toLowerCase().includes(query)
+    );
+  };
+
+  // Filtered Arrays combining both Category Selection & Search Query
+const filteredEbooks = ebooks
+  .filter(
+    (b) =>
+      selectedCategory === "All" ||
+      (b.ebook?.category || "Uncategorized").toLowerCase().trim() ===
+        selectedCategory.toLowerCase().trim(),
+  )
+  .filter(matchesSearch);
 
   const tabs = [
     { id: "ebooks", label: "Ebooks", count: ebooks.length },
-    { id: "hardcovers", label: "Hardcovers", count: hardcovers.length },
-    { id: "leases", label: "My leases", count: activeLeases.length },
     { id: "rooms", label: "Rooms", count: rooms.length },
   ];
 
@@ -80,15 +82,18 @@ export function User({ client }) {
           <button
             key={t.id}
             className={`tab-btn ${activeTab === t.id ? "active" : ""}`}
+            // ── PLACE THE UPDATE HERE ──
             onClick={() => {
               setActiveTab(t.id);
               setMsg("");
+              setSearchQuery(""); // Clears search input on tab change
             }}
           >
             {t.label}
             {t.count > 0 && <span className="tab-count">{t.count}</span>}
           </button>
         ))}
+
         <button
           className="tab-btn"
           style={{ marginLeft: "auto" }}
@@ -98,147 +103,84 @@ export function User({ client }) {
           <RefreshCw size={13} />
         </button>
       </nav>
-
       <div className="page-content">
         {msg && <p className="notice">{msg}</p>}
+
+        {/* ── Monochrome Search Bar Integration (Shows for Ebooks & Hardcovers) ── */}
+        {(activeTab === "ebooks" || activeTab === "hardcovers") && (
+          loading ? (
+            <SearchBarSkeleton />
+          ) : (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                border: "1px solid #000",
+                padding: "8px 14px",
+                marginBottom: "24px",
+                background: "#fff",
+              }}
+            >
+              <Search size={16} style={{ color: "#000", marginRight: "10px" }} />
+              <input
+                type="text"
+                placeholder="Search titles or authors..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{
+                  width: "100%",
+                  border: "none",
+                  outline: "none",
+                  fontSize: "14px",
+                  color: "#000",
+                  background: "transparent",
+                }}
+              />
+            </div>
+          )
+        )}
 
         {/* ── Ebooks tab ── */}
         {activeTab === "ebooks" && (
           <>
-            <p className="section-label">{ebooks.length} titles available</p>
-            {ebooks.length === 0 ? (
-              <div className="empty-state">
-                <p className="empty-state-title">No ebooks yet</p>
-                <p className="empty-state-sub">Ask an admin to add some.</p>
-              </div>
+              {/* Show CategoryFilters only when there are any ebooks */}
+            {loading ? (
+              <CategoryFiltersSkeleton />
             ) : (
-              <div className="books-grid">
-                {ebooks.map((b) => (
-                  <div className="book-card" key={b.id}>
-                    <span className="book-type-tag">
-                      Ebook · {b.ebook_source || "Library"}
-                    </span>
-                    <span className="book-title">{b.title}</span>
-                    <span className="book-author">{b.author}</span>
-                    <div className="book-footer">
-                      <span className="book-copies"></span>
-                      <button
-                        className="btn-read"
-                        onClick={() => setOpenBook(b)}
-                      >
-                        Read
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              ebooks.length > 0 && (
+                <CategoryFilters selectedCategory={selectedCategory} onSelectCategory={setSelectedCategory} ebooks={ebooks} />
+              )
             )}
+            <BookGrid
+              books={filteredEbooks}
+              isEbook={true}
+              onAction={() => {}}
+              onSelectBook={handleSelectBook}
+              emptyMessage={loading ? "" : (ebooks.length === 0 ? "No ebooks yet. Ask an admin to add some." : "No ebooks match search parameters.")}
+              loading={loading}
+            />
           </>
         )}
-
-        {/* ── Hardcovers tab ── */}
-        {activeTab === "hardcovers" && (
-          <>
-            <p className="section-label">
-              {hardcovers.length} titles in collection
-            </p>
-            {hardcovers.length === 0 ? (
-              <div className="empty-state">
-                <p className="empty-state-title">No hardcovers yet</p>
-                <p className="empty-state-sub">Ask an admin to add some.</p>
-              </div>
-            ) : (
-              <div className="books-grid">
-                {hardcovers.map((b) => (
-                  <div className="book-card" key={b.id}>
-                    <span className="book-type-tag">Hardcover</span>
-                    <span className="book-title">{b.title}</span>
-                    <span className="book-author">{b.author}</span>
-                    <div className="book-footer">
-                      <span
-                        className={`book-copies ${b.available_copies < 2 ? "low" : ""}`}
-                      >
-                        {b.available_copies} of {b.total_copies} available
-                      </span>
-                      <button
-                        className="btn-lease"
-                        disabled={b.available_copies < 1}
-                        onClick={() => lease(b.id)}
-                      >
-                        Lease
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </>
-        )}
-
-        {/* ── Leases tab ── */}
-        {activeTab === "leases" && (
-          <>
-            <p className="section-label">
-              {leases.length} total · {activeLeases.length} active
-            </p>
-            {leases.length === 0 ? (
-              <div className="empty-state">
-                <p className="empty-state-title">No leases yet</p>
-                <p className="empty-state-sub">
-                  Lease a hardcover to see it here.
-                </p>
-              </div>
-            ) : (
-              <div className="leases-list">
-                {leases.map((l) => (
-                  <div className="lease-row" key={l.id}>
-                    <span className="lease-title">{l.title}</span>
-                    <div
-                      style={{ display: "flex", alignItems: "center", gap: 12 }}
-                    >
-                      {l.returned_at ? (
-                        <span className="lease-status-returned">Returned</span>
-                      ) : (
-                        <span className="lease-status-active">Active</span>
-                      )}
-                      {!l.returned_at && (
-                        <button
-                          className="btn-return"
-                          onClick={() => ret(l.id)}
-                        >
-                          Return
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </>
-        )}
-
         {/* ── Rooms tab ── */}
         {activeTab === "rooms" && (
           <>
             <p className="section-label">{rooms.length} active rooms</p>
             {rooms.length === 0 ? (
-              <div className="empty-state">
-                <p className="empty-state-title">No reading rooms yet</p>
-                <p className="empty-state-sub">Open an ebook and start one.</p>
-              </div>
+              <div className="empty-state"><p className="empty-state-title">No reading rooms yet</p></div>
             ) : (
               <div className="rooms-list">
-                {rooms.map((r) => (
-                  <div className="room-card" key={r.id}>
-                    <div className="room-card-left">
-                      <div className="room-card-name">{r.name}</div>
-                      <div className="room-card-meta">
-                        {r.member_count} readers · {r.title}
+                {rooms.map((r) => {
+                  const book = ebooks.find((b) => b.id === r.book_id || b.title === r.title);
+                  return (
+                    <div key={r.id} className="room-card" onClick={() => book ? setOpenBook({ ...book, _joinRoomId: r.id }) : setMsg("Could not find the ebook for this room.")}>
+                      <div className="room-card-left">
+                        <div className="room-card-name">{r.name}</div>
+                        <div className="room-card-meta">{r.member_count} readers · {r.title}</div>
                       </div>
+                      <ArrowRight size={15} className="room-card-arrow" />
                     </div>
-                    <ArrowRight size={15} className="room-card-arrow" />
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </>
