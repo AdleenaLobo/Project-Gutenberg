@@ -27,7 +27,6 @@ const ReaderContent = forwardRef(function ReaderContent({
 
     startX.current = null;
   };
-console.log(currentPage+ "loggg");
   return (
     <div
       ref={ref}

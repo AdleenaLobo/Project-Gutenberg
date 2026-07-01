@@ -76,12 +76,14 @@ const measureRef = useRef(null);
   
    const ebookText = book?.ebook_text ?? book?.ebook?.text ?? "";
 
-  // ---- Load book text into pages ------------------------------------------
+const [blocks, setBlocks] = useState([]);
+
 useEffect(() => {
-const parsed = parseBook(book);
-console.log("parsed: ", parsed);
-const pages = paginate(parsed.blocks);
-setPages(pages);
+  if (!book) return;
+
+  const parsed = parseBook(book);
+
+  setBlocks(parsed.blocks);
   setChapters(parsed.chapters);
   setPageIndex(0);
 }, [book]);
@@ -130,6 +132,177 @@ setPages(pages);
   }, [pageIndex, activeRoom]);
 
   // -----------------------------------------------------------------------
+function fitsOnPage(candidateBlocks) {
+  if (!measureRef.current || !pageRef.current) return true;
+
+  const measure = measureRef.current;
+
+  measure.innerHTML = "";
+
+  candidateBlocks.forEach((block) => {
+    const el = document.createElement(block.type === "heading" ? "h2" : "p");
+
+    el.textContent = block.text;
+
+    if (block.type === "heading") {
+      el.style.cssText = `
+        text-align:center;
+        font-size:30px;
+        font-weight:700;
+        margin:32px 0 24px;
+        letter-spacing:.03em;
+      `;
+    } else {
+      el.style.cssText = `
+        font-size:18px;
+        line-height:2;
+        margin:0 0 18px;
+        text-align:justify;
+        text-indent:2em;
+      `;
+    }
+
+    measure.appendChild(el);
+  });
+
+  return measure.scrollHeight <= pageRef.current.clientHeight;
+}
+
+function paginate(blocks) {
+  const pages = [];
+
+  const chapters = [];
+  let currentPage = [];
+
+  for (const block of blocks) {const candidate = [...currentPage, block];
+
+// Entire block fits
+if (fitsOnPage(candidate)) {
+
+  if (block.type === "heading") {
+    chapters.push({
+      title: block.text,
+      pageIndex: pages.length,
+    });
+  }
+
+  currentPage = candidate;
+  continue;
+}
+
+// Heading never gets split
+if (block.type === "heading") {
+
+  if (currentPage.length) {
+    pages.push({
+      lines: currentPage,
+    });
+  }
+
+  chapters.push({
+    title: block.text,
+    pageIndex: pages.length,
+  });
+
+  currentPage = [block];
+  continue;
+}
+
+// Paragraph doesn't fit.
+// We'll split only the overflowing part.
+
+    if (block.type === "heading") {
+      if (currentPage.length) {
+        pages.push({ lines: currentPage });
+      }
+
+      currentPage = [block];
+      continue;
+    }
+
+    const words = block.text.split(/\s+/);
+
+    let start = 0;
+
+    while (start < words.length) {
+      let low = start;
+      let high = words.length;
+
+      let best = start;
+
+      while (low <= high) {
+        const mid = Math.floor((low + high) / 2);
+
+        const test = [
+          ...currentPage,
+          {
+            type: "paragraph",
+            text: words.slice(start, mid).join(" "),
+          },
+        ];
+
+        if (fitsOnPage(test)) {
+          best = mid;
+          low = mid + 1;
+        } else {
+          high = mid - 1;
+        }
+      }
+
+      if (best === start) best++;
+
+      currentPage.push({
+        type: "paragraph",
+        text: words.slice(start, best).join(" "),
+      });
+
+      pages.push({
+        lines: currentPage,
+      });
+
+      currentPage = [];
+
+      start = best;
+    }
+  }
+
+  if (currentPage.length) {
+    pages.push({
+      lines: currentPage,
+    });
+  }
+return {
+  pages,
+  chapters,
+};
+}
+
+useEffect(() => {
+  if (!blocks.length) return;
+const result = paginate(blocks);
+
+setPages(result.pages);
+setChapters(result.chapters);
+}, [blocks]);
+
+useEffect(() => {
+  const resize = () => {
+    if (!blocks.length) return;
+
+    setPages(paginate(blocks));
+  };
+
+  window.addEventListener("resize", resize);
+
+  return () => window.removeEventListener("resize", resize);
+}, [blocks]); 
+
+useEffect(() => {
+  if (!pageRef.current || !measureRef.current) return;
+
+  measureRef.current.style.width = `${pageRef.current.clientWidth}px`;
+}, [pages]);
+
   async function loadRoom() {
     try {
       const data = await client.request(`/rooms/${activeRoom}`);

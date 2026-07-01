@@ -1,5 +1,3 @@
-const CHARS_PER_PAGE = 1100;
-
 export const HEADING_REGEX =
   /^\s*(?:CHAPTER|Chapter|LETTER|Letter)\s+([IVXLCDM]+|\d+)\.?\s*$|^\s*[IVXLCDM]+\.\s*$/i;
 
@@ -82,55 +80,7 @@ function createBlocks(text) {
   }
 
   flushParagraph();
-  console.log(blocks);
   return blocks;
-}
-/* -------------------------------------------------- */
-/* Paginate blocks                                     */
-/* -------------------------------------------------- */
-function paginateBlocks(blocks) {
-  const pages = [];
-
-  const chapters = [];
-
-  let currentPage = [];
-
-  let currentLength = 0;
-
-  blocks.forEach((block) => {
-    const length = block.text.length;
-
-    if (currentLength + length > CHARS_PER_PAGE && currentPage.length > 0) {
-      pages.push({
-        lines: currentPage,
-      });
-
-      currentPage = [];
-      currentLength = 0;
-    }
-
-    if (block.type === "heading") {
-      chapters.push({
-        title: block.text,
-        pageIndex: pages.length,
-      });
-    }
-
-    currentPage.push(block);
-
-    currentLength += length;
-  });
-
-  if (currentPage.length) {
-    pages.push({
-      lines: currentPage,
-    });
-  }
-
-  return {
-    pages,
-    chapters,
-  };
 }
 
 /* Main parser                                         */
@@ -139,7 +89,7 @@ export function parseBook(book) {
 
   if (!ebookText) {
     return {
-      pages: [],
+      blocks: [],
       chapters: [],
     };
   }
@@ -148,10 +98,20 @@ export function parseBook(book) {
 
   const blocks = createBlocks(cleanedText);
 
-  const { pages, chapters } = paginateBlocks(blocks);
+  // Build chapter list from the blocks
+  const chapters = [];
+
+  blocks.forEach((block, index) => {
+    if (block.type === "heading") {
+      chapters.push({
+        title: block.text,
+        blockIndex: index,
+      });
+    }
+  });
 
   return {
-    pages,
+    blocks,
     chapters,
   };
 }
