@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { parseBook } from "../utils/ebookParser";
 import ReaderControls from "../components/ReaderControls";
 import ReaderSidePanel from "../components/ReaderSidePanel";
+import { List } from "lucide-react";
 import {
   Bookmark,
   NotebookPen,
@@ -53,8 +54,8 @@ export function EbookReader({ book, client }) {
   // ---- Core reading state -------------------------------------------------
   const [pages, setPages] = useState([]);
   const [pageIndex, setPageIndex] = useState(0);
-  const textRef = useRef(null);
-
+const pageRef = useRef(null);
+const measureRef = useRef(null);
   // ---- Collaborative room state -------------------------------------------
   const [showPanel, setShowPanel] = useState("room");
   const [rooms, setRooms] = useState([]);
@@ -76,11 +77,12 @@ export function EbookReader({ book, client }) {
    const ebookText = book?.ebook_text ?? book?.ebook?.text ?? "";
 
   // ---- Load book text into pages ------------------------------------------
-  useEffect(() => {
-  const { pages, chapters } = parseBook(book);
-
-  setPages(pages);
-  setChapters(chapters);
+useEffect(() => {
+const parsed = parseBook(book);
+console.log("parsed: ", parsed);
+const pages = paginate(parsed.blocks);
+setPages(pages);
+  setChapters(parsed.chapters);
   setPageIndex(0);
 }, [book]);
 
@@ -269,7 +271,7 @@ const actualBookText =
   const bookRooms = rooms.filter(
     (r) => r.book_id === book.id || r.title === book.title,
   );
-  const currentPage = pages[pageIndex] || "";
+  const currentPage = pages[pageIndex] ?? { lines: [] };
   const totalPages = pages.length;
 return (
   <div>
@@ -285,23 +287,41 @@ return (
         {/* Main reader area */}
         <div
           style={{
-            flex: 1,
+            width: "100%",
             display: "flex",
             justifyContent: "center",
-            alignItems: "stretch",
+            alignItems: "center",
           }}
         >
           <ReaderContent
+            ref={pageRef}
             currentPage={currentPage}
             pageIndex={pageIndex}
             totalPages={totalPages}
-            onPrevious={() => setPageIndex((p) => p - 1)}
-            onNext={() => setPageIndex((p) => p + 1)}
+            onPrevious={() => setPageIndex((p) => Math.max(0, p - 1))}
+            onNext={() => setPageIndex((p) => Math.min(totalPages - 1, p + 1))}
+          />
+          <div
+            ref={measureRef}
+            style={{
+              position: "fixed",
+              left: "-9999px",
+              top: 0,
+              visibility: "hidden",
+
+              width: pageRef.current?.clientWidth || 900,
+              height: "auto",
+
+              padding: "40px 55px",
+              boxSizing: "border-box",
+              fontFamily: "Georgia, serif",
+              background: "#fff",
+            }}
           />
         </div>
 
         {/* Sidebar */}
-        <ReaderSidePanel
+        {/* <ReaderSidePanel
           showPanel={showPanel}
           setShowPanel={setShowPanel}
           msg={msg}
@@ -327,26 +347,26 @@ return (
           pageIndex={pageIndex}
           setActiveRoom={setActiveRoom}
           setRoomData={setRoomData}
-        />
+        /> */}
       </div>
-
-      {showChapters && (
-        <>
-          <ChapterSidebar
-            open={showChapters}
-            chapters={chapters}
-            pageIndex={pageIndex}
-            onClose={() => setShowChapters(false)}
-            onSelectChapter={(page) => setPageIndex(page)}
-          />
-        </>
-      )}
+      <ChapterSidebar
+        open={showChapters}
+        chapters={chapters}
+        bookmarks={[]}
+        pageIndex={pageIndex}
+        onClose={() => setShowChapters(false)}
+        onSelectChapter={(page) => {
+          setPageIndex(page);
+          setShowChapters(false);
+        }}
+      />
 
       <ReaderControls
         pageIndex={pageIndex}
         totalPages={totalPages}
         onPrevious={() => setPageIndex((p) => p - 1)}
         onNext={() => setPageIndex((p) => p + 1)}
+        onOpenChapters={() => setShowChapters(true)}
       />
     </div>
   </div>

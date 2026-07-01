@@ -1,12 +1,12 @@
-import React, { useRef } from "react";
+import React, { useRef, forwardRef } from "react";
 
-export default function ReaderContent({
+const ReaderContent = forwardRef(function ReaderContent({
   currentPage,
   pageIndex,
   totalPages,
   onPrevious,
   onNext,
-}) {
+}, ref) {
   const startX = useRef(null);
 
   const handleMouseDown = (e) => {
@@ -27,9 +27,10 @@ export default function ReaderContent({
 
     startX.current = null;
   };
-
+console.log(currentPage+ "loggg");
   return (
     <div
+      ref={ref}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       style={{
@@ -43,21 +44,47 @@ export default function ReaderContent({
         overflow: "hidden",
         cursor: "grab",
         userSelect: "none",
+        fontFamily: "Georgia, serif",
       }}
     >
-      <p
-        style={{
-          whiteSpace: "pre-wrap",
-          lineHeight: 2,
-          fontSize: "18px",
-          color: "#222",
-          textAlign: "justify",
-          fontFamily: "Georgia, serif",
-          margin: 0,
-        }}
-      >
-        {currentPage}
-      </p>
+      {(currentPage?.lines || []).map((block, index) => {
+        if (block.type === "heading") {
+          return (
+            <h2
+              key={index}
+              style={{
+                textAlign: "center",
+                fontSize: 30,
+                fontWeight: 700,
+                margin: "32px 0 24px",
+                letterSpacing: ".03em",
+                color: "#111",
+              }}
+            >
+              {block.text}
+            </h2>
+          );
+        }
+
+        return (
+          <p
+            key={index}
+            style={{
+              fontSize: 18,
+              lineHeight: 2,
+              color: "#222",
+              margin: "0 0 18px",
+              textAlign: "justify",
+              textIndent: "2em",
+            }}
+          >
+            {block.text}
+          </p>
+        );
+      })}
     </div>
   );
-}
+})
+
+
+export default ReaderContent;

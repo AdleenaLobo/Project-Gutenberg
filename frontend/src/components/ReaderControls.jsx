@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, List } from "lucide-react";
 
 export default function ReaderControls({
   pageIndex,
   totalPages,
   onPrevious,
   onNext,
+  onOpenChapters,
 }) {
   const [visible, setVisible] = useState(true);
-  const [hoveringArrow, setHoveringArrow] = useState(false);
+  const [hoveringControl, setHoveringControl] = useState(false);
 
   useEffect(() => {
     let timeout;
@@ -19,7 +20,7 @@ export default function ReaderControls({
       clearTimeout(timeout);
 
       timeout = setTimeout(() => {
-        if (!hoveringArrow) {
+        if (!hoveringControl) {
           setVisible(false);
         }
       }, 2000);
@@ -33,86 +34,90 @@ export default function ReaderControls({
       clearTimeout(timeout);
       window.removeEventListener("mousemove", showControls);
     };
-  }, [hoveringArrow]);
+  }, [hoveringControl]);
 
-  const showUI = visible || hoveringArrow;
+  const showUI = visible || hoveringControl;
+
+  const controlStyle = {
+    width: 54,
+    height: 54,
+    borderRadius: "50%",
+    border: showUI ? "1px solid rgba(0,0,0,.08)" : "1px solid transparent",
+    background: showUI ? "#fff" : "transparent",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    transition: "all .25s ease",
+  };
+
+  const iconStyle = {
+    color: "#222",
+    opacity: showUI ? 1 : 0.35,
+    transition: "opacity .25s ease",
+  };
 
   return (
     <>
+      {/* Chapter Button */}
+      <button
+        onClick={onOpenChapters}
+        onMouseEnter={() => setHoveringControl(true)}
+        onMouseLeave={() => setHoveringControl(false)}
+        aria-label="Table of contents"
+        style={{
+          ...controlStyle,
+          position: "fixed",
+          left: 28,
+          top: "15%",
+          transform: "translateY(-50%)",
+          cursor: "pointer",
+          zIndex: 10,
+          padding:0,
+        }}
+      >
+        <List size={22} style={iconStyle} />
+      </button>
+
       {/* Previous Button */}
       <button
         disabled={pageIndex === 0}
-        onMouseEnter={() => setHoveringArrow(true)}
-        onMouseLeave={() => setHoveringArrow(false)}
+        onMouseEnter={() => setHoveringControl(true)}
+        onMouseLeave={() => setHoveringControl(false)}
         onClick={onPrevious}
         aria-label="Previous page"
         style={{
+          ...controlStyle,
           position: "fixed",
           left: 28,
           top: "50%",
           transform: "translateY(-50%)",
-          width: 54,
-          height: 54,
-          borderRadius: "50%",
-          border: showUI
-            ? "1px solid rgba(0,0,0,.08)"
-            : "1px solid transparent",
-          background: showUI ? "#fff" : "transparent",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
           cursor: pageIndex === 0 ? "not-allowed" : "pointer",
-          transition: "all .25s ease",
           opacity: pageIndex === 0 ? 0.3 : 1,
-          zIndex: 100,
+          zIndex: 10,
         }}
       >
-        <ChevronLeft
-          size={28}
-          style={{
-            color: "#222",
-            opacity: showUI ? 1 : 0.35,
-            transition: "opacity .25s ease",
-          }}
-        />
+        <ChevronLeft size={28} style={iconStyle} />
       </button>
 
       {/* Next Button */}
       <button
         disabled={pageIndex >= totalPages - 1}
-        onMouseEnter={() => setHoveringArrow(true)}
-        onMouseLeave={() => setHoveringArrow(false)}
+        onMouseEnter={() => setHoveringControl(true)}
+        onMouseLeave={() => setHoveringControl(false)}
         onClick={onNext}
         aria-label="Next page"
         style={{
+          ...controlStyle,
           position: "fixed",
           right: 28,
           top: "50%",
           transform: "translateY(-50%)",
-          width: 54,
-          height: 54,
-          borderRadius: "50%",
-          border: showUI
-            ? "1px solid rgba(0,0,0,.08)"
-            : "1px solid transparent",
-          background: showUI ? "#fff" : "transparent",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
           cursor: pageIndex >= totalPages - 1 ? "not-allowed" : "pointer",
-          transition: "all .25s ease",
           opacity: pageIndex >= totalPages - 1 ? 0.3 : 1,
-          zIndex: 100,
+          zIndex: 10,
         }}
       >
-        <ChevronRight
-          size={28}
-          style={{
-            color: "#222",
-            opacity: showUI ? 1 : 0.35,
-            transition: "opacity .25s ease",
-          }}
-        />
+        <ChevronRight size={28} style={iconStyle} />
       </button>
 
       {/* Page Indicator */}
@@ -123,7 +128,6 @@ export default function ReaderControls({
           left: "50%",
           transform: "translateX(-50%)",
           padding: "8px 18px",
-          borderRadius: "999px",
           background: showUI ? "rgba(255,255,255,.95)" : "transparent",
           border: showUI
             ? "1px solid rgba(0,0,0,.08)"
@@ -134,7 +138,7 @@ export default function ReaderControls({
           pointerEvents: "none",
           userSelect: "none",
           transition: "all .25s ease",
-          zIndex: 100,
+          zIndex: 10,
         }}
       >
         {pageIndex + 1} / {totalPages}

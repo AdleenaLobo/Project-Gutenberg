@@ -1,44 +1,16 @@
-const CHARS_PER_PAGE = 8000;
+const CHARS_PER_PAGE = 1100;
 
-const HEADING_REGEX =
-  /^\s*(?:Chapter|Letter)\s+(\d+|[IVXLCDM]+)\.?\s*$|^\s*[IVXLCDM]+\.?\s*$/i;
+export const HEADING_REGEX =
+  /^\s*(?:CHAPTER|Chapter|LETTER|Letter)\s+([IVXLCDM]+|\d+)\.?\s*$|^\s*[IVXLCDM]+\.\s*$/i;
 
-export function paginateText(text, charsPerPage = CHARS_PER_PAGE) {
-  if (!text) return [""];
-
-  const pages = [];
-  let start = 0;
-
-  while (start < text.length) {
-    let end = start + charsPerPage;
-
-    if (end < text.length) {
-      // Prefer paragraph breaks
-      let paragraphBreak = text.lastIndexOf("\n\n", end);
-
-      if (paragraphBreak > start + charsPerPage * 0.6) {
-        end = paragraphBreak;
-      } else {
-        // Otherwise break at a space
-        while (end > start && text[end] !== " ") {
-          end--;
-        }
-      }
-    }
-
-    pages.push(text.slice(start, end).trim());
-
-    start = end;
-  }
-
-  return pages;
-}
-
+/* -------------------------------------------------- */
+/* Remove duplicated table of contents                 */
+/* -------------------------------------------------- */
 function removeTableOfContents(text) {
   const lines = text.split("\n");
 
   let firstHeading = null;
-  let secondOccurrenceIndex = -1;
+  let secondOccurrence = -1;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
@@ -51,44 +23,117 @@ function removeTableOfContents(text) {
     }
 
     if (line.toLowerCase() === firstHeading) {
-      secondOccurrenceIndex = i;
+      secondOccurrence = i;
       break;
     }
   }
 
-  if (secondOccurrenceIndex === -1) {
-    return text;
-  }
+  if (secondOccurrence === -1) return text;
 
-  return lines.slice(secondOccurrenceIndex).join("\n");
+  return lines.slice(secondOccurrence).join("\n");
 }
 
-function extractChapters(bookText) {
-  const lines = bookText.split("\n");
+/* -------------------------------------------------- */
+/* Convert raw text into blocks                        */
+/* -------------------------------------------------- */
+const WORDS_PER_BLOCK = 100;
 
-  const chapterPositions = [];
+function createBlocks(text) {
+  const lines = text.split("\n");
 
-  let charCount = 0;
+  const blocks = [];
+  let paragraph = [];
 
-  lines.forEach((line) => {
-    const trimmed = line.trim();
+  const flushParagraph = () => {
+    if (!paragraph.length) return;
 
-    if (HEADING_REGEX.test(trimmed)) {
-      chapterPositions.push({
-        title: trimmed,
-        position: charCount,
+    const words = paragraph.join(" ").trim().split(/\s+/);
+
+    for (let i = 0; i < words.length; i += WORDS_PER_BLOCK) {
+      blocks.push({
+        type: "paragraph",
+        text: words.slice(i, i + WORDS_PER_BLOCK).join(" "),
       });
     }
 
-    charCount += line.length + 1;
+    paragraph = [];
+  };
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+
+    if (!line) {
+      flushParagraph();
+      continue;
+    }
+
+    if (HEADING_REGEX.test(line)) {
+      flushParagraph();
+
+      blocks.push({
+        type: "heading",
+        text: line,
+      });
+
+      continue;
+    }
+
+    paragraph.push(line);
+  }
+
+  flushParagraph();
+  console.log(blocks);
+  return blocks;
+}
+/* -------------------------------------------------- */
+/* Paginate blocks                                     */
+/* -------------------------------------------------- */
+function paginateBlocks(blocks) {
+  const pages = [];
+
+  const chapters = [];
+
+  let currentPage = [];
+
+  let currentLength = 0;
+
+  blocks.forEach((block) => {
+    const length = block.text.length;
+
+    if (currentLength + length > CHARS_PER_PAGE && currentPage.length > 0) {
+      pages.push({
+        lines: currentPage,
+      });
+
+      currentPage = [];
+      currentLength = 0;
+    }
+
+    if (block.type === "heading") {
+      chapters.push({
+        title: block.text,
+        pageIndex: pages.length,
+      });
+    }
+
+    currentPage.push(block);
+
+    currentLength += length;
   });
 
-  return chapterPositions.map((chapter) => ({
-    title: chapter.title,
-    pageIndex: Math.floor(chapter.position / CHARS_PER_PAGE),
-  }));
+  if (currentPage.length) {
+    pages.push({
+      lines: currentPage,
+    });
+  }
+
+  return {
+    pages,
+    chapters,
+  };
 }
 
+/* Main parser                                         */
 export function parseBook(book) {
   const ebookText = book?.ebook_text ?? book?.ebook?.text ?? "";
 
@@ -101,9 +146,9 @@ export function parseBook(book) {
 
   const cleanedText = removeTableOfContents(ebookText);
 
-  const pages = paginateText(cleanedText);
+  const blocks = createBlocks(cleanedText);
 
-  const chapters = extractChapters(cleanedText);
+  const { pages, chapters } = paginateBlocks(blocks);
 
   return {
     pages,
