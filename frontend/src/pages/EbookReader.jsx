@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import ReaderContent from "../components/ReaderContent";
 import ChapterSidebar from "../components/ChapterSidebar";
+import ReaderContentSkeleton from "../components/ReaderContentSkeleton";
 
 const CHARS_PER_PAGE = 8000; // Increased characters per page to fill the screen
 function paginateText(text, charsPerPage = 5000) {
@@ -73,6 +74,7 @@ const measureRef = useRef(null);
   // Chapter index for navigation
   const [chapters, setChapters] = useState([]);
   const [showChapters, setShowChapters] = useState(false);
+  const [isPaginating, setIsPaginating] = useState(true);
   
    const ebookText = book?.ebook_text ?? book?.ebook?.text ?? "";
 
@@ -279,10 +281,14 @@ return {
 
 useEffect(() => {
   if (!blocks.length) return;
+setIsPaginating(true);
+
 const result = paginate(blocks);
 
 setPages(result.pages);
 setChapters(result.chapters);
+
+setIsPaginating(false);
 }, [blocks]);
 
 useEffect(() => {
@@ -466,14 +472,29 @@ return (
             alignItems: "center",
           }}
         >
-          <ReaderContent
-            ref={pageRef}
-            currentPage={currentPage}
-            pageIndex={pageIndex}
-            totalPages={totalPages}
-            onPrevious={() => setPageIndex((p) => Math.max(0, p - 1))}
-            onNext={() => setPageIndex((p) => Math.min(totalPages - 1, p + 1))}
-          />
+            <ReaderContent
+              ref={pageRef}
+              currentPage={currentPage}
+              pageIndex={pageIndex}
+              totalPages={totalPages}
+              onPrevious={() => setPageIndex((p) => Math.max(0, p - 1))}
+              onNext={() =>
+                setPageIndex((p) => Math.min(totalPages - 1, p + 1))
+              }
+              style={{
+                visibility: isPaginating ? "hidden" : "visible",
+              }}
+            />
+           {isPaginating && (
+        <div
+            style={{
+                position: "absolute",
+                inset: 0
+            }}
+        >
+            <ReaderContentSkeleton />
+        </div>
+    )}
           <div
             ref={measureRef}
             style={{
