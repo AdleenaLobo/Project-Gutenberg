@@ -487,7 +487,7 @@ export function EbookReader({ book, client, onBack }) {
   const currentPage = pages[pageIndex] ?? { lines: [] };
   const totalPages = pages.length;
   return (
-    <div className={`relative w-full bg-white dark:bg-zinc-955 text-zinc-900 dark:text-zinc-100 transition-colors duration-200 ${layoutMode === "scroll" ? "min-h-screen h-auto overflow-y-visible" : "h-screen overflow-hidden"
+    <div className={`relative w-full bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 transition-colors duration-200 ${layoutMode === "scroll" ? "min-h-screen h-auto overflow-y-visible" : "h-screen overflow-hidden"
       }`}>
       {/* Warmth overlay shade */}
       <div

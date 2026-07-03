@@ -40,7 +40,7 @@ export default function ChapterSidebar({
             onClick={() => setActiveTab("contents")}
             className={`flex-1 py-4 text-center text-xs font-bold uppercase tracking-wider transition-colors duration-150 border-none cursor-pointer focus:outline-none ${
               activeTab === "contents"
-                ? "bg-zinc-50 dark:bg-zinc-850 text-zinc-955 dark:text-white border-b border-zinc-200 dark:border-zinc-800 font-bold"
+                ? "bg-zinc-50 dark:bg-zinc-900/50 text-zinc-955 dark:text-white border-b border-zinc-200 dark:border-zinc-800 font-bold"
                 : "bg-transparent text-zinc-500 dark:text-zinc-450 hover:text-zinc-950 dark:hover:text-white"
             }`}
           >
@@ -51,7 +51,7 @@ export default function ChapterSidebar({
             onClick={() => setActiveTab("bookmarks")}
             className={`flex-1 py-4 text-center text-xs font-bold uppercase tracking-wider transition-colors duration-150 border-none cursor-pointer focus:outline-none ${
               activeTab === "bookmarks"
-                ? "bg-zinc-50 dark:bg-zinc-850 text-zinc-955 dark:text-white border-b border-zinc-200 dark:border-zinc-800 font-bold"
+                ? "bg-zinc-50 dark:bg-zinc-900/50 text-zinc-955 dark:text-white border-b border-zinc-200 dark:border-zinc-800 font-bold"
                 : "bg-transparent text-zinc-500 dark:text-zinc-450 hover:text-zinc-950 dark:hover:text-white"
             }`}
           >
@@ -88,8 +88,8 @@ export default function ChapterSidebar({
                       }}
                       className={`w-full text-left px-5 py-4 border-b border-zinc-200 dark:border-zinc-800 flex justify-between items-center bg-transparent cursor-pointer transition-colors duration-150 rounded-none font-serif ${
                         active
-                          ? "bg-zinc-100 text-zinc-950 dark:bg-zinc-800 dark:text-white font-bold"
-                          : "hover:bg-zinc-50 dark:hover:bg-zinc-850 text-zinc-950 dark:text-zinc-300"
+                          ? "bg-zinc-100 text-zinc-950 dark:bg-zinc-900 dark:text-white font-bold"
+                          : "hover:bg-zinc-50 dark:hover:bg-zinc-900/40 text-zinc-950 dark:text-zinc-300"
                       }`}
                     >
                       <div className="text-left">
@@ -144,7 +144,7 @@ export default function ChapterSidebar({
         </div>
 
         {/* Footer */}
-        <div className="border-t border-zinc-200 dark:border-zinc-800 p-4 text-xs font-bold uppercase tracking-wider text-zinc-950 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-850/40">
+        <div className="border-t border-zinc-200 dark:border-zinc-800 p-4 text-xs font-bold uppercase tracking-wider text-zinc-950 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-900/40">
           {activeTab === "contents"
             ? `${chapters.length} Chapters`
             : `${bookmarks.length} Bookmarks`}

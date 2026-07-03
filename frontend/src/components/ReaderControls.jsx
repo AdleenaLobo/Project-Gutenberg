@@ -93,7 +93,7 @@ export default function ReaderControls({
 
   const btnBase = "w-12 h-12 rounded-lg border flex items-center justify-center transition-all duration-200 fixed z-20 focus:outline-none";
   const btnActive = showUI
-    ? "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-955 dark:text-white hover:scale-105 cursor-pointer shadow-none focus:outline-none focus:ring-0 focus:border-zinc-300 dark:focus:border-zinc-700"
+    ? "border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-800 text-zinc-955 dark:text-white hover:scale-105 cursor-pointer shadow-none focus:outline-none focus:ring-0 focus:border-zinc-300 dark:focus:border-zinc-800"
     : "border-transparent bg-transparent text-transparent shadow-none pointer-events-none";
 
   const iconOpacity = showUI ? "opacity-100" : "opacity-0 pointer-events-none";
@@ -140,7 +140,7 @@ export default function ReaderControls({
       {/* Page Number */}
       {layoutMode !== "scroll" && (
         <div
-          className={`fixed bottom-6 left-1/2 -translate-x-1/2 px-5 py-2.5 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border-2 border-zinc-300 dark:border-zinc-700 rounded-full text-sm font-medium tracking-wider text-zinc-955 dark:text-white shadow-md pointer-events-none transition-opacity duration-350 z-20 font-serif ${showUI ? "opacity-100" : "opacity-0"
+          className={`fixed bottom-6 left-1/2 -translate-x-1/2 px-5 py-2.5 bg-white/80 dark:bg-zinc-800/90 backdrop-blur-sm border border-zinc-200 dark:border-zinc-800 rounded-full text-sm font-medium tracking-wider text-zinc-955 dark:text-white shadow-md pointer-events-none transition-opacity duration-350 z-20 font-serif ${showUI ? "opacity-100" : "opacity-0"
             }`}
         >
           {pageIndex + 1} / {totalPages}
@@ -180,7 +180,7 @@ export default function ReaderControls({
           ref={panelRef}
           onMouseEnter={() => setHoveringControl(true)}
           onMouseLeave={() => setHoveringControl(false)}
-          className="fixed bottom-20 right-7 z-30 w-80 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xl transition-all duration-300 origin-bottom-right scale-100 p-6 flex flex-col gap-5 text-zinc-800 dark:text-zinc-200"
+          className="fixed bottom-20 right-7 z-30 w-80 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800 shadow-xl transition-all duration-300 origin-bottom-right scale-100 p-6 flex flex-col gap-5 text-zinc-800 dark:text-zinc-200"
         >
           <div className="flex flex-col gap-5">
             {/* Font */}
@@ -216,6 +216,9 @@ export default function ReaderControls({
                 value={fontSize}
                 onChange={(e) => setFontSize(Number(e.target.value))}
                 className="w-full reader-slider"
+                style={{
+                  background: `linear-gradient(to right, ${theme === "dark" ? "#fff" : "#000"} ${((fontSize - 14) / (34 - 14)) * 100}%, ${theme === "dark" ? "#27272a" : "#f4f4f5"} ${((fontSize - 14) / (34 - 14)) * 100}%)`,
+                }}
               />
             </div>
 
@@ -230,8 +233,8 @@ export default function ReaderControls({
                   type="button"
                   onClick={() => setTheme("light")}
                   className={`py-2 px-4 border text-xs font-semibold uppercase tracking-wider flex items-center justify-center cursor-pointer transition-all rounded-lg ${theme === "light"
-                      ? "bg-zinc-950 border-zinc-950 text-white dark:bg-zinc-50 dark:border-zinc-50 dark:text-zinc-950 font-bold"
-                      : "bg-transparent border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                      ? "bg-zinc-950 border-zinc-955 text-white dark:bg-zinc-100 dark:border-zinc-100 dark:text-zinc-950 font-bold"
+                      : "bg-transparent border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-700"
                     }`}
                 >
                   Light
@@ -241,8 +244,8 @@ export default function ReaderControls({
                   type="button"
                   onClick={() => setTheme("dark")}
                   className={`py-2 px-4 border text-xs font-semibold uppercase tracking-wider flex items-center justify-center cursor-pointer transition-all rounded-lg ${theme === "dark"
-                      ? "bg-zinc-950 border-zinc-950 text-white dark:bg-zinc-50 dark:border-zinc-50 dark:text-zinc-950 font-bold"
-                      : "bg-transparent border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                      ? "bg-zinc-950 border-zinc-955 text-white dark:bg-zinc-100 dark:border-zinc-100 dark:text-zinc-950 font-bold"
+                      : "bg-transparent border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-700"
                     }`}
                 >
                   Dark
@@ -251,7 +254,7 @@ export default function ReaderControls({
             </div>
 
             {/* Layout Mode */}
-            <div className="flex flex-col gap-1.5 border-t border-zinc-100 dark:border-zinc-800 pt-3.5">
+            <div className="flex flex-col gap-1.5 border-t border-zinc-100 dark:border-zinc-700 pt-3.5">
               <label className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 Layout
               </label>
@@ -260,8 +263,8 @@ export default function ReaderControls({
                   type="button"
                   onClick={() => setLayoutMode("paginated")}
                   className={`py-2 px-4 border text-xs font-semibold uppercase tracking-wider flex items-center justify-center cursor-pointer transition-all rounded-lg ${layoutMode === "paginated"
-                      ? "bg-zinc-950 border-zinc-950 text-white dark:bg-zinc-50 dark:border-zinc-50 dark:text-zinc-950 font-bold"
-                      : "bg-transparent border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                      ? "bg-zinc-950 border-zinc-955 text-white dark:bg-zinc-100 dark:border-zinc-100 dark:text-zinc-950 font-bold"
+                      : "bg-transparent border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-700"
                     }`}
                 >
                   Paginated
@@ -271,8 +274,8 @@ export default function ReaderControls({
                   type="button"
                   onClick={() => setLayoutMode("scroll")}
                   className={`py-2 px-4 border text-xs font-semibold uppercase tracking-wider flex items-center justify-center cursor-pointer transition-all rounded-lg ${layoutMode === "scroll"
-                      ? "bg-zinc-950 border-zinc-950 text-white dark:bg-zinc-50 dark:border-zinc-50 dark:text-zinc-950 font-bold"
-                      : "bg-transparent border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                      ? "bg-zinc-950 border-zinc-955 text-white dark:bg-zinc-100 dark:border-zinc-100 dark:text-zinc-950 font-bold"
+                      : "bg-transparent border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-700"
                     }`}
                 >
                   Scroll
@@ -281,7 +284,7 @@ export default function ReaderControls({
             </div>
 
             {/* Warmth */}
-            <div className="flex flex-col gap-1.5 border-t border-zinc-100 dark:border-zinc-800 pt-3.5">
+            <div className="flex flex-col gap-1.5 border-t border-zinc-100 dark:border-zinc-700 pt-3.5">
               <div className="flex items-center justify-between">
                 <label className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Warmth</label>
                 <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-450">{warmth}%</span>
@@ -294,11 +297,14 @@ export default function ReaderControls({
                 value={warmth}
                 onChange={(e) => setWarmth(Number(e.target.value))}
                 className="w-full reader-slider"
+                style={{
+                  background: `linear-gradient(to right, ${theme === "dark" ? "#fff" : "#000"} ${(warmth / 25) * 100}%, ${theme === "dark" ? "#27272a" : "#f4f4f5"} ${(warmth / 25) * 100}%)`,
+                }}
               />
             </div>
 
             {/* Focus Mode */}
-            <div className="flex flex-col gap-1.5 border-t border-zinc-100 dark:border-zinc-800 pt-3.5">
+            <div className="flex flex-col gap-1.5 border-t border-zinc-100 dark:border-zinc-700 pt-3.5">
               <label className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 Focus Mode
               </label>
@@ -306,8 +312,8 @@ export default function ReaderControls({
                 type="button"
                 onClick={toggleFullscreen}
                 className={`w-full py-2 px-4 border text-xs font-semibold uppercase tracking-wider flex items-center justify-center cursor-pointer transition-all rounded-lg ${isFullscreen
-                    ? "bg-zinc-950 border-zinc-955 text-white dark:bg-zinc-50 dark:border-zinc-50 dark:text-zinc-950 font-bold"
-                    : "bg-transparent border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                    ? "bg-zinc-950 border-zinc-955 text-white dark:bg-zinc-100 dark:border-zinc-100 dark:text-zinc-955 font-bold"
+                    : "bg-transparent border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-700"
                   }`}
               >
                 {isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}

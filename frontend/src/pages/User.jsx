@@ -183,7 +183,7 @@ const filteredEbooks = ebooks
                   return (
                     <div
                       key={r.id}
-                      className="group flex items-center justify-between p-6 border-2 border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-850 cursor-pointer shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] hover:scale-[1.01] hover:shadow-[6px_6px_0px_#000] dark:hover:shadow-[6px_6px_0px_#fff] transition-all duration-200 rounded-none"
+                      className="group flex items-center justify-between p-6 border-2 border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] hover:scale-[1.01] hover:shadow-[6px_6px_0px_#000] dark:hover:shadow-[6px_6px_0px_#fff] transition-all duration-200 rounded-none"
                       onClick={() =>
                         book
                           ? navigate(`/books/${book.id}/read`, { state: { joinRoomId: r.id } })
