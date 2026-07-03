@@ -40,11 +40,20 @@ export function BookDetail({ client }) {
   }
 
   // `onBack` navigates back to the previous page (the grid view).
-  // `onAction` is retained for lease/read actions; we simply navigate back when the action completes.
-  const handleAction = (payload) => {
-    // For simplicity, after performing the action (lease or open ebook) we navigate back.
-    // Real implementation could integrate a service call here.
-    navigate(-1);
+  // `onAction` executes backend lease API call for hardcover books.
+  const handleAction = async (bookId) => {
+    setLoading(true);
+    setMsg("");
+    try {
+      await client.request("/leases", {
+        method: "POST",
+        body: JSON.stringify({ book_id: bookId }),
+      });
+      navigate("/");
+    } catch (e) {
+      setMsg(e.message);
+      setLoading(false);
+    }
   };
 
   return (
@@ -52,7 +61,7 @@ export function BookDetail({ client }) {
       book={book}
       isEbook={book.type === "ebook"}
       onBack={() => navigate(-1)}
-      onAction={book.type === "ebook" ? (b) => navigate(-1) : (id) => navigate(-1)}
+      onAction={handleAction}
     />
   );
 }

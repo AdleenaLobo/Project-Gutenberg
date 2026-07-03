@@ -1,0 +1,241 @@
+/* ==========================================
+   BOOK GRID
+========================================== */
+
+.books-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0;
+  border: 1px solid var(--gray-200);
+}
+
+.book-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  padding: 18px;
+
+  border-right: 1px solid var(--gray-200);
+  border-bottom: 1px solid var(--gray-200);
+
+  transition: background 0.15s ease;
+  cursor: default;
+}
+
+.book-card:hover {
+  background: var(--gray-50);
+}
+
+.book-type-tag {
+  margin-bottom: 4px;
+
+  font-size: 10px;
+  font-weight: 500;
+
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+
+  color: var(--gray-400);
+}
+
+.book-title {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.35;
+
+  color: var(--black);
+}
+
+.book-author {
+  font-size: 14px;
+  color: var(--gray-500);
+}
+
+.book-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-top: 12px;
+}
+
+.book-copies {
+  font-size: 11px;
+  color: var(--gray-400);
+}
+
+.book-copies.low {
+  color: #b45309;
+}
+
+/* ==========================================
+   LEASE HISTORY
+========================================== */
+
+.leases-list {
+  border: 1px solid var(--gray-200);
+}
+
+.lease-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 12px 16px;
+
+  border-bottom: 1px solid var(--gray-200);
+
+  font-size: 13px;
+}
+
+.lease-row:last-child {
+  border-bottom: none;
+}
+
+.lease-title {
+  font-weight: 500;
+  color: var(--black);
+}
+
+.lease-status-active {
+  padding: 3px 8px;
+
+  background: var(--gray-100);
+
+  font-size: 11px;
+  font-weight: 500;
+
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+
+  color: var(--black);
+}
+
+.lease-status-returned {
+  font-size: 11px;
+  font-weight: 500;
+
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+
+  color: var(--gray-400);
+}
+
+/* ==========================================
+   STUDY ROOMS
+========================================== */
+
+.rooms-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.room-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 14px 16px;
+
+  border: 1px solid var(--gray-200);
+
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.room-card:hover {
+  border-color: var(--black);
+}
+
+.room-card-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--black);
+}
+
+.room-card-meta {
+  margin-top: 2px;
+
+  font-size: 11px;
+  color: var(--gray-500);
+}
+
+.room-card-arrow {
+  color: var(--gray-400);
+}
+
+/* ==========================================
+   READER ROOMS
+========================================== */
+
+.room-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  width: 100%;
+
+  padding: 10px 12px;
+  margin-bottom: 6px;
+
+  text-align: left;
+
+  background: #fdf8f0;
+  border: 1px solid #d6c9ae;
+
+  transition: background 0.12s ease;
+}
+
+.room-item:hover {
+  background: #f5efe3;
+}
+
+.room-item-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1a1207;
+}
+
+.room-item-meta {
+  font-size: 11px;
+  color: #8b7355;
+}
+
+.room-joined-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 6px 10px;
+
+  font-size: 12px;
+
+  color: #5a3e1b;
+
+  background: #f0e6d0;
+  border: 1px solid #d6c9ae;
+}
+
+.empty-state {
+  padding: 48px 24px;
+
+  text-align: center;
+
+  border: 1px dashed var(--gray-300);
+}
+
+.empty-state-title {
+  margin-bottom: 4px;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  color: var(--gray-600);
+}
+
+.empty-state-sub {
+  font-size: 12px;
+  color: var(--gray-400);
+}

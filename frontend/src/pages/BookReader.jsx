@@ -43,10 +43,6 @@ export  default function BookReader({ client }) {
   }
 
   return (
-    <EbookReader
-      book={book}
-      client={client}
-      onBack={() => navigate(-1)}
-    />
+    <EbookReader book={book} client={client} onBack={() => navigate(-1)} />
   );
 }

@@ -22,15 +22,8 @@ export function BookGrid({
 
   if (books.length === 0) {
     return (
-      <div
-        className="empty-state"
-        style={{
-          padding: "40px",
-          textAlign: "center",
-          border: "1px solid #000",
-        }}
-      >
-        <p className="empty-state-title" style={{ color: "#000" }}>
+      <div className="flex flex-col items-center justify-center p-12 border border-dashed border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded text-center">
+        <p className="text-sm font-semibold text-zinc-500 dark:text-zinc-450">
           {emptyMessage}
         </p>
       </div>
@@ -38,101 +31,60 @@ export function BookGrid({
   }
 
   return (
-    <div className="books-grid" style={{ display: "grid", gap: "20px" }}>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {books.map((b) => {
         const isHovered = hoveredId === b.id;
 
         return (
           <div
             key={b.id}
-            className="book-card"
+            className="group relative border-2 border-zinc-300 dark:border-zinc-700 p-6 bg-white dark:bg-zinc-900 cursor-pointer transition-all duration-250 rounded-none hover:scale-[1.015] shadow-none hover:shadow-[4px_4px_0px_#000] dark:hover:shadow-[4px_4px_0px_#fff]"
             onMouseEnter={() => setHoveredId(b.id)}
             onMouseLeave={() => setHoveredId(null)}
-            onClick={() => onSelectBook(b)} // Directs user to details view
-            style={{
-              border: "1px solid #000",
-              borderRadius: "0px",
-              padding: "20px",
-              background: "#fff",
-              cursor: "pointer",
-              // Expanding scaling effect on hover
-              transform: isHovered ? "scale(1.02)" : "scale(1)",
-              boxShadow: isHovered ? "4px 4px 0px #000" : "0px 0px 0px #000",
-              transition: "transform 0.2s ease, box-shadow 0.2s ease",
-            }}
+            onClick={() => onSelectBook(b)}
           >
-            <span
-              className="book-type-tag"
-              style={{
-                color: "#666",
-                fontSize: "11px",
-                textTransform: "uppercase",
-                display: "block",
-                marginBottom: "8px",
-              }}
-            >
-              {isEbook ? `Ebook ` : "Hardcover "} {b.category && `· ${b.category}`}
-            </span>
+            <div>
+              <span className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-450 uppercase tracking-widest block mb-2">
+                {isEbook ? "Ebook" : "Hardcover"} {b.ebook?.category || b.category ? `· ${b.ebook?.category || b.category}` : ""}
+              </span>
 
-            <span
-              className="book-title"
-              style={{
-                color: "#000",
-                fontSize: "18px",
-                fontWeight: "bold",
-                display: "block",
-              }}
-            >
-              {b.title}
-            </span>
+              <span className="text-lg font-bold text-zinc-955 dark:text-white mb-1 leading-snug block transition-colors">
+                {b.title}
+              </span>
 
-            <span
-              className="book-author"
-              style={{ color: "#333", display: "block", marginBottom: "16px" }}
-            >
-              by {b.author}
-            </span>
+              <span className="text-sm text-zinc-500 dark:text-zinc-450 mb-6 block">
+                by {b.author}
+              </span>
+            </div>
 
-            <div
-              className="book-footer"
-              style={{
-                display: "flex",
-                justifyContent: "between",
-                alignItems: "center",
-              }}
-            >
+            <div className="flex items-center justify-between mt-6 pt-4 border-t-2 border-zinc-300 dark:border-zinc-700">
               {!isEbook ? (
                 <span
-                  className={`book-copies ${b.available_copies < 2 ? "low" : ""}`}
-                  style={{
-                    color: b.available_copies < 2 ? "#cc0000" : "#333",
-                    fontSize: "13px",
-                  }}
+                  className={`text-xs ${
+                    b.available_copies < 2 
+                      ? "text-red-650 dark:text-red-400 font-semibold" 
+                      : "text-zinc-500 dark:text-zinc-400"
+                  }`}
                 >
                   {b.available_copies} of {b.total_copies} available
                 </span>
               ) : (
-                <span className="book-copies" />
+                <span className="text-xs text-zinc-550 dark:text-zinc-400">
+                  Instant Access
+                </span>
               )}
 
               <button
-                className={isEbook ? "btn-read" : "btn-lease"}
                 disabled={!isEbook && b.available_copies < 1}
                 onClick={(e) => {
-                  e.stopPropagation(); // Stops the card's outer click from triggering simultaneously
-                  onAction(isEbook ? b : b.id);
-                  navigate(`/books/${b.id}/read`)
-                  
+                  e.stopPropagation();
+                  if (isEbook) {
+                    navigate(`/books/${b.id}/read`);
+                  } else {
+                    onAction(b.id);
+                  }
                 }}
-                style={{
-                  background: "#000",
-                  color: "#fff",
-                  border: "1px solid #000",
-                  borderRadius: "0px",
-                  padding: "6px 16px",
-                  cursor: "pointer",
-                  marginLeft: "auto",
-                }}
+                className="px-4 py-2 bg-zinc-950 border-2 border-zinc-950 dark:bg-zinc-50 dark:border-zinc-50 text-white dark:text-zinc-950 font-semibold text-xs uppercase tracking-wider hover:bg-white hover:text-zinc-950 dark:hover:bg-zinc-950 dark:hover:text-white transition-all hover:shadow-[2px_2px_0px_#000] dark:hover:shadow-[2px_2px_0px_#fff] rounded-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {isEbook ? "Read" : "Lease"}
               </button>

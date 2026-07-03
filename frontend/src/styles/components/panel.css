@@ -1,0 +1,241 @@
+/* ==========================================
+   READER SIDE PANEL
+========================================== */
+
+.reader-panel {
+  width: 320px;
+  flex-shrink: 0;
+
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  background: var(--reader-paper);
+  border-left: 1px solid var(--reader-border);
+
+  transition:
+    background 0.25s ease,
+    border-color 0.25s ease;
+}
+
+/* ==========================================
+   Panel Header
+========================================== */
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 14px 16px;
+
+  background: var(--reader-surface);
+
+  border-bottom: 1px solid var(--reader-border);
+}
+
+.panel-header h3 {
+  font-family: "Libre Baskerville", serif;
+  font-size: 15px;
+  font-weight: 700;
+
+  color: var(--reader-text);
+}
+
+.panel-header button.icon {
+  color: var(--reader-secondary);
+  border-color: var(--reader-border);
+}
+
+.panel-header button.icon:hover {
+  background: var(--reader-bg);
+  color: var(--reader-text);
+}
+
+/* ==========================================
+   Panel Content
+========================================== */
+
+.panel-content {
+  flex: 1;
+  overflow-y: auto;
+
+  padding: 16px;
+}
+
+.panel-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.panel-content::-webkit-scrollbar-thumb {
+  background: var(--reader-border);
+  border-radius: 999px;
+}
+
+.panel-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.panel-hint {
+  margin-bottom: 12px;
+
+  font-size: 12px;
+  line-height: 1.5;
+
+  color: var(--reader-secondary);
+}
+
+.panel-section-label {
+  margin-bottom: 8px;
+
+  font-size: 10px;
+  font-weight: 600;
+
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+
+  color: var(--reader-secondary);
+}
+
+.panel-empty {
+  font-size: 12px;
+  font-style: italic;
+
+  color: var(--reader-secondary);
+  opacity: 0.8;
+}
+
+/* ==========================================
+   Notes / Highlights
+========================================== */
+
+.panel-item {
+  margin-bottom: 10px;
+  padding: 10px 12px;
+
+  background: var(--reader-bg);
+
+  border: 1px solid var(--reader-border);
+  border-radius: 6px;
+
+  transition: 0.2s;
+}
+
+.panel-item:hover {
+  background: var(--reader-surface);
+}
+
+.panel-item-loc {
+  display: block;
+  margin-bottom: 4px;
+
+  font-size: 10px;
+  font-weight: 600;
+
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+
+  color: var(--reader-secondary);
+}
+
+.panel-item-body {
+  font-family: "Libre Baskerville", serif;
+  font-size: 13px;
+  line-height: 1.6;
+
+  color: var(--reader-text);
+}
+
+.panel-item-user {
+  display: block;
+  margin-top: 6px;
+
+  font-size: 11px;
+  font-style: italic;
+
+  color: var(--reader-secondary);
+}
+
+/* ==========================================
+   Reading Rooms
+========================================== */
+
+.room-item {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  margin-bottom: 8px;
+  padding: 10px 12px;
+
+  text-align: left;
+
+  background: var(--reader-bg);
+
+  border: 1px solid var(--reader-border);
+  border-radius: 6px;
+
+  transition: 0.2s;
+}
+
+.room-item:hover {
+  background: var(--reader-surface);
+  border-color: var(--gray-400);
+}
+
+.room-item-name {
+  font-size: 13px;
+  font-weight: 600;
+
+  color: var(--reader-text);
+}
+
+.room-item-meta {
+  font-size: 11px;
+
+  color: var(--reader-secondary);
+}
+
+.room-joined-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  margin-bottom: 12px;
+  padding: 6px 10px;
+
+  font-size: 12px;
+  font-weight: 500;
+
+  background: var(--reader-surface);
+
+  color: var(--reader-text);
+
+  border: 1px solid var(--reader-border);
+  border-radius: 6px;
+}
+
+/* ==========================================
+   Panel Inputs
+========================================== */
+
+.panel-content input,
+.panel-content textarea {
+  background: var(--reader-bg);
+
+  border: 1px solid var(--reader-border);
+
+  color: var(--reader-text);
+}
+
+.panel-content input:focus,
+.panel-content textarea:focus {
+  border-color: var(--gray-500);
+}
+
+.panel-content textarea {
+  resize: vertical;
+  min-height: 90px;
+}

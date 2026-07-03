@@ -1,24 +1,15 @@
-// Skeleton UI for CategoryFilters – shows placeholder title and chip bars while data loads.
 import React from "react";
 
 export function CategoryFiltersSkeleton() {
-  // Number of placeholder chips – adjust as desired.
   const placeholders = Array.from({ length: 6 });
   return (
-    <div
-      className="categories-container"
-      style={{
-        marginBottom: "24px",
-        borderBottom: "1px solid #000",
-        paddingBottom: "16px",
-      }}
-    >
+    <div className="border-b-2 border-zinc-300 dark:border-zinc-700 pb-6 mb-6">
       {/* Title placeholder */}
-      <div className="skeleton" style={{ width: "120px", height: "14px", marginBottom: "12px" }} />
+      <div className="bg-zinc-200 dark:bg-zinc-850 animate-pulse w-28 h-3.5 mb-3 rounded-none" />
       {/* Chip placeholders */}
-      <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+      <div className="flex gap-2.5 flex-wrap">
         {placeholders.map((_, i) => (
-          <div key={i} className="skeleton" style={{ width: "60px", height: "20px" }} />
+          <div key={i} className="bg-zinc-200 dark:bg-zinc-850 animate-pulse w-16 h-7 rounded-none border-2 border-transparent" />
         ))}
       </div>
     </div>

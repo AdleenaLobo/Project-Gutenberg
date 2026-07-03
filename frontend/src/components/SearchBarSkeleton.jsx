@@ -1,22 +1,12 @@
-// Skeleton UI for the search bar shown while loading e‑book data.
 import React from "react";
 
 export function SearchBarSkeleton() {
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        border: "1px solid #000",
-        padding: "8px 14px",
-        marginBottom: "24px",
-        background: "#fff",
-      }}
-    >
+    <div className="flex items-center border-2 border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3.5 mb-8 rounded-none animate-pulse">
       {/* Icon placeholder */}
-      <div className="skeleton" style={{ width: "16px", height: "16px", marginRight: "10px" }} />
+      <div className="bg-zinc-200 dark:bg-zinc-800 h-4 w-4 mr-3 rounded" />
       {/* Input placeholder */}
-      <div className="skeleton" style={{ flex: 1, height: "14px" }} />
+      <div className="bg-zinc-200 dark:bg-zinc-800 h-4 flex-1 rounded" />
     </div>
   );
 }

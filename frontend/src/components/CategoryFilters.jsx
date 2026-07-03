@@ -14,54 +14,26 @@ export function CategoryFilters({
     "Tech",
     "Mystery",
   ];
-  const dynamicCategories = ebooks.map((b) => b.category).filter(Boolean);
+  const dynamicCategories = ebooks.map((b) => b.ebook?.category || b.category).filter(Boolean);
   const categories = [...new Set([...presetCategories, ...dynamicCategories])];
 
   return (
-    <div
-      className="categories-container"
-      style={{
-        marginBottom: "24px",
-        borderBottom: "1px solid #000",
-        paddingBottom: "16px",
-      }}
-    >
-      <p
-        className="section-sublabel"
-        style={{
-          fontSize: "11px",
-          letterSpacing: "1px",
-          fontWeight: "700",
-          color: "#000",
-          marginBottom: "12px",
-          textTransform: "uppercase",
-        }}
-      >
+    <div className="border-b-2 border-zinc-300 dark:border-zinc-700 pb-6 mb-6">
+      <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-450 mb-3 block">
         Filter by Category
       </p>
-      <div
-        className="categories-chips"
-        style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}
-      >
+      <div className="flex gap-2.5 flex-wrap">
         {categories.map((cat) => {
-          const isSelected =
-            selectedCategory.toLowerCase() === cat.toLowerCase();
+          const isSelected = selectedCategory.toLowerCase() === cat.toLowerCase();
           return (
             <button
               key={cat}
               onClick={() => onSelectCategory(cat)}
-              style={{
-                padding: "6px 14px",
-                borderRadius: "0px",
-                border: "1px solid #000",
-                background: isSelected ? "#000" : "#fff",
-                color: isSelected ? "#fff" : "#000",
-                cursor: "pointer",
-                fontSize: "12px",
-                fontWeight: isSelected ? "600" : "400",
-                transition: "all 0.15s ease",
-                textTransform: "capitalize",
-              }}
+              className={`px-4 py-2 border-2 text-xs font-bold transition-all uppercase tracking-wider rounded-none cursor-pointer ${
+                isSelected
+                  ? "bg-zinc-950 border-zinc-950 text-white dark:bg-zinc-50 dark:border-zinc-50 dark:text-zinc-950"
+                  : "bg-transparent border-zinc-300 dark:border-zinc-700 text-zinc-950 dark:text-white hover:shadow-[2px_2px_0px_#000] dark:hover:shadow-[2px_2px_0px_#fff]"
+              }`}
             >
               {cat}
             </button>

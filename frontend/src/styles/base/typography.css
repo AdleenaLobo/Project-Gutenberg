@@ -1,0 +1,239 @@
+/* ==========================================
+   FONT STACKS
+========================================== */
+
+:root {
+  /* UI Font */
+  --font-ui:
+    Calibri,
+    Helvetica,
+    Arial,
+    sans-serif;
+
+  /* Reader Font */
+  --font-reader:
+    Georgia,
+    Calibri,
+    Helvetica,
+    "Times New Roman",
+    serif;
+
+  /* Reader Typography Defaults */
+  --reader-font: var(--font-reader);
+
+
+  /* Default reader settings */
+  --reader-font-size: 20px;
+  --reader-line-height: 1.8;
+  --reader-letter-spacing: 0.01em;
+
+}
+
+/* ==========================================
+   GLOBAL
+========================================== */
+
+body {
+  font-family: var(--font-ui);
+  font-size: 18px;
+  line-height: 1;
+  color: var(--black);
+}
+
+/* ==========================================
+   HEADINGS
+========================================== */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+  color: var(--black);
+  line-height: 1.3;
+}
+
+h1 {
+  font-size: clamp(2rem, 3vw, 2.5rem);
+}
+
+h2 {
+  font-size: clamp(1.75rem, 2.5vw, 2rem);
+}
+
+h3 {
+  font-size: 1.5rem;
+}
+
+h4 {
+  font-size: 1.25rem;
+}
+
+h5 {
+  font-size: 1.125rem;
+}
+
+h6 {
+  font-size: 1rem;
+}
+
+/* ==========================================
+   PARAGRAPHS
+========================================== */
+
+p {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--gray-600);
+}
+
+/* ==========================================
+   LINKS
+========================================== */
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+a:hover {
+  color: var(--black);
+}
+
+/* ==========================================
+   READER TYPOGRAPHY
+========================================== */
+
+.page-text,
+.reader-book-title,
+.page-book-name,
+.panel-header h3,
+.panel-item-body {
+  font-family: var(--font-reader);
+}
+
+.reader-book-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--reader-text);
+}
+
+.reader-book-author {
+  font-size: 0.875rem;
+  color: var(--reader-secondary);
+}
+
+.page-book-name {
+  font-size: 0.75rem;
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  opacity: 0.6;
+  color: var(--reader-text);
+}
+
+.page-num {
+  font-size: 0.75rem;
+  color: var(--reader-secondary);
+  letter-spacing: 0.06em;
+}
+
+.page-text {
+  font-family: var(--reader-font);
+
+  font-size: var(--reader-font-size);
+  line-height: var(--reader-line-height);
+  letter-spacing: var(--reader-letter-spacing);
+
+  color: var(--reader-text);
+
+  text-align: justify;
+  text-justify: inter-word;
+
+  white-space: pre-wrap;
+  word-break: normal;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+/* ==========================================
+   UI TEXT
+========================================== */
+
+label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gray-500);
+  margin-bottom: 6px;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--gray-400);
+}
+
+/* ==========================================
+   UTILITY CLASSES
+========================================== */
+
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-muted {
+  color: var(--gray-500);
+}
+
+.text-xs {
+  font-size: 0.75rem;
+}
+
+.text-sm {
+  font-size: 0.875rem;
+}
+
+.text-base {
+  font-size: 1rem;
+}
+
+.text-lg {
+  font-size: 1.125rem;
+}
+
+.text-xl {
+  font-size: 1.25rem;
+}
+
+.font-serif {
+  font-family: var(--font-reader);
+}
+
+.font-sans {
+  font-family: var(--font-ui);
+}
+
+.font-medium {
+  font-weight: 500;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+.font-bold {
+  font-weight: 700;
+}

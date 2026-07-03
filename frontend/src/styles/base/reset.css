@@ -1,0 +1,131 @@
+/* ========================================
+   RESET
+======================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ========================================
+   HTML & BODY
+======================================== */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  background: var(--white);
+  color: var(--black);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ========================================
+   LINKS
+======================================== */
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ========================================
+   BUTTONS
+======================================== */
+
+button {
+  font: inherit;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* ========================================
+   FORM ELEMENTS
+======================================== */
+
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  outline: none;
+}
+
+textarea {
+  resize: vertical;
+}
+
+/* ========================================
+   MEDIA
+======================================== */
+
+img,
+picture,
+svg,
+video,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+/* ========================================
+   LISTS
+======================================== */
+
+ul,
+ol {
+  list-style: none;
+}
+
+/* ========================================
+   TABLES
+======================================== */
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/* ========================================
+   TYPOGRAPHY
+======================================== */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  font: inherit;
+}
+
+/* ========================================
+   MISC
+======================================== */
+
+hr {
+  border: 0;
+}
+
+fieldset {
+  border: none;
+}
+
+legend {
+  padding: 0;
+}

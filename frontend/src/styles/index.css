@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Core global layout rules */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: Georgia, yingping, "New York", serif;
+}
+
+/* Warmth overlay for reader screen shading */
+.warmth-overlay {
+  background-color: #f6d7a8;
+  pointer-events: none;
+  z-index: 50;
+}
+
+/* Custom style for range slider track height and progress fill color */
+input[type="range"].reader-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type="range"].reader-slider::-webkit-slider-runnable-track {
+  height: 6px;
+  background: var(--slider-track-bg, #e5e5e5);
+  border-radius: 3px;
+}
+
+input[type="range"].reader-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -5px;
+  background-color: #000;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+}
+
+.dark input[type="range"].reader-slider::-webkit-slider-runnable-track {
+  background: var(--slider-track-bg, #262626);
+}
+
+.dark input[type="range"].reader-slider::-webkit-slider-thumb {
+  background-color: #fff;
+}

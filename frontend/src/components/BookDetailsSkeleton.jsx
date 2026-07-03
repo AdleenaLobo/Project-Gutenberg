@@ -1,74 +1,47 @@
-// Skeleton UI for the BookDetails component – shows placeholder UI while a single book loads.
 import React from "react";
 
 export function BookDetailsSkeleton() {
   return (
-    <div style={{ padding: "20px", maxWidth: "950px", margin: "0 auto" }}>
-      {/* Back button – keep visible for navigation */}
+    <div className="px-6 py-8 max-w-4xl mx-auto">
+      {/* Back button */}
       <button
         disabled
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
-          background: "none",
-          border: "none",
-          cursor: "default",
-          fontSize: "14px",
-          fontWeight: "600",
-          marginBottom: "32px",
-          padding: 0,
-          color: "#aaa",
-        }}
+        className="flex items-center gap-2 text-zinc-300 dark:text-zinc-700 text-sm font-bold mb-8 border-none bg-transparent cursor-default p-0 uppercase"
       >
         ← Back to Collection
       </button>
 
-      <div style={{ display: "flex", gap: "32px", alignItems: "flex-start" }}>
+      <div className="flex flex-col md:flex-row gap-8 items-stretch">
         {/* Left side – cover image placeholder */}
-        <div style={{ flexShrink: 0, width: "220px" }}>
-          <div className="skeleton" style={{ width: "100%", height: "410px" }} />
+        <div className="flex-shrink-0 w-full md:w-56 flex flex-col">
+          <div className="bg-zinc-200 dark:bg-zinc-850 animate-pulse w-full h-full min-h-[320px] rounded-none border-2 border-zinc-300 dark:border-zinc-700" />
         </div>
 
         {/* Right side – content placeholders */}
-        <div
-          style={{
-            flexGrow: 1,
-            border: "1px solid #000",
-            padding: "40px",
-            background: "#fff",
-          }}
-        >
+        <div className="flex-grow w-full border-2 border-zinc-300 dark:border-zinc-700 p-8 bg-white dark:bg-zinc-900 shadow-[8px_8px_0px_#000] dark:shadow-[8px_8px_0px_#fff] rounded-none">
           {/* Type tag */}
-          <div className="skeleton" style={{ width: "120px", height: "12px", marginBottom: "8px" }} />
+          <div className="bg-zinc-200 dark:bg-zinc-850 animate-pulse w-28 h-3 mb-3 rounded-none" />
           {/* Title */}
-          <div className="skeleton" style={{ width: "70%", height: "32px", marginBottom: "4px" }} />
+          <div className="bg-zinc-200 dark:bg-zinc-850 animate-pulse w-2/3 h-8 mb-2 rounded-none" />
           {/* Author */}
-          <div className="skeleton" style={{ width: "40%", height: "18px", marginBottom: "24px" }} />
-          {/* Divider */}
-          <hr style={{ border: "none", borderTop: "1px solid #000", margin: "24px 0" }} />
+          <div className="bg-zinc-200 dark:bg-zinc-850 animate-pulse w-1/3 h-4 mb-6 rounded-none" />
+          
+          <hr className="border-t-2 border-zinc-300 dark:border-zinc-700 my-6" />
+          
           {/* Summary heading */}
-          <div className="skeleton" style={{ width: "80px", height: "14px", marginBottom: "12px" }} />
+          <div className="bg-zinc-200 dark:bg-zinc-850 animate-pulse w-20 h-4 mb-3 rounded-none" />
           {/* Summary text – several lines */}
-          <div className="skeleton" style={{ width: "100%", height: "12px", marginBottom: "6px" }} />
-          <div className="skeleton" style={{ width: "95%", height: "12px", marginBottom: "6px" }} />
-          <div className="skeleton" style={{ width: "90%", height: "12px", marginBottom: "6px" }} />
-          <div className="skeleton" style={{ width: "85%", height: "12px", marginBottom: "24px" }} />
+          <div className="bg-zinc-200 dark:bg-zinc-850 animate-pulse w-full h-3 mb-2 rounded-none" />
+          <div className="bg-zinc-200 dark:bg-zinc-850 animate-pulse w-[95%] h-3 mb-2 rounded-none" />
+          <div className="bg-zinc-200 dark:bg-zinc-850 animate-pulse w-[90%] h-3 mb-2 rounded-none" />
+          <div className="bg-zinc-200 dark:bg-zinc-850 animate-pulse w-[85%] h-3 mb-8 rounded-none" />
+          
           {/* Footer action panel */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              background: "#f9f9f9",
-              padding: "20px",
-              border: "1px solid #000",
-            }}
-          >
+          <div className="flex flex-col sm:flex-row gap-4 justify-between sm:items-center bg-zinc-50 dark:bg-zinc-950/20 p-3.5 px-4 border-2 border-zinc-300 dark:border-zinc-700 rounded-none max-w-xl">
             {/* Status placeholder */}
-            <div className="skeleton" style={{ width: "200px", height: "14px" }} />
+            <div className="bg-zinc-200 dark:bg-zinc-850 animate-pulse w-48 h-3 rounded-none" />
             {/* Button placeholder */}
-            <div className="skeleton" style={{ width: "120px", height: "36px" }} />
+            <div className="bg-zinc-200 dark:bg-zinc-850 animate-pulse w-28 h-8 rounded-none" />
           </div>
         </div>
       </div>

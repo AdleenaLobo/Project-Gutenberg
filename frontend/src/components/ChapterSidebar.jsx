@@ -16,105 +16,56 @@ export default function ChapterSidebar({
       {/* Overlay */}
       <div
         onClick={onClose}
-        style={{
-          position: "fixed",
-          top: "80px",
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: "transparent", // No dark overlay
-          opacity: open ? 1 : 0,
-          pointerEvents: open ? "auto" : "none",
-          transition: ".25s",
-          zIndex: 20,
-        }}
+        className={`fixed inset-0 bg-zinc-950/20 dark:bg-zinc-950/50 transition-opacity duration-300 z-40 ${
+          open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
       />
 
       {/* Sidebar */}
       <aside
-        style={{
-          position: "fixed",
-          top: "53px",
-          left: 0, // Always 0
-          width: "340px",
-          height: "calc(100vh - 80px)",
-          transform: open ? "translateX(0)" : "translateX(-100%)",
-          transition: "transform 300ms cubic-bezier(.22,1,.36,1)",
-          background: "#fff",
-          borderRight: "1px solid #e5e5e5",
-          display: "flex",
-          flexDirection: "column",
-          zIndex: 100,
-          boxShadow: "none",
-          willChange: "transform",
-        }}
+        className={`fixed top-0 left-0 w-80 h-full bg-white dark:bg-zinc-900 border-r-2 border-zinc-300 dark:border-zinc-700 flex flex-col z-50 shadow-[6px_0px_0px_#000] dark:shadow-[6px_0px_0px_#fff] transition-transform duration-300 ease-out will-change-transform ${
+          open ? "translate-x-0" : "-translate-x-full"
+        }`}
       >
         {/* Header */}
-        <div
-          style={{
-            display: "flex",
-            borderBottom: "1px solid #eee",
-          }}
-        >
+        <div className="flex border-b-2 border-zinc-300 dark:border-zinc-700 items-center justify-between">
           <button
             onClick={() => setActiveTab("contents")}
-            style={{
-              flex: 1,
-              padding: "16px",
-              border: "none",
-              background: activeTab === "contents" ? "#f8f8f8" : "#fff",
-              fontWeight: activeTab === "contents" ? 700 : 500,
-              cursor: "pointer",
-              color: "#000",
-            }}
+            className={`flex-1 py-4 text-center text-xs font-bold uppercase tracking-wider transition-colors duration-150 border-none cursor-pointer focus:outline-none ${
+              activeTab === "contents"
+                ? "bg-zinc-50 dark:bg-zinc-850 text-zinc-950 dark:text-white border-b-2 border-zinc-300 dark:border-zinc-700 font-bold"
+                : "bg-transparent text-zinc-500 dark:text-zinc-450 hover:text-zinc-950 dark:hover:text-white"
+            }`}
           >
             Contents
           </button>
 
           <button
             onClick={() => setActiveTab("bookmarks")}
-            style={{
-              flex: 1,
-              padding: "16px",
-              border: "none",
-              background: activeTab === "bookmarks" ? "#f8f8f8" : "#fff",
-              fontWeight: activeTab === "bookmarks" ? 700 : 500,
-              cursor: "pointer",
-              color: "#000",
-            }}
+            className={`flex-1 py-4 text-center text-xs font-bold uppercase tracking-wider transition-colors duration-150 border-none cursor-pointer focus:outline-none ${
+              activeTab === "bookmarks"
+                ? "bg-zinc-50 dark:bg-zinc-850 text-zinc-950 dark:text-white border-b-2 border-zinc-300 dark:border-zinc-700 font-bold"
+                : "bg-transparent text-zinc-500 dark:text-zinc-450 hover:text-zinc-950 dark:hover:text-white"
+            }`}
           >
             Bookmarks
           </button>
 
           <button
             onClick={onClose}
-            style={{
-              border: "none",
-              background: "transparent",
-              cursor: "pointer",
-              color: "#000",
-            }}
+            className="p-4 border-l-2 border-zinc-300 dark:border-zinc-700 bg-transparent cursor-pointer text-zinc-500 hover:text-zinc-950 dark:hover:text-white focus:outline-none flex items-center justify-center h-full"
+            aria-label="Close panel"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
+
         {/* Chapter List */}
-        <div
-          style={{
-            flex: 1,
-            overflowY: "auto",
-          }}
-        >
+        <div className="flex-1 overflow-y-auto">
           {activeTab === "contents" ? (
             <>
               {chapters.length === 0 ? (
-                <div
-                  style={{
-                    padding: 30,
-                    color: "#666",
-                    textAlign: "center",
-                  }}
-                >
+                <div className="p-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
                   No chapters found
                 </div>
               ) : (
@@ -128,41 +79,21 @@ export default function ChapterSidebar({
                         onSelectChapter(chapter.pageIndex);
                         onClose();
                       }}
-                      style={{
-                        width: "100%",
-                        border: "none",
-                        background: active ? "#f5f5f5" : "#fff",
-                        cursor: "pointer",
-                        padding: "18px 20px",
-                        borderBottom: "1px solid #f1f1f1",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        color: "#000",
-                      }}
+                      className={`w-full text-left px-5 py-4 border-b-2 border-zinc-300 dark:border-zinc-700 flex justify-between items-center bg-transparent cursor-pointer transition-colors duration-150 rounded-none ${
+                        active
+                          ? "bg-zinc-950 text-white dark:bg-zinc-50 dark:text-zinc-950 font-bold"
+                          : "hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-950 dark:text-zinc-300"
+                      }`}
                     >
-                      <div style={{ textAlign: "left" }}>
-                        <div
-                          style={{
-                            fontWeight: active ? 700 : 500,
-                            fontSize: 15,
-                          }}
-                        >
+                      <div className="text-left">
+                        <div className={`text-sm font-bold uppercase ${active ? "text-white dark:text-zinc-955" : ""}`}>
                           {chapter.title}
                         </div>
-
-                        <div
-                          style={{
-                            fontSize: 12,
-                            color: "#777",
-                            marginTop: 4,
-                          }}
-                        >
+                        <div className={`text-xs mt-1 ${active ? "text-zinc-300 dark:text-zinc-600" : "text-zinc-450 dark:text-zinc-500"}`}>
                           Page {chapter.pageIndex + 1}
                         </div>
                       </div>
-
-                      <ChevronRight size={18} color="#999" />
+                      <ChevronRight size={16} className={active ? "text-white dark:text-zinc-955" : "text-zinc-400 dark:text-zinc-600"} />
                     </button>
                   );
                 })
@@ -171,17 +102,11 @@ export default function ChapterSidebar({
           ) : (
             <>
               {bookmarks.length === 0 ? (
-                <div
-                  style={{
-                    padding: 40,
-                    textAlign: "center",
-                    color: "#888",
-                  }}
-                >
-                  <div style={{ marginTop: 12, fontWeight: 600 }}>
+                <div className="p-10 text-center text-zinc-500 dark:text-zinc-450 flex flex-col gap-2">
+                  <div className="text-sm font-bold text-zinc-900 dark:text-zinc-250 mt-3">
                     No bookmarks yet
                   </div>
-                  <div style={{ marginTop: 8, fontSize: 13 }}>
+                  <div className="text-xs text-zinc-500 mt-1">
                     Bookmark pages while reading to find them quickly.
                   </div>
                 </div>
@@ -193,55 +118,26 @@ export default function ChapterSidebar({
                       onSelectChapter(bookmark.pageIndex);
                       onClose();
                     }}
-                    style={{
-                      width: "100%",
-                      border: "none",
-                      background: "#fff",
-                      cursor: "pointer",
-                      padding: "18px 20px",
-                      borderBottom: "1px solid #f1f1f1",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      color: "#000",
-                    }}
+                    className="w-full text-left px-5 py-4 border-b-2 border-zinc-300 dark:border-zinc-700 flex justify-between items-center bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer transition-colors text-zinc-955 dark:text-zinc-350 rounded-none"
                   >
-                    <div style={{ textAlign: "left" }}>
-                      <div
-                        style={{
-                          fontWeight: 600,
-                        }}
-                      >
+                    <div className="text-left">
+                      <div className="text-sm font-bold">
                         {bookmark.label || "Bookmark"}
                       </div>
-
-                      <div
-                        style={{
-                          marginTop: 4,
-                          color: "#777",
-                          fontSize: 12,
-                        }}
-                      >
+                      <div className="text-xs text-zinc-450 dark:text-zinc-500 mt-1">
                         Page {bookmark.pageIndex + 1}
                       </div>
                     </div>
-
-                    <ChevronRight size={18} color="#999" />
+                    <ChevronRight size={16} className="text-zinc-400 dark:text-zinc-650" />
                   </button>
                 ))
               )}
             </>
           )}
         </div>
+
         {/* Footer */}
-        <div
-          style={{
-            borderTop: "1px solid #eee",
-            padding: "14px 20px",
-            fontSize: 13,
-            color: "#666",
-          }}
-        >
+        <div className="border-t-2 border-zinc-300 dark:border-zinc-700 p-4 text-xs font-bold uppercase tracking-wider text-zinc-950 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-850/40">
           {activeTab === "contents"
             ? `${chapters.length} Chapters`
             : `${bookmarks.length} Bookmarks`}

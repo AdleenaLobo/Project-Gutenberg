@@ -1,12 +1,15 @@
 import React, { useRef, forwardRef } from "react";
+import { useReaderTheme } from "../context/ReaderThemeContext";
 
 const ReaderContent = forwardRef(function ReaderContent({
   currentPage,
+  pages = [],
   pageIndex,
   totalPages,
   onPrevious,
   onNext,
 }, ref) {
+  const { fontFamily, fontSize, lineHeight, layoutMode } = useReaderTheme();
   const startX = useRef(null);
 
   const handleMouseDown = (e) => {
@@ -27,23 +30,67 @@ const ReaderContent = forwardRef(function ReaderContent({
 
     startX.current = null;
   };
+
+  if (layoutMode === "scroll") {
+    const allBlocks = pages.reduce((acc, p) => [...acc, ...(p.lines || [])], []);
+
+    return (
+      <div
+        ref={ref}
+        className="w-full max-w-[850px] min-h-screen h-auto mx-auto px-12 py-10 bg-transparent border-none shadow-none select-text"
+        style={{
+          fontFamily: fontFamily,
+          fontSize: `${fontSize}px`,
+          lineHeight: lineHeight,
+        }}
+      >
+        {allBlocks.map((block, index) => {
+          if (block.type === "heading") {
+            return (
+              <h2
+                key={index}
+                id={`block-${index}`}
+                className="text-center font-bold my-8 tracking-wide text-zinc-955 dark:text-white"
+                style={{
+                  fontSize: `${Math.round(fontSize * 1.45)}px`,
+                  fontFamily: fontFamily,
+                }}
+              >
+                {block.text}
+              </h2>
+            );
+          }
+
+          return (
+            <p
+              key={index}
+              id={`block-${index}`}
+              className="mb-4 text-justify text-zinc-800 dark:text-zinc-200"
+              style={{
+                textIndent: "2em",
+                fontSize: `${fontSize}px`,
+                lineHeight: lineHeight,
+                fontFamily: fontFamily,
+              }}
+            >
+              {block.text}
+            </p>
+          );
+        })}
+      </div>
+    );
+  }
+
   return (
     <div
       ref={ref}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
+      className="w-full max-w-[850px] h-[calc(100vh-80px)] mx-auto px-12 py-10 overflow-hidden cursor-grab select-none bg-transparent border-none shadow-none"
       style={{
-        width: "100%",
-        maxWidth: "900px",
-        height: "calc(100vh - 90px)",
-        margin: "0 auto",
-        padding: "40px 55px",
-        background: "#fff",
-        boxSizing: "border-box",
-        overflow: "hidden",
-        cursor: "grab",
-        userSelect: "none",
-        fontFamily: "Georgia, serif",
+        fontFamily: fontFamily,
+        fontSize: `${fontSize}px`,
+        lineHeight: lineHeight,
       }}
     >
       {(currentPage?.lines || []).map((block, index) => {
@@ -51,13 +98,10 @@ const ReaderContent = forwardRef(function ReaderContent({
           return (
             <h2
               key={index}
+              className="text-center font-bold my-8 tracking-wide text-zinc-950 dark:text-white"
               style={{
-                textAlign: "center",
-                fontSize: 30,
-                fontWeight: 700,
-                margin: "32px 0 24px",
-                letterSpacing: ".03em",
-                color: "#111",
+                fontSize: `${Math.round(fontSize * 1.45)}px`,
+                fontFamily: fontFamily,
               }}
             >
               {block.text}
@@ -68,13 +112,12 @@ const ReaderContent = forwardRef(function ReaderContent({
         return (
           <p
             key={index}
+            className="mb-4 text-justify text-zinc-800 dark:text-zinc-200"
             style={{
-              fontSize: 18,
-              lineHeight: 2,
-              color: "#222",
-              margin: "0 0 18px",
-              textAlign: "justify",
               textIndent: "2em",
+              fontSize: `${fontSize}px`,
+              lineHeight: lineHeight,
+              fontFamily: fontFamily,
             }}
           >
             {block.text}
@@ -83,7 +126,6 @@ const ReaderContent = forwardRef(function ReaderContent({
       })}
     </div>
   );
-})
-
+});
 
 export default ReaderContent;

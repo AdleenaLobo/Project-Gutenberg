@@ -1,0 +1,321 @@
+/* ==========================================
+   APP SHELL
+========================================== */
+
+.app-shell {
+  min-height: 100vh;
+  background: var(--white);
+}
+
+.page-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+/* ==========================================
+   HEADER
+========================================== */
+
+.app-header {
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 24px;
+
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-200);
+
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-brand-icon {
+  width: 30px;
+  height: 30px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  background: var(--black);
+}
+
+.header-brand-icon svg {
+  color: var(--white);
+}
+
+.header-brand-name {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.header-brand-sub {
+
+  font-size: 15px;
+  color: var(--gray-500);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ==========================================
+   USER CHIP
+========================================== */
+
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+
+  padding: 4px 10px;
+
+  border: 1px solid var(--gray-200);
+
+  font-size: 15px;
+  color: var(--gray-600);
+}
+
+.user-avatar {
+  width: 20px;
+  height: 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--gray-200);
+
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--gray-700);
+}
+
+/* ==========================================
+   TAB NAVIGATION
+========================================== */
+
+.tab-nav {
+  display: flex;
+
+  padding: 0 24px;
+
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-200);
+  font-size: 14px;
+  position: sticky;
+  top: 52px;
+  z-index: 10;
+}
+
+.tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 16px;
+  height: 16px;
+
+  margin-left: 5px;
+
+  background: var(--gray-200);
+
+  font-size: 10px;
+  color: var(--gray-600);
+}
+
+.tab-btn.active .tab-count {
+  background: var(--black);
+  color: var(--white);
+  padding-right: 3px;
+}
+
+.tab-btn{
+  padding:4px;
+  font-size: 14px;
+}
+/* ==========================================
+   ADMIN LAYOUT
+========================================== */
+
+.admin-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 32px;
+
+  max-width: 1100px;
+
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+.admin-section {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+@media (max-width: 768px) {
+  .admin-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================
+   SECTIONS
+========================================== */
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding-bottom: 10px;
+
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  font-size: 13px;
+  font-weight: 500;
+
+  color: var(--black);
+}
+
+.section-label {
+  margin-bottom: 14px;
+
+  font-size: 11px;
+  font-weight: 500;
+
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+
+  color: var(--gray-400);
+}
+
+/* ==========================================
+   GENERIC COMPONENTS
+========================================== */
+
+.card {
+  padding: 18px;
+  border: 1px solid var(--gray-200);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 10px 14px;
+
+  border: 1px solid var(--gray-200);
+
+  font-size: 13px;
+}
+
+/* ==========================================
+   TOOLBAR
+========================================== */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding-bottom: 10px;
+
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.toolbar-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  font-size: 13px;
+  font-weight: 500;
+
+  color: var(--black);
+}
+
+/* ==========================================
+   LOGIN
+========================================== */
+
+.login-shell {
+  min-height: 100vh;
+
+  display: grid;
+  place-items: center;
+
+  padding: 24px;
+
+  background: var(--gray-50);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 360px;
+
+  padding: 32px;
+
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+}
+
+.login-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  margin-bottom: 24px;
+}
+
+.login-icon {
+  width: 32px;
+  height: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--black);
+}
+
+.login-title {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.login-hint {
+  margin-top: 20px;
+  padding-top: 16px;
+
+  border-top: 1px solid var(--gray-100);
+}
+
+.login-hint p {
+  font-size: 11px;
+  color: var(--gray-400);
+  line-height: 1.8;
+}

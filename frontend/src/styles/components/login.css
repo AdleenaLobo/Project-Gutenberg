@@ -1,0 +1,230 @@
+/* ==========================================
+   LOGIN + GREETING
+========================================== */
+
+/* ==========================================
+   Login Screen
+========================================== */
+
+.login-shell {
+  min-height: 100vh;
+
+  display: grid;
+  place-items: center;
+
+  padding: 24px;
+
+  background: var(--gray-50);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 360px;
+
+  padding: 32px;
+
+  background: var(--white);
+
+  border: 1px solid var(--gray-200);
+}
+
+.login-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  margin-bottom: 24px;
+}
+
+.login-icon {
+  width: 32px;
+  height: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--black);
+
+  color: var(--white);
+
+  flex-shrink: 0;
+}
+
+.login-title {
+  font-size: 18px;
+  font-weight: 500;
+
+  color: var(--black);
+}
+
+.login-hint {
+  margin-top: 20px;
+  padding-top: 16px;
+
+  border-top: 1px solid var(--gray-100);
+}
+
+.login-hint p {
+  font-size: 11px;
+  line-height: 1.8;
+
+  color: var(--gray-400);
+}
+
+/* ==========================================
+   Greeting Overlay
+========================================== */
+
+.greeting-overlay {
+  position: fixed;
+  inset: 0;
+
+  z-index: 999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(4px);
+
+  animation: greeting-in 0.35s ease forwards;
+
+  transition: opacity 0.6s ease;
+}
+
+.greeting-fade {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.greeting-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  gap: 10px;
+
+  text-align: center;
+}
+
+.greeting-avatar {
+  width: 56px;
+  height: 56px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 4px;
+
+  background: var(--black);
+  color: var(--white);
+
+  font-size: 20px;
+  font-weight: 500;
+
+  letter-spacing: 0.04em;
+}
+
+.greeting-hello {
+  font-size: 22px;
+  font-weight: 500;
+
+  letter-spacing: -0.01em;
+
+  color: var(--black);
+}
+
+.greeting-sub {
+  font-size: 13px;
+
+  color: var(--gray-500);
+}
+
+/* ==========================================
+   Greeting Animation
+========================================== */
+
+@keyframes greeting-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reader-slider {
+  width: 100%;
+  height: 20px;
+
+  appearance: none;
+  -webkit-appearance: none;
+
+  background: transparent;
+  cursor: pointer;
+}
+
+/* Track */
+.reader-slider::-webkit-slider-runnable-track {
+  height: 10px;
+  border-radius: 999px;
+  border: 1px solid var(--reader-text);
+  background: linear-gradient(
+    to right,
+    var(--reader-text) 0%,
+    var(--reader-text) var(--progress),
+    var(--reader-border) var(--progress),
+    var(--reader-border) 100%
+  );
+}
+
+/* Thumb */
+.reader-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+
+  width: 18px;
+  height: 18px;
+  margin-top: -6px;
+
+  border-radius: 50%;
+  background: var(--reader-text);
+  border: 2px solid var(--reader-bg);
+
+  transition: transform 0.15s ease;
+}
+
+.reader-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+.reader-slider::-webkit-slider-thumb:active {
+  transform: scale(1.2);
+}
+
+/* Firefox */
+.reader-slider::-moz-range-track {
+  height: 6px;
+  background: var(--reader-border);
+  border-radius: 999px;
+}
+
+.reader-slider::-moz-range-progress {
+  height: 6px;
+  background: var(--reader-text);
+  border-radius: 999px;
+}
+
+.reader-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--reader-text);
+  border: 2px solid var(--reader-bg);
+}
