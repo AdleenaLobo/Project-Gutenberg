@@ -87,7 +87,7 @@ export function ReaderThemeProvider({ children }) {
   return (
     <ReaderThemeContext.Provider value={value}>
       <div 
-        className={`min-h-screen transition-colors duration-200 ${theme === "dark" ? "dark bg-zinc-950 text-zinc-100" : "bg-white text-zinc-900"}`} 
+        className="min-h-screen bg-white text-zinc-900" 
         style={style}
       >
         {children}
