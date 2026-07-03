@@ -2,7 +2,7 @@ import React from "react";
 
 export default function ReaderContentSkeleton() {
   return (
-    <div className="w-full max-w-[850px] h-[calc(100vh-90px)] mx-auto px-12 py-10 overflow-hidden select-none bg-white dark:bg-zinc-900 border border-zinc-250 dark:border-zinc-800/80 rounded-lg shadow-sm flex flex-col">
+    <div className="w-full max-w-[850px] h-[calc(100vh-90px)] mx-auto px-12 py-10 overflow-hidden select-none bg-transparent border-none shadow-none flex flex-col">
       {/* Heading */}
       <div className="bg-zinc-200 dark:bg-zinc-800 animate-pulse w-[45%] h-8 mx-auto my-8 rounded-lg" />
 
