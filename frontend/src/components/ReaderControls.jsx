@@ -91,7 +91,7 @@ export default function ReaderControls({
 
   const showUI = visible || hoveringControl;
 
-  const btnBase = "w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all duration-250 fixed z-50 focus:outline-none";
+  const btnBase = "w-12 h-12 rounded-lg border flex items-center justify-center transition-all duration-200 fixed z-50 focus:outline-none";
   const btnActive = showUI
     ? "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-950 dark:text-white hover:scale-105 cursor-pointer shadow-none focus:outline-none focus:ring-0 focus:border-zinc-300 dark:focus:border-zinc-700"
     : "border-transparent bg-transparent text-transparent shadow-none pointer-events-none";

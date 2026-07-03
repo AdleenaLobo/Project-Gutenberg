@@ -93,7 +93,7 @@ const filteredEbooks = ebooks
           >
             {t.label}
             {t.count > 0 && (
-              <span className="text-[10px] px-2 py-0.5 rounded-none bg-zinc-950 dark:bg-zinc-50 border border-zinc-300 dark:border-zinc-700 text-white dark:text-zinc-950">
+              <span className="text-[10px] px-2 py-0.5 rounded-lg bg-zinc-950 dark:bg-zinc-50 border border-zinc-300 dark:border-zinc-700 text-white dark:text-zinc-950">
                 {t.count}
               </span>
             )}
@@ -101,7 +101,7 @@ const filteredEbooks = ebooks
         ))}
 
         <button
-          className="p-2 ml-auto text-zinc-500 hover:text-zinc-950 dark:hover:text-zinc-150 rounded-none border border-transparent hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors focus:outline-none cursor-pointer"
+          className="p-2 ml-auto text-zinc-500 hover:text-zinc-950 dark:hover:text-zinc-150 rounded-lg border border-transparent hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors focus:outline-none cursor-pointer"
           onClick={load}
           title="Refresh"
         >

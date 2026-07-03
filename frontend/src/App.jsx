@@ -17,12 +17,12 @@ function AppContent({ client, initials, firstName, logout, user, greeting }) {
       {/* Greeting overlay */}
       {greeting && (
         <div
-          className={`fixed inset-0 z-[999] flex items-center justify-center bg-white/70 dark:bg-zinc-950/70 backdrop-blur-sm transition-opacity duration-700 ${
+          className={`fixed inset-0 z-[999] flex items-center justify-center bg-white/70 dark:bg-zinc-955/70 backdrop-blur-sm transition-opacity duration-700 ${
             greeting === "fading" ? "opacity-0 pointer-events-none" : "opacity-100"
           }`}
         >
           <div className="flex flex-col items-center gap-2 text-center animate-fade-in">
-            <div className="w-14 h-14 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center text-xl font-bold tracking-wider mb-1">
+            <div className="w-14 h-14 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center text-xl font-bold tracking-wider mb-1">
               {initials}
             </div>
             <p className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">Hello, {firstName}</p>
@@ -44,8 +44,8 @@ function AppContent({ client, initials, firstName, logout, user, greeting }) {
             </div>
           </Link>
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-sm font-medium">
-              <div className="w-6 h-6 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center text-[10px] font-bold">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-sm font-medium">
+              <div className="w-6 h-6 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center text-[10px] font-bold">
                 {initials}
               </div>
               {user.name}

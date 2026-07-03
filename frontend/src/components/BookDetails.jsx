@@ -65,15 +65,8 @@ export function BookDetails({ book, isEbook, onBack, onAction }) {
 
 
           <button
-            onClick={() => {
-              if (isEbook) {
-                navigate(`/books/${book.id}/read`);
-              } else {
-                onAction(book.id);
-              }
-            }}
-            disabled={!isEbook && book.available_copies < 1}
-            className="px-4 py-2 bg-zinc-950 border-2 border-zinc-950 dark:bg-zinc-50 dark:border-zinc-50 text-white dark:text-zinc-955 font-semibold text-xs uppercase tracking-wider hover:bg-white hover:text-zinc-950 dark:hover:bg-zinc-955 dark:hover:text-white transition-all hover:shadow-[2px_2px_0px_#000] dark:hover:shadow-[2px_2px_0px_#fff] rounded-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            onClick={() => navigate(`/books/${book.id}/read`)}
+            className="px-4 py-2 bg-zinc-950 border border-zinc-950 dark:bg-zinc-50 dark:border-zinc-50 text-white dark:text-zinc-955 font-semibold text-xs uppercase tracking-wider hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-all duration-200 rounded-lg cursor-pointer"
           >
             Open Reader
           </button>

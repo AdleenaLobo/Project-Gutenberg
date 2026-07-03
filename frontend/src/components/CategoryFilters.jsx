@@ -29,10 +29,10 @@ export function CategoryFilters({
             <button
               key={cat}
               onClick={() => onSelectCategory(cat)}
-              className={`px-4 py-2 border-2 text-xs font-bold transition-all uppercase tracking-wider rounded-none cursor-pointer ${
+              className={`px-4 py-2 border text-xs font-semibold uppercase tracking-wider rounded-lg cursor-pointer transition-all duration-200 ${
                 isSelected
-                  ? "bg-zinc-950 border-zinc-950 text-white dark:bg-zinc-50 dark:border-zinc-50 dark:text-zinc-950"
-                  : "bg-transparent border-zinc-300 dark:border-zinc-700 text-zinc-950 dark:text-white hover:shadow-[2px_2px_0px_#000] dark:hover:shadow-[2px_2px_0px_#fff]"
+                  ? "bg-zinc-950 border-zinc-950 text-white dark:bg-zinc-50 dark:border-zinc-50 dark:text-zinc-950 font-bold"
+                  : "bg-transparent border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-950 dark:hover:text-white"
               }`}
             >
               {cat}
