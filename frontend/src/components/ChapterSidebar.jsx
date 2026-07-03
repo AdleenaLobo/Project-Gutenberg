@@ -23,17 +23,17 @@ export default function ChapterSidebar({
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 w-80 h-full bg-white dark:bg-zinc-900 border-r-2 border-zinc-300 dark:border-zinc-700 flex flex-col z-50 shadow-[6px_0px_0px_#000] dark:shadow-[6px_0px_0px_#fff] transition-transform duration-300 ease-out will-change-transform ${
-          open ? "translate-x-0" : "-translate-x-full"
+        className={`fixed top-0 right-0 w-80 h-full bg-white dark:bg-zinc-900 border-l border-zinc-200 dark:border-zinc-800 flex flex-col z-50 shadow-2xl transition-transform duration-300 ease-out will-change-transform ${
+          open ? "translate-x-0" : "translate-x-full"
         }`}
       >
         {/* Header */}
-        <div className="flex border-b-2 border-zinc-300 dark:border-zinc-700 items-center justify-between">
+        <div className="flex border-b border-zinc-200 dark:border-zinc-800 items-center justify-between">
           <button
             onClick={() => setActiveTab("contents")}
             className={`flex-1 py-4 text-center text-xs font-bold uppercase tracking-wider transition-colors duration-150 border-none cursor-pointer focus:outline-none ${
               activeTab === "contents"
-                ? "bg-zinc-50 dark:bg-zinc-850 text-zinc-950 dark:text-white border-b-2 border-zinc-300 dark:border-zinc-700 font-bold"
+                ? "bg-zinc-50 dark:bg-zinc-850 text-zinc-955 dark:text-white border-b border-zinc-200 dark:border-zinc-800 font-bold"
                 : "bg-transparent text-zinc-500 dark:text-zinc-450 hover:text-zinc-950 dark:hover:text-white"
             }`}
           >
@@ -44,7 +44,7 @@ export default function ChapterSidebar({
             onClick={() => setActiveTab("bookmarks")}
             className={`flex-1 py-4 text-center text-xs font-bold uppercase tracking-wider transition-colors duration-150 border-none cursor-pointer focus:outline-none ${
               activeTab === "bookmarks"
-                ? "bg-zinc-50 dark:bg-zinc-850 text-zinc-950 dark:text-white border-b-2 border-zinc-300 dark:border-zinc-700 font-bold"
+                ? "bg-zinc-50 dark:bg-zinc-850 text-zinc-955 dark:text-white border-b border-zinc-200 dark:border-zinc-800 font-bold"
                 : "bg-transparent text-zinc-500 dark:text-zinc-450 hover:text-zinc-950 dark:hover:text-white"
             }`}
           >
@@ -53,7 +53,7 @@ export default function ChapterSidebar({
 
           <button
             onClick={onClose}
-            className="p-4 border-l-2 border-zinc-300 dark:border-zinc-700 bg-transparent cursor-pointer text-zinc-500 hover:text-zinc-950 dark:hover:text-white focus:outline-none flex items-center justify-center h-full"
+            className="p-4 border-l border-zinc-200 dark:border-zinc-800 bg-transparent cursor-pointer text-zinc-500 hover:text-zinc-950 dark:hover:text-white focus:outline-none flex items-center justify-center h-full"
             aria-label="Close panel"
           >
             <X size={18} />

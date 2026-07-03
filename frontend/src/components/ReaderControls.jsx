@@ -91,9 +91,9 @@ export default function ReaderControls({
 
   const showUI = visible || hoveringControl;
 
-  const btnBase = "w-12 h-12 rounded-lg border flex items-center justify-center transition-all duration-200 fixed z-50 focus:outline-none";
+  const btnBase = "w-12 h-12 rounded-lg border flex items-center justify-center transition-all duration-200 fixed z-20 focus:outline-none";
   const btnActive = showUI
-    ? "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-950 dark:text-white hover:scale-105 cursor-pointer shadow-none focus:outline-none focus:ring-0 focus:border-zinc-300 dark:focus:border-zinc-700"
+    ? "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-955 dark:text-white hover:scale-105 cursor-pointer shadow-none focus:outline-none focus:ring-0 focus:border-zinc-300 dark:focus:border-zinc-700"
     : "border-transparent bg-transparent text-transparent shadow-none pointer-events-none";
 
   const iconOpacity = showUI ? "opacity-100" : "opacity-0 pointer-events-none";
@@ -106,7 +106,7 @@ export default function ReaderControls({
         onMouseEnter={() => setHoveringControl(true)}
         onMouseLeave={() => setHoveringControl(false)}
         aria-label="Table of contents"
-        className={`${btnBase} ${btnActive} left-7 top-6`}
+        className={`${btnBase} ${btnActive} right-7 top-6`}
       >
         <List size={20} className={`transition-all duration-200 ${iconOpacity}`} />
       </button>
@@ -140,7 +140,7 @@ export default function ReaderControls({
       {/* Page Number */}
       {layoutMode !== "scroll" && (
         <div
-          className={`fixed bottom-6 left-1/2 -translate-x-1/2 px-5 py-2.5 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border-2 border-zinc-300 dark:border-zinc-700 rounded-full text-sm font-medium tracking-wider text-zinc-955 dark:text-white shadow-md pointer-events-none transition-opacity duration-350 z-50 font-serif ${showUI ? "opacity-100" : "opacity-0"
+          className={`fixed bottom-6 left-1/2 -translate-x-1/2 px-5 py-2.5 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border-2 border-zinc-300 dark:border-zinc-700 rounded-full text-sm font-medium tracking-wider text-zinc-955 dark:text-white shadow-md pointer-events-none transition-opacity duration-350 z-20 font-serif ${showUI ? "opacity-100" : "opacity-0"
             }`}
         >
           {pageIndex + 1} / {totalPages}
@@ -154,7 +154,7 @@ export default function ReaderControls({
           onMouseEnter={() => setHoveringControl(true)}
           onMouseLeave={() => setHoveringControl(false)}
           aria-label="Go back"
-          className={`${btnBase} ${btnActive} left-7 bottom-6`}
+          className={`${btnBase} ${btnActive} left-7 top-6`}
         >
           <ArrowLeft size={20} className={`transition-all duration-200 ${iconOpacity}`} />
         </button>
@@ -180,7 +180,7 @@ export default function ReaderControls({
           ref={panelRef}
           onMouseEnter={() => setHoveringControl(true)}
           onMouseLeave={() => setHoveringControl(false)}
-          className="fixed bottom-20 right-7 z-50 w-80 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xl transition-all duration-300 origin-bottom-right scale-100 p-6 flex flex-col gap-5 text-zinc-800 dark:text-zinc-200"
+          className="fixed bottom-20 right-7 z-30 w-80 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xl transition-all duration-300 origin-bottom-right scale-100 p-6 flex flex-col gap-5 text-zinc-800 dark:text-zinc-200"
         >
           <div className="flex flex-col gap-5">
             {/* Font */}

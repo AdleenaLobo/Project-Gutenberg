@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { EbookReader } from "./EbookReader";
+import ReaderContentSkeleton from "../components/ReaderContentSkeleton";
 
 export  default function BookReader({ client }) {
   const { id } = useParams();
@@ -35,7 +36,11 @@ export  default function BookReader({ client }) {
   }, [id, book, client, location.state]);
 
   if (loading) {
-    return <p className="notice">Loading ebook…</p>;
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-transparent">
+        <ReaderContentSkeleton />
+      </div>
+    );
   }
 
   if (msg) {
@@ -43,6 +48,6 @@ export  default function BookReader({ client }) {
   }
 
   return (
-    <EbookReader book={book} client={client} onBack={() => navigate(-1)} />
+    <EbookReader book={book} client={client} onBack={() => navigate("/")} />
   );
 }

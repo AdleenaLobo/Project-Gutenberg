@@ -491,7 +491,7 @@ export function EbookReader({ book, client, onBack }) {
       }`}>
       {/* Warmth overlay shade */}
       <div
-        className="warmth-overlay fixed inset-0 pointer-events-none z-20 transition-opacity duration-200"
+        className="warmth-overlay fixed inset-0 pointer-events-none z-10 transition-opacity duration-200"
         style={{ opacity: warmth / 100 }}
       />
 
