@@ -117,7 +117,7 @@ const filteredEbooks = ebooks
         )}
 
         {/* ── Monochrome Search Bar Integration ── */}
-        {(activeTab === "ebooks" || activeTab === "hardcovers") && (
+        {activeTab === "ebooks" && (
           loading ? (
             <SearchBarSkeleton />
           ) : (

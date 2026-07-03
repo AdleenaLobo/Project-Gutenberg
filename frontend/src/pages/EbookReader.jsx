@@ -54,8 +54,8 @@ export function EbookReader({ book, client, onBack }) {
   // ---- Core reading state -------------------------------------------------
   const [pages, setPages] = useState([]);
   const [pageIndex, setPageIndex] = useState(0);
-const pageRef = useRef(null);
-const measureRef = useRef(null);
+  const pageRef = useRef(null);
+  const measureRef = useRef(null);
   // ---- Collaborative room state -------------------------------------------
   const [showPanel, setShowPanel] = useState("room");
   const [rooms, setRooms] = useState([]);
@@ -74,21 +74,21 @@ const measureRef = useRef(null);
   const [chapters, setChapters] = useState([]);
   const [showChapters, setShowChapters] = useState(false);
   const [isPaginating, setIsPaginating] = useState(true);
-  
-   const ebookText = book?.ebook_text ?? book?.ebook?.text ?? "";
 
-const [blocks, setBlocks] = useState([]);
-const { theme, warmth, fontFamily, fontSize, lineHeight, layoutMode } = useReaderTheme(); 
+  const ebookText = book?.ebook_text ?? book?.ebook?.text ?? "";
 
-useEffect(() => {
-  if (!book) return;
+  const [blocks, setBlocks] = useState([]);
+  const { theme, warmth, fontFamily, fontSize, lineHeight, layoutMode } = useReaderTheme();
 
-  const parsed = parseBook(book);
+  useEffect(() => {
+    if (!book) return;
 
-  setBlocks(parsed.blocks);
-  setChapters(parsed.chapters);
-  setPageIndex(0);
-}, [book]);
+    const parsed = parseBook(book);
+
+    setBlocks(parsed.blocks);
+    setChapters(parsed.chapters);
+    setPageIndex(0);
+  }, [book]);
 
   // ---- Keyboard Arrow Navigation ------------------------------------------
   useEffect(() => {
@@ -124,7 +124,7 @@ useEffect(() => {
     client
       .request("/rooms")
       .then(setRooms)
-      .catch(() => {});
+      .catch(() => { });
     // If a room was passed via navigation (book._joinRoomId), auto‑join it.
     if (book._joinRoomId) {
       joinRoom(book._joinRoomId);
@@ -144,7 +144,7 @@ useEffect(() => {
       try {
         const data = await client.request(`/rooms/${activeRoom}/presence`);
         setParticipants(data.participants || []);
-      } catch (_) {}
+      } catch (_) { }
     };
     poll(); // initial fetch
     const interval = setInterval(poll, 5000);
@@ -159,24 +159,24 @@ useEffect(() => {
         method: "POST",
         body: JSON.stringify({ page_index: pageIndex }),
       })
-      .catch(() => {});
+      .catch(() => { });
   }, [pageIndex, activeRoom]);
 
   // -----------------------------------------------------------------------
-function fitsOnPage(candidateBlocks) {
-  if (!measureRef.current || !pageRef.current) return true;
+  function fitsOnPage(candidateBlocks) {
+    if (!measureRef.current || !pageRef.current) return true;
 
-  const measure = measureRef.current;
+    const measure = measureRef.current;
 
-  measure.innerHTML = "";
+    measure.innerHTML = "";
 
-  candidateBlocks.forEach((block) => {
-    const el = document.createElement(block.type === "heading" ? "h2" : "p");
+    candidateBlocks.forEach((block) => {
+      const el = document.createElement(block.type === "heading" ? "h2" : "p");
 
-    el.textContent = block.text;
+      el.textContent = block.text;
 
-    if (block.type === "heading") {
-      el.style.cssText = `
+      if (block.type === "heading") {
+        el.style.cssText = `
         text-align: center;
         font-size: ${Math.round(fontSize * 1.5)}px;
         font-weight: 700;
@@ -184,8 +184,8 @@ function fitsOnPage(candidateBlocks) {
         letter-spacing: .03em;
         font-family: ${fontFamily};
       `;
-    } else {
-      el.style.cssText = `
+      } else {
+        el.style.cssText = `
         font-size: ${fontSize}px;
         line-height: ${lineHeight};
         margin: 0 0 18px;
@@ -193,154 +193,155 @@ function fitsOnPage(candidateBlocks) {
         text-indent: 2em;
         font-family: ${fontFamily};
       `;
-    }
-
-    measure.appendChild(el);
-  });
-
-  return measure.scrollHeight <= pageRef.current.clientHeight;
-}
-
-function paginate(blocks) {
-  const pages = [];
-
-  const chapters = [];
-  let currentPage = [];
-
-  for (const block of blocks) {const candidate = [...currentPage, block];
-
-// Entire block fits
-if (fitsOnPage(candidate)) {
-
-  if (block.type === "heading") {
-    chapters.push({
-      title: block.text,
-      pageIndex: pages.length,
-    });
-  }
-
-  currentPage = candidate;
-  continue;
-}
-
-// Heading never gets split
-if (block.type === "heading") {
-
-  if (currentPage.length) {
-    pages.push({
-      lines: currentPage,
-    });
-  }
-
-  chapters.push({
-    title: block.text,
-    pageIndex: pages.length,
-  });
-
-  currentPage = [block];
-  continue;
-}
-
-// Paragraph doesn't fit.
-// We'll split only the overflowing part.
-
-    if (block.type === "heading") {
-      if (currentPage.length) {
-        pages.push({ lines: currentPage });
       }
 
-      currentPage = [block];
-      continue;
-    }
+      measure.appendChild(el);
+    });
 
-    const words = block.text.split(/\s+/);
+    return measure.scrollHeight <= pageRef.current.clientHeight;
+  }
 
-    let start = 0;
+  function paginate(blocks) {
+    const pages = [];
 
-    while (start < words.length) {
-      let low = start;
-      let high = words.length;
+    const chapters = [];
+    let currentPage = [];
 
-      let best = start;
+    for (const block of blocks) {
+      const candidate = [...currentPage, block];
 
-      while (low <= high) {
-        const mid = Math.floor((low + high) / 2);
+      // Entire block fits
+      if (fitsOnPage(candidate)) {
 
-        const test = [
-          ...currentPage,
-          {
-            type: "paragraph",
-            text: words.slice(start, mid).join(" "),
-          },
-        ];
-
-        if (fitsOnPage(test)) {
-          best = mid;
-          low = mid + 1;
-        } else {
-          high = mid - 1;
+        if (block.type === "heading") {
+          chapters.push({
+            title: block.text,
+            pageIndex: pages.length,
+          });
         }
+
+        currentPage = candidate;
+        continue;
       }
 
-      if (best === start) best++;
+      // Heading never gets split
+      if (block.type === "heading") {
 
-      currentPage.push({
-        type: "paragraph",
-        text: words.slice(start, best).join(" "),
-      });
+        if (currentPage.length) {
+          pages.push({
+            lines: currentPage,
+          });
+        }
 
+        chapters.push({
+          title: block.text,
+          pageIndex: pages.length,
+        });
+
+        currentPage = [block];
+        continue;
+      }
+
+      // Paragraph doesn't fit.
+      // We'll split only the overflowing part.
+
+      if (block.type === "heading") {
+        if (currentPage.length) {
+          pages.push({ lines: currentPage });
+        }
+
+        currentPage = [block];
+        continue;
+      }
+
+      const words = block.text.split(/\s+/);
+
+      let start = 0;
+
+      while (start < words.length) {
+        let low = start;
+        let high = words.length;
+
+        let best = start;
+
+        while (low <= high) {
+          const mid = Math.floor((low + high) / 2);
+
+          const test = [
+            ...currentPage,
+            {
+              type: "paragraph",
+              text: words.slice(start, mid).join(" "),
+            },
+          ];
+
+          if (fitsOnPage(test)) {
+            best = mid;
+            low = mid + 1;
+          } else {
+            high = mid - 1;
+          }
+        }
+
+        if (best === start) best++;
+
+        currentPage.push({
+          type: "paragraph",
+          text: words.slice(start, best).join(" "),
+        });
+
+        pages.push({
+          lines: currentPage,
+        });
+
+        currentPage = [];
+
+        start = best;
+      }
+    }
+
+    if (currentPage.length) {
       pages.push({
         lines: currentPage,
       });
-
-      currentPage = [];
-
-      start = best;
     }
+    return {
+      pages,
+      chapters,
+    };
   }
 
-  if (currentPage.length) {
-    pages.push({
-      lines: currentPage,
-    });
-  }
-return {
-  pages,
-  chapters,
-};
-}
-
-useEffect(() => {
-  if (!blocks.length) return;
-setIsPaginating(true);
-
-const result = paginate(blocks);
-
-setPages(result.pages);
-setChapters(result.chapters);
-
-setIsPaginating(false);
-}, [blocks]);
-
-useEffect(() => {
-  const resize = () => {
+  useEffect(() => {
     if (!blocks.length) return;
+    setIsPaginating(true);
 
     const result = paginate(blocks);
+
     setPages(result.pages);
     setChapters(result.chapters);
-  };
 
-  window.addEventListener("resize", resize);
+    setIsPaginating(false);
+  }, [blocks]);
 
-  return () => window.removeEventListener("resize", resize);
-}, [blocks]); 
+  useEffect(() => {
+    const resize = () => {
+      if (!blocks.length) return;
 
-useEffect(() => {
-  if (!pageRef.current || !measureRef.current) return;
+      const result = paginate(blocks);
+      setPages(result.pages);
+      setChapters(result.chapters);
+    };
 
-  measureRef.current.style.width = `${pageRef.current.clientWidth}px`;
-}, [pages]);
+    window.addEventListener("resize", resize);
+
+    return () => window.removeEventListener("resize", resize);
+  }, [blocks]);
+
+  useEffect(() => {
+    if (!pageRef.current || !measureRef.current) return;
+
+    measureRef.current.style.width = `${pageRef.current.clientWidth}px`;
+  }, [pages]);
 
   async function loadRoom() {
     try {
@@ -351,34 +352,34 @@ useEffect(() => {
     }
   }
 
-const headingRegex =
-  /^\s*(?:Chapter|Letter)\s+(\d+|[IVXLCDM]+)\s*$|^\s*[IVXLCDM]+\s*$/i;
+  const headingRegex =
+    /^\s*(?:Chapter|Letter)\s+(\d+|[IVXLCDM]+)\s*$|^\s*[IVXLCDM]+\s*$/i;
 
-const lines = ebookText.split("\n");
+  const lines = ebookText.split("\n");
 
-let firstHeading = null;
-let secondOccurrenceIndex = -1;
+  let firstHeading = null;
+  let secondOccurrenceIndex = -1;
 
-for (let i = 0; i < lines.length; i++) {
-  const line = lines[i].trim();
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
 
-  if (!headingRegex.test(line)) continue;
+    if (!headingRegex.test(line)) continue;
 
-  if (!firstHeading) {
-    firstHeading = line.toLowerCase();
-    continue;
+    if (!firstHeading) {
+      firstHeading = line.toLowerCase();
+      continue;
+    }
+
+    if (line.toLowerCase() === firstHeading) {
+      secondOccurrenceIndex = i;
+      break;
+    }
   }
 
-  if (line.toLowerCase() === firstHeading) {
-    secondOccurrenceIndex = i;
-    break;
-  }
-}
-
-const actualBookText =
-  secondOccurrenceIndex !== -1
-    ? lines.slice(secondOccurrenceIndex).join("\n")
-    : ebookText;
+  const actualBookText =
+    secondOccurrenceIndex !== -1
+      ? lines.slice(secondOccurrenceIndex).join("\n")
+      : ebookText;
 
 
 
@@ -486,12 +487,11 @@ const actualBookText =
   const currentPage = pages[pageIndex] ?? { lines: [] };
   const totalPages = pages.length;
   return (
-    <div className={`relative w-full bg-white dark:bg-zinc-955 text-zinc-900 dark:text-zinc-100 transition-colors duration-200 ${
-      layoutMode === "scroll" ? "min-h-screen h-auto overflow-y-visible" : "h-screen overflow-hidden"
-    }`}>
+    <div className={`relative w-full bg-white dark:bg-zinc-955 text-zinc-900 dark:text-zinc-100 transition-colors duration-200 ${layoutMode === "scroll" ? "min-h-screen h-auto overflow-y-visible" : "h-screen overflow-hidden"
+      }`}>
       {/* Warmth overlay shade */}
-      <div 
-        className="warmth-overlay fixed inset-0 pointer-events-none z-20 transition-opacity duration-200" 
+      <div
+        className="warmth-overlay fixed inset-0 pointer-events-none z-20 transition-opacity duration-200"
         style={{ opacity: warmth / 100 }}
       />
 

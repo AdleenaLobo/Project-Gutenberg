@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { BookGridSkeleton } from "./BookGridSkeleton";
-import {useNavigate} from 'react-router-dom';
- 
+import { useNavigate } from 'react-router-dom';
+
 export function BookGrid({
   books,
   isEbook,
@@ -31,14 +31,14 @@ export function BookGrid({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
       {books.map((b) => {
         const isHovered = hoveredId === b.id;
 
         return (
           <div
             key={b.id}
-            className="group relative border-2 border-zinc-300 dark:border-zinc-700 p-6 bg-white dark:bg-zinc-900 cursor-pointer transition-all duration-250 rounded-none hover:scale-[1.015] shadow-none hover:shadow-[4px_4px_0px_#000] dark:hover:shadow-[4px_4px_0px_#fff]"
+            className="group relative border-2 border-zinc-300 dark:border-zinc-700 p-6 bg-white dark:bg-zinc-900 cursor-pointer transition-all duration-300 ease-out rounded-none hover:-translate-y-1 hover:-translate-x-1 shadow-none hover:shadow-[4px_4px_0px_#000] dark:hover:shadow-[4px_4px_0px_#fff]"
             onMouseEnter={() => setHoveredId(b.id)}
             onMouseLeave={() => setHoveredId(null)}
             onClick={() => onSelectBook(b)}
@@ -58,22 +58,6 @@ export function BookGrid({
             </div>
 
             <div className="flex items-center justify-between mt-6 pt-4 border-t-2 border-zinc-300 dark:border-zinc-700">
-              {!isEbook ? (
-                <span
-                  className={`text-xs ${
-                    b.available_copies < 2 
-                      ? "text-red-650 dark:text-red-400 font-semibold" 
-                      : "text-zinc-500 dark:text-zinc-400"
-                  }`}
-                >
-                  {b.available_copies} of {b.total_copies} available
-                </span>
-              ) : (
-                <span className="text-xs text-zinc-550 dark:text-zinc-400">
-                  Instant Access
-                </span>
-              )}
-
               <button
                 disabled={!isEbook && b.available_copies < 1}
                 onClick={(e) => {

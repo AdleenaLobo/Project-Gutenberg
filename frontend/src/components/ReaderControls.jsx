@@ -140,9 +140,8 @@ export default function ReaderControls({
       {/* Page Number */}
       {layoutMode !== "scroll" && (
         <div
-          className={`fixed bottom-6 left-1/2 -translate-x-1/2 px-5 py-2.5 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border-2 border-zinc-300 dark:border-zinc-700 rounded-full text-sm font-medium tracking-wider text-zinc-955 dark:text-white shadow-md pointer-events-none transition-opacity duration-350 z-50 font-serif ${
-            showUI ? "opacity-100" : "opacity-0"
-          }`}
+          className={`fixed bottom-6 left-1/2 -translate-x-1/2 px-5 py-2.5 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border-2 border-zinc-300 dark:border-zinc-700 rounded-full text-sm font-medium tracking-wider text-zinc-955 dark:text-white shadow-md pointer-events-none transition-opacity duration-350 z-50 font-serif ${showUI ? "opacity-100" : "opacity-0"
+            }`}
         >
           {pageIndex + 1} / {totalPages}
         </div>
@@ -230,11 +229,10 @@ export default function ReaderControls({
                 <button
                   type="button"
                   onClick={() => setTheme("light")}
-                  className={`py-2 px-4 border text-xs font-semibold uppercase tracking-wider flex items-center justify-center cursor-pointer transition-all rounded-lg ${
-                    theme === "light"
+                  className={`py-2 px-4 border text-xs font-semibold uppercase tracking-wider flex items-center justify-center cursor-pointer transition-all rounded-lg ${theme === "light"
                       ? "bg-zinc-950 border-zinc-950 text-white dark:bg-zinc-50 dark:border-zinc-50 dark:text-zinc-950 font-bold"
                       : "bg-transparent border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800"
-                  }`}
+                    }`}
                 >
                   Light
                 </button>
@@ -242,11 +240,10 @@ export default function ReaderControls({
                 <button
                   type="button"
                   onClick={() => setTheme("dark")}
-                  className={`py-2 px-4 border text-xs font-semibold uppercase tracking-wider flex items-center justify-center cursor-pointer transition-all rounded-lg ${
-                    theme === "dark"
+                  className={`py-2 px-4 border text-xs font-semibold uppercase tracking-wider flex items-center justify-center cursor-pointer transition-all rounded-lg ${theme === "dark"
                       ? "bg-zinc-950 border-zinc-950 text-white dark:bg-zinc-50 dark:border-zinc-50 dark:text-zinc-950 font-bold"
                       : "bg-transparent border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800"
-                  }`}
+                    }`}
                 >
                   Dark
                 </button>
@@ -262,11 +259,10 @@ export default function ReaderControls({
                 <button
                   type="button"
                   onClick={() => setLayoutMode("paginated")}
-                  className={`py-2 px-4 border text-xs font-semibold uppercase tracking-wider flex items-center justify-center cursor-pointer transition-all rounded-lg ${
-                    layoutMode === "paginated"
+                  className={`py-2 px-4 border text-xs font-semibold uppercase tracking-wider flex items-center justify-center cursor-pointer transition-all rounded-lg ${layoutMode === "paginated"
                       ? "bg-zinc-950 border-zinc-950 text-white dark:bg-zinc-50 dark:border-zinc-50 dark:text-zinc-950 font-bold"
                       : "bg-transparent border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800"
-                  }`}
+                    }`}
                 >
                   Paginated
                 </button>
@@ -274,11 +270,10 @@ export default function ReaderControls({
                 <button
                   type="button"
                   onClick={() => setLayoutMode("scroll")}
-                  className={`py-2 px-4 border text-xs font-semibold uppercase tracking-wider flex items-center justify-center cursor-pointer transition-all rounded-lg ${
-                    layoutMode === "scroll"
+                  className={`py-2 px-4 border text-xs font-semibold uppercase tracking-wider flex items-center justify-center cursor-pointer transition-all rounded-lg ${layoutMode === "scroll"
                       ? "bg-zinc-950 border-zinc-950 text-white dark:bg-zinc-50 dark:border-zinc-50 dark:text-zinc-950 font-bold"
                       : "bg-transparent border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800"
-                  }`}
+                    }`}
                 >
                   Scroll
                 </button>
@@ -310,11 +305,10 @@ export default function ReaderControls({
               <button
                 type="button"
                 onClick={toggleFullscreen}
-                className={`w-full py-2 px-4 border text-xs font-semibold uppercase tracking-wider flex items-center justify-center cursor-pointer transition-all rounded-lg ${
-                  isFullscreen
+                className={`w-full py-2 px-4 border text-xs font-semibold uppercase tracking-wider flex items-center justify-center cursor-pointer transition-all rounded-lg ${isFullscreen
                     ? "bg-zinc-950 border-zinc-955 text-white dark:bg-zinc-50 dark:border-zinc-50 dark:text-zinc-950 font-bold"
                     : "bg-transparent border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800"
-                }`}
+                  }`}
               >
                 {isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
               </button>

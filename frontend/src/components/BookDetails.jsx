@@ -63,34 +63,20 @@ export function BookDetails({ book, isEbook, onBack, onAction }) {
               "No summary provided for this title yet. This volume remains an essential addition to the local archive collection."}
           </p>
 
-          {/* Footer Action Panel */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-between sm:items-center bg-zinc-50 dark:bg-zinc-950/20 p-3.5 px-4 border-2 border-zinc-300 dark:border-zinc-700 rounded-none max-w-xl">
-            <div>
-              {!isEbook ? (
-                <span className="text-xs font-semibold text-zinc-955 dark:text-zinc-100">
-                  Status: {book.available_copies} / {book.total_copies} copies on shelves.
-                </span>
-              ) : (
-                <span className="text-xs font-semibold text-zinc-955 dark:text-zinc-100">
-                  Format: Instant access ({book.ebook_source || "Library"}).
-                </span>
-              )}
-            </div>
 
-            <button
-              onClick={() => {
-                if (isEbook) {
-                  navigate(`/books/${book.id}/read`);
-                } else {
-                  onAction(book.id);
-                }
-              }}
-              disabled={!isEbook && book.available_copies < 1}
-              className="px-4 py-2 bg-zinc-950 border-2 border-zinc-950 dark:bg-zinc-50 dark:border-zinc-50 text-white dark:text-zinc-955 font-semibold text-xs uppercase tracking-wider hover:bg-white hover:text-zinc-950 dark:hover:bg-zinc-955 dark:hover:text-white transition-all hover:shadow-[2px_2px_0px_#000] dark:hover:shadow-[2px_2px_0px_#fff] rounded-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {isEbook ? "Open Reader" : "Lease Hardcover"}
-            </button>
-          </div>
+          <button
+            onClick={() => {
+              if (isEbook) {
+                navigate(`/books/${book.id}/read`);
+              } else {
+                onAction(book.id);
+              }
+            }}
+            disabled={!isEbook && book.available_copies < 1}
+            className="px-4 py-2 bg-zinc-950 border-2 border-zinc-950 dark:bg-zinc-50 dark:border-zinc-50 text-white dark:text-zinc-955 font-semibold text-xs uppercase tracking-wider hover:bg-white hover:text-zinc-950 dark:hover:bg-zinc-955 dark:hover:text-white transition-all hover:shadow-[2px_2px_0px_#000] dark:hover:shadow-[2px_2px_0px_#fff] rounded-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Open Reader
+          </button>
         </div>
       </div>
     </div>

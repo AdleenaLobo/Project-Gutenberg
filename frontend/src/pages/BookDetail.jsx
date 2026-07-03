@@ -40,28 +40,11 @@ export function BookDetail({ client }) {
   }
 
   // `onBack` navigates back to the previous page (the grid view).
-  // `onAction` executes backend lease API call for hardcover books.
-  const handleAction = async (bookId) => {
-    setLoading(true);
-    setMsg("");
-    try {
-      await client.request("/leases", {
-        method: "POST",
-        body: JSON.stringify({ book_id: bookId }),
-      });
-      navigate("/");
-    } catch (e) {
-      setMsg(e.message);
-      setLoading(false);
-    }
-  };
-
   return (
     <BookDetails
       book={book}
       isEbook={book.type === "ebook"}
       onBack={() => navigate(-1)}
-      onAction={handleAction}
     />
   );
 }
