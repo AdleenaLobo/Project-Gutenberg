@@ -233,7 +233,7 @@ export default function ReaderControls({
                   type="button"
                   onClick={() => setTheme("light")}
                   className={`py-2 px-4 border text-xs font-semibold uppercase tracking-wider flex items-center justify-center cursor-pointer transition-all rounded-lg ${theme === "light"
-                      ? "bg-zinc-950 border-zinc-955 text-white dark:bg-zinc-100 dark:border-zinc-100 dark:text-zinc-950 font-bold"
+                      ? "bg-zinc-950 border-zinc-950 text-white dark:bg-zinc-100 dark:border-zinc-100 dark:text-zinc-950 font-bold"
                       : "bg-transparent border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-700"
                     }`}
                 >
@@ -244,7 +244,7 @@ export default function ReaderControls({
                   type="button"
                   onClick={() => setTheme("dark")}
                   className={`py-2 px-4 border text-xs font-semibold uppercase tracking-wider flex items-center justify-center cursor-pointer transition-all rounded-lg ${theme === "dark"
-                      ? "bg-zinc-950 border-zinc-955 text-white dark:bg-zinc-100 dark:border-zinc-100 dark:text-zinc-950 font-bold"
+                      ? "bg-zinc-950 border-zinc-950 text-white dark:bg-zinc-100 dark:border-zinc-100 dark:text-zinc-950 font-bold"
                       : "bg-transparent border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-700"
                     }`}
                 >
@@ -263,7 +263,7 @@ export default function ReaderControls({
                   type="button"
                   onClick={() => setLayoutMode("paginated")}
                   className={`py-2 px-4 border text-xs font-semibold uppercase tracking-wider flex items-center justify-center cursor-pointer transition-all rounded-lg ${layoutMode === "paginated"
-                      ? "bg-zinc-950 border-zinc-955 text-white dark:bg-zinc-100 dark:border-zinc-100 dark:text-zinc-950 font-bold"
+                      ? "bg-zinc-950 border-zinc-950 text-white dark:bg-zinc-100 dark:border-zinc-100 dark:text-zinc-950 font-bold"
                       : "bg-transparent border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-700"
                     }`}
                 >
@@ -274,7 +274,7 @@ export default function ReaderControls({
                   type="button"
                   onClick={() => setLayoutMode("scroll")}
                   className={`py-2 px-4 border text-xs font-semibold uppercase tracking-wider flex items-center justify-center cursor-pointer transition-all rounded-lg ${layoutMode === "scroll"
-                      ? "bg-zinc-950 border-zinc-955 text-white dark:bg-zinc-100 dark:border-zinc-100 dark:text-zinc-950 font-bold"
+                      ? "bg-zinc-950 border-zinc-950 text-white dark:bg-zinc-100 dark:border-zinc-100 dark:text-zinc-950 font-bold"
                       : "bg-transparent border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-700"
                     }`}
                 >
@@ -312,7 +312,7 @@ export default function ReaderControls({
                 type="button"
                 onClick={toggleFullscreen}
                 className={`w-full py-2 px-4 border text-xs font-semibold uppercase tracking-wider flex items-center justify-center cursor-pointer transition-all rounded-lg ${isFullscreen
-                    ? "bg-zinc-950 border-zinc-955 text-white dark:bg-zinc-100 dark:border-zinc-100 dark:text-zinc-955 font-bold"
+                    ? "bg-zinc-950 border-zinc-950 text-white dark:bg-zinc-100 dark:border-zinc-100 dark:text-zinc-950 font-bold"
                     : "bg-transparent border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-700"
                   }`}
               >
