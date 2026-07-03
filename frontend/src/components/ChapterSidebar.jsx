@@ -79,21 +79,21 @@ export default function ChapterSidebar({
                         onSelectChapter(chapter.pageIndex);
                         onClose();
                       }}
-                      className={`w-full text-left px-5 py-4 border-b-2 border-zinc-300 dark:border-zinc-700 flex justify-between items-center bg-transparent cursor-pointer transition-colors duration-150 rounded-none ${
+                      className={`w-full text-left px-5 py-4 border-b border-zinc-200 dark:border-zinc-800 flex justify-between items-center bg-transparent cursor-pointer transition-colors duration-150 rounded-none font-serif ${
                         active
-                          ? "bg-zinc-950 text-white dark:bg-zinc-50 dark:text-zinc-950 font-bold"
-                          : "hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-950 dark:text-zinc-300"
+                          ? "bg-zinc-100 text-zinc-950 dark:bg-zinc-800 dark:text-white font-bold"
+                          : "hover:bg-zinc-50 dark:hover:bg-zinc-850 text-zinc-950 dark:text-zinc-300"
                       }`}
                     >
                       <div className="text-left">
-                        <div className={`text-sm font-bold uppercase ${active ? "text-white dark:text-zinc-955" : ""}`}>
+                        <div className={`text-sm font-bold uppercase tracking-wider ${active ? "text-zinc-955 dark:text-white" : ""}`}>
                           {chapter.title}
                         </div>
-                        <div className={`text-xs mt-1 ${active ? "text-zinc-300 dark:text-zinc-600" : "text-zinc-450 dark:text-zinc-500"}`}>
+                        <div className={`text-xs mt-1 font-sans ${active ? "text-zinc-600 dark:text-zinc-400" : "text-zinc-450 dark:text-zinc-500"}`}>
                           Page {chapter.pageIndex + 1}
                         </div>
                       </div>
-                      <ChevronRight size={16} className={active ? "text-white dark:text-zinc-955" : "text-zinc-400 dark:text-zinc-600"} />
+                      <ChevronRight size={16} className={active ? "text-zinc-955 dark:text-white" : "text-zinc-400 dark:text-zinc-600"} />
                     </button>
                   );
                 })
@@ -118,13 +118,13 @@ export default function ChapterSidebar({
                       onSelectChapter(bookmark.pageIndex);
                       onClose();
                     }}
-                    className="w-full text-left px-5 py-4 border-b-2 border-zinc-300 dark:border-zinc-700 flex justify-between items-center bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer transition-colors text-zinc-955 dark:text-zinc-350 rounded-none"
+                    className="w-full text-left px-5 py-4 border-b border-zinc-200 dark:border-zinc-800 flex justify-between items-center bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer transition-colors text-zinc-955 dark:text-zinc-350 rounded-none font-serif"
                   >
                     <div className="text-left">
                       <div className="text-sm font-bold">
                         {bookmark.label || "Bookmark"}
                       </div>
-                      <div className="text-xs text-zinc-450 dark:text-zinc-500 mt-1">
+                      <div className="text-xs text-zinc-450 dark:text-zinc-500 mt-1 font-sans">
                         Page {bookmark.pageIndex + 1}
                       </div>
                     </div>
@@ -137,7 +137,7 @@ export default function ChapterSidebar({
         </div>
 
         {/* Footer */}
-        <div className="border-t-2 border-zinc-300 dark:border-zinc-700 p-4 text-xs font-bold uppercase tracking-wider text-zinc-950 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-850/40">
+        <div className="border-t border-zinc-200 dark:border-zinc-800 p-4 text-xs font-bold uppercase tracking-wider text-zinc-950 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-850/40">
           {activeTab === "contents"
             ? `${chapters.length} Chapters`
             : `${bookmarks.length} Bookmarks`}
