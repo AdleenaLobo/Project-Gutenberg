@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { X, BookOpen, ChevronRight, Plus } from "lucide-react";
+import { useReaderTheme } from "../context/ReaderThemeContext";
 
 export default function ChapterSidebar({
   open,
@@ -10,6 +11,7 @@ export default function ChapterSidebar({
   onSelectChapter
 }) {
   const [activeTab, setActiveTab] = useState("contents");
+  const { warmth } = useReaderTheme();
 
   return (
     <>
@@ -23,10 +25,15 @@ export default function ChapterSidebar({
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 right-0 w-80 h-full bg-white dark:bg-zinc-900 border-l border-zinc-200 dark:border-zinc-800 flex flex-col z-50 shadow-2xl transition-transform duration-300 ease-out will-change-transform ${
+        className={`fixed top-0 right-0 w-80 h-full bg-white dark:bg-zinc-900 border-l border-zinc-200 dark:border-zinc-800 flex flex-col z-50 shadow-2xl transition-transform duration-300 ease-out will-change-transform overflow-hidden ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
       >
+        {/* Warmth overlay shade */}
+        <div
+          className="warmth-overlay absolute inset-0 pointer-events-none z-50 transition-opacity duration-200"
+          style={{ opacity: warmth / 100 }}
+        />
         {/* Header */}
         <div className="flex border-b border-zinc-200 dark:border-zinc-800 items-center justify-between">
           <button

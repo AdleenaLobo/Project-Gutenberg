@@ -1,6 +1,21 @@
 import React, { useRef, forwardRef } from "react";
 import { useReaderTheme } from "../context/ReaderThemeContext";
 
+const getFontStack = (font) => {
+  switch (font) {
+    case "Bookerly":
+      return "'Bookerly', 'Literata', Georgia, serif";
+    case "Open Sans":
+      return "'Open Sans', sans-serif";
+    case "Inter":
+      return "'Inter', sans-serif";
+    case "Merriweather":
+      return "'Merriweather', serif";
+    default:
+      return font;
+  }
+};
+
 const ReaderContent = forwardRef(function ReaderContent({
   currentPage,
   pages = [],
@@ -10,6 +25,7 @@ const ReaderContent = forwardRef(function ReaderContent({
   onNext,
 }, ref) {
   const { fontFamily, fontSize, lineHeight, layoutMode } = useReaderTheme();
+  const fontStack = getFontStack(fontFamily);
   const startX = useRef(null);
 
   const handleMouseDown = (e) => {
@@ -39,7 +55,7 @@ const ReaderContent = forwardRef(function ReaderContent({
         ref={ref}
         className="w-full max-w-[850px] min-h-screen h-auto mx-auto px-12 py-10 bg-transparent border-none shadow-none select-text"
         style={{
-          fontFamily: fontFamily,
+          fontFamily: fontStack,
           fontSize: `${fontSize}px`,
           lineHeight: lineHeight,
         }}
@@ -53,7 +69,7 @@ const ReaderContent = forwardRef(function ReaderContent({
                 className="text-center font-bold my-8 tracking-wide text-zinc-955 dark:text-white"
                 style={{
                   fontSize: `${Math.round(fontSize * 1.45)}px`,
-                  fontFamily: fontFamily,
+                  fontFamily: fontStack,
                 }}
               >
                 {block.text}
@@ -70,7 +86,7 @@ const ReaderContent = forwardRef(function ReaderContent({
                 textIndent: "2em",
                 fontSize: `${fontSize}px`,
                 lineHeight: lineHeight,
-                fontFamily: fontFamily,
+                fontFamily: fontStack,
               }}
             >
               {block.text}
@@ -88,7 +104,7 @@ const ReaderContent = forwardRef(function ReaderContent({
       onMouseUp={handleMouseUp}
       className="w-full max-w-[850px] h-[calc(100vh-80px)] mx-auto px-12 py-10 overflow-hidden cursor-grab select-none bg-transparent border-none shadow-none"
       style={{
-        fontFamily: fontFamily,
+        fontFamily: fontStack,
         fontSize: `${fontSize}px`,
         lineHeight: lineHeight,
       }}
@@ -101,7 +117,7 @@ const ReaderContent = forwardRef(function ReaderContent({
               className="text-center font-bold my-8 tracking-wide text-zinc-950 dark:text-white"
               style={{
                 fontSize: `${Math.round(fontSize * 1.45)}px`,
-                fontFamily: fontFamily,
+                fontFamily: fontStack,
               }}
             >
               {block.text}
@@ -117,7 +133,7 @@ const ReaderContent = forwardRef(function ReaderContent({
               textIndent: "2em",
               fontSize: `${fontSize}px`,
               lineHeight: lineHeight,
-              fontFamily: fontFamily,
+              fontFamily: fontStack,
             }}
           >
             {block.text}
