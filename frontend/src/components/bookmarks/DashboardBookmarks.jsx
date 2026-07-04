@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bookmark, Trash2, BookOpen, AlertCircle, Loader2 } from "lucide-react";
+import { Bookmark, Trash2, ArrowRight, AlertCircle } from "lucide-react";
+import BookmarksSkeleton from "./BookmarksSkeleton";
 
 export default function DashboardBookmarks({ client, onBookmarkDeleted }) {
   const navigate = useNavigate();
@@ -70,12 +71,7 @@ export default function DashboardBookmarks({ client, onBookmarkDeleted }) {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center p-16 text-zinc-500">
-        <Loader2 className="animate-spin mr-3 text-zinc-600 dark:text-zinc-400" size={24} />
-        <span className="text-sm font-semibold">Loading your bookmarks...</span>
-      </div>
-    );
+    return <BookmarksSkeleton />;
   }
 
   if (error) {
@@ -105,57 +101,41 @@ export default function DashboardBookmarks({ client, onBookmarkDeleted }) {
         {bookmarks.length} saved {bookmarks.length === 1 ? "bookmark" : "bookmarks"}
       </p>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
+      <div className="flex flex-col gap-4 animate-fade-in">
         {bookmarks.map((b) => (
           <div
             key={b.id}
             onClick={() => handleRead(b)}
-            className="group relative border-2 border-zinc-300 dark:border-zinc-700 p-6 bg-white dark:bg-zinc-900 cursor-pointer transition-all duration-350 ease-out rounded-none hover:-translate-y-1 hover:-translate-x-1 shadow-none hover:shadow-[4px_4px_0px_#000] dark:hover:shadow-[4px_4px_0px_#fff]"
+            className="group flex items-center justify-between p-4 border-2 border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] hover:scale-[1.005] hover:shadow-[6px_6px_0px_#000] dark:hover:shadow-[6px_6px_0px_#fff] transition-all duration-200 rounded-none w-full"
           >
-            <div className="flex justify-between items-start mb-3">
-              <span className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-450 uppercase tracking-widest block pr-6 truncate">
-                {b.location} {b.room_name && `· Room: ${b.room_name}`}
-              </span>
-              
-              <button
-                onClick={(e) => handleDelete(b.id, e)}
-                className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-red-500 rounded transition-colors cursor-pointer"
-                title="Delete Bookmark"
-              >
-                <Trash2 size={15} />
-              </button>
-            </div>
-
-            <div className="flex flex-col">
-              <span className="text-sm font-bold text-zinc-400 dark:text-zinc-500 mb-0.5">
-                {b.book_title}
-              </span>
-              <span className="text-xs text-zinc-500 dark:text-zinc-450 mb-4">
-                by {b.book_author}
-              </span>
-              
-              <div className="p-3 bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-150 dark:border-zinc-800 rounded-lg mb-5 flex items-start gap-2.5">
-                <Bookmark size={15} className="text-zinc-400 mt-0.5 flex-shrink-0" />
-                <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 line-clamp-2">
-                  {b.label}
-                </span>
+            <div className="flex-1 min-w-0 pr-6">
+              <div className="font-bold text-base text-zinc-955 dark:text-white truncate">
+                {b.label}
+              </div>
+              <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1.5 flex items-center gap-1.5 flex-wrap">
+                <span className="font-semibold text-zinc-900 dark:text-zinc-200">{b.book_title}</span>
+                <span>· by {b.book_author}</span>
+                <span>·</span>
+                <span className="px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 font-mono text-[10px] text-zinc-600 dark:text-zinc-400">{b.location}</span>
+                {b.room_name && (
+                  <>
+                    <span>·</span>
+                    <span className="text-[10px] uppercase font-bold text-zinc-500 dark:text-zinc-400 tracking-wider">Room: {b.room_name}</span>
+                  </>
+                )}
+                <span>· Saved {formatDate(b.created_at)}</span>
               </div>
             </div>
-
-            <div className="flex items-center justify-between mt-auto pt-4 border-t-2 border-zinc-200 dark:border-zinc-800">
+            
+            <div className="flex items-center gap-4 flex-shrink-0">
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleRead(b);
-                }}
-                className="px-4 py-2 bg-zinc-950 border border-zinc-950 dark:bg-zinc-50 dark:border-zinc-50 text-white dark:text-zinc-950 font-semibold text-xs uppercase tracking-wider hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-all duration-200 rounded-lg cursor-pointer flex items-center gap-1.5"
+                onClick={(e) => handleDelete(b.id, e)}
+                className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-red-500 dark:hover:text-red-400 rounded-lg transition-colors cursor-pointer flex items-center justify-center"
+                title="Delete Bookmark"
               >
-                <BookOpen size={13} /> Continue
+                <Trash2 size={16} />
               </button>
-              
-              <span className="text-[10px] text-zinc-450 dark:text-zinc-500">
-                Saved {formatDate(b.created_at)}
-              </span>
+              <ArrowRight size={16} className="text-zinc-400 group-hover:text-zinc-950 dark:group-hover:text-white group-hover:translate-x-1 transition-all" />
             </div>
           </div>
         ))}

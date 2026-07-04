@@ -9,44 +9,54 @@ export  default function BookReader({ client }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Load book data – use navigation state if provided to avoid extra fetch.
-  const [book, setBook] = useState(location.state?.book || null);
-  const [loading, setLoading] = useState(!book);
+  const [book, setBook] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState("");
 
   useEffect(() => {
-    if (!book) {
-      async function fetchBook() {
-        try {
-          const fetched = await client.request(`/books/${id}`);
-          if (location.state?.initialPageIndex !== undefined) {
-            fetched._initialPageIndex = location.state.initialPageIndex;
-          }
-          if (location.state?.joinRoomId) {
-            fetched._joinRoomId = location.state.joinRoomId;
-          }
-          setBook(fetched);
-        } catch (e) {
-          setMsg(e.message);
-        } finally {
-          setLoading(false);
+    let active = true;
+    async function loadBookAndRecentBookmark() {
+      try {
+        setLoading(true);
+        // Step 1: Retrieve book data (from nav state or fetch it)
+        let bookData = location.state?.book;
+        if (!bookData) {
+          bookData = await client.request(`/books/${id}`);
         }
+
+        // Step 2: Retrieve recent bookmark if not explicitly navigated to a specific page
+        let initialPage = location.state?.initialPageIndex;
+        if (initialPage === undefined) {
+          const bookmarks = await client.request(`/books/${id}/bookmarks`);
+          if (bookmarks && bookmarks.length > 0) {
+            // Bookmarks are sorted by created_at DESC in the API response
+            const latestBookmark = bookmarks[0];
+            const match = latestBookmark.location.match(/Page\s+(\d+)/i);
+            if (match) {
+              initialPage = parseInt(match[1], 10) - 1;
+            }
+          }
+        }
+
+        if (active) {
+          setBook({
+            ...bookData,
+            _initialPageIndex: initialPage !== undefined ? initialPage : 0,
+            _joinRoomId: location.state?.joinRoomId || bookData?._joinRoomId || null,
+          });
+        }
+      } catch (e) {
+        if (active) setMsg(e.message);
+      } finally {
+        if (active) setLoading(false);
       }
-      fetchBook();
-    } else {
-      // If navigation passed a joinRoomId or initialPageIndex, attach it to the book object.
-      setBook((prev) => {
-        let updated = prev;
-        if (location.state?.joinRoomId && prev?._joinRoomId !== location.state.joinRoomId) {
-          updated = { ...updated, _joinRoomId: location.state.joinRoomId };
-        }
-        if (location.state?.initialPageIndex !== undefined && prev?._initialPageIndex !== location.state.initialPageIndex) {
-          updated = { ...updated, _initialPageIndex: location.state.initialPageIndex };
-        }
-        return updated;
-      });
     }
-  }, [id, book, client, location.state]);
+
+    loadBookAndRecentBookmark();
+    return () => {
+      active = false;
+    };
+  }, [id, client, location.state]);
 
   if (loading) {
     return (

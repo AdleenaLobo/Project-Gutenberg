@@ -8,22 +8,29 @@ export default function BookmarksManager({
   totalPages,
   client,
   onGoToPage,
+  bookmarks: propsBookmarks,
+  onBookmarksChanged,
 }) {
-  const [bookmarks, setBookmarks] = useState([]);
+  const [internalBookmarks, setInternalBookmarks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [editLabel, setEditLabel] = useState("");
 
+  const bookmarks = propsBookmarks || internalBookmarks;
   const currentPageLabel = `Page ${pageIndex + 1}`;
 
   // Fetch bookmarks for this book
   const fetchBookmarks = async () => {
+    if (propsBookmarks && onBookmarksChanged) {
+      onBookmarksChanged();
+      return;
+    }
     setLoading(true);
     setError("");
     try {
       const data = await client.request(`/books/${bookId}/bookmarks`);
-      setBookmarks(data || []);
+      setInternalBookmarks(data || []);
     } catch (err) {
       setError(err.message || "Failed to load bookmarks");
     } finally {
@@ -32,32 +39,12 @@ export default function BookmarksManager({
   };
 
   useEffect(() => {
-    fetchBookmarks();
-  }, [bookId]);
-
-  // Check if current page is already bookmarked
-  const currentPageBookmark = bookmarks.find(
-    (b) => b.location === currentPageLabel && (!activeRoom || b.room_id === activeRoom)
-  );
-
-  // Add bookmark
-  const handleAddBookmark = async () => {
-    setError("");
-    try {
-      await client.request("/bookmarks", {
-        method: "POST",
-        body: JSON.stringify({
-          book_id: bookId,
-          room_id: activeRoom || null,
-          location: currentPageLabel,
-          label: currentPageLabel,
-        }),
-      });
+    if (!propsBookmarks) {
       fetchBookmarks();
-    } catch (err) {
-      setError(err.message || "Failed to add bookmark");
     }
-  };
+  }, [bookId, propsBookmarks]);
+
+  // (handleAddBookmark and currentPageBookmark checks deleted – bookmark creation is handled on-page)
 
   // Delete bookmark
   const handleDeleteBookmark = async (id) => {
@@ -102,42 +89,12 @@ export default function BookmarksManager({
 
   return (
     <div className="flex flex-col h-full bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 text-sm">
-      {/* Add Bookmark form */}
-      <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/40">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-505 mb-3">
-          Bookmark Current Page
-        </h3>
-
-        {currentPageBookmark ? (
-          <div className="p-3 bg-zinc-100 dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 flex items-center justify-between">
-            <div className="min-w-0 pr-2">
-              <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Bookmarked</p>
-              <p className="font-bold text-zinc-800 dark:text-zinc-200 mt-0.5 truncate">{currentPageBookmark.label}</p>
-            </div>
-            <button
-              onClick={() => handleDeleteBookmark(currentPageBookmark.id)}
-              className="p-1.5 hover:bg-zinc-250 dark:hover:bg-zinc-700 rounded text-red-500 transition-colors cursor-pointer flex-shrink-0"
-              title="Remove Bookmark"
-            >
-              <Trash2 size={16} />
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={handleAddBookmark}
-            className="w-full py-2 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-semibold rounded-lg text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-          >
-            <Bookmark size={13} /> Add to {currentPageLabel}
-          </button>
-        )}
-
-        {error && (
-          <div className="mt-2.5 flex items-start gap-1.5 text-xs text-red-600 dark:text-red-400">
-            <AlertCircle size={14} className="mt-0.5 flex-shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
-      </div>
+      {error && (
+        <div className="p-3 bg-red-55/10 text-red-600 dark:text-red-400 text-xs border-b border-red-200 dark:border-red-900 flex items-center gap-1.5">
+          <AlertCircle size={14} className="flex-shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
 
       {/* Bookmarks List */}
       <div className="flex-1 overflow-y-auto">

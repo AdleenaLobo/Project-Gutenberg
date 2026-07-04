@@ -119,6 +119,53 @@ export function EbookReader({ book, client, onBack }) {
   const [noteBody, setNoteBody] = useState("");
   const [bookmarkLabel, setBookmarkLabel] = useState("");
   const [msg, setMsg] = useState("");
+
+  // ---- Bookmarks state and operations ----
+  const [bookmarks, setBookmarks] = useState([]);
+
+  const loadBookmarks = async () => {
+    if (!book) return;
+    try {
+      const data = await client.request(`/books/${book.id}/bookmarks`);
+      setBookmarks(data || []);
+    } catch (_) {}
+  };
+
+  useEffect(() => {
+    loadBookmarks();
+  }, [book?.id]);
+
+  const currentPageLabel = `Page ${pageIndex + 1}`;
+  const currentPageBookmark = bookmarks.find(
+    (b) => b.location === currentPageLabel && (!activeRoom || b.room_id === activeRoom)
+  );
+  const isBookmarked = !!currentPageBookmark;
+
+  const toggleCurrentPageBookmark = async () => {
+    if (isBookmarked) {
+      try {
+        await client.request(`/bookmarks/${currentPageBookmark.id}`, { method: "DELETE" });
+        loadBookmarks();
+      } catch (e) {
+        setMsg(e.message);
+      }
+    } else {
+      try {
+        await client.request("/bookmarks", {
+          method: "POST",
+          body: JSON.stringify({
+            book_id: book.id,
+            room_id: activeRoom || null,
+            location: currentPageLabel,
+            label: currentPageLabel,
+          }),
+        });
+        loadBookmarks();
+      } catch (e) {
+        setMsg(e.message);
+      }
+    }
+  };
   // Chapter index for navigation
   const [chapters, setChapters] = useState([]);
   const [showChapters, setShowChapters] = useState(false);
@@ -573,6 +620,26 @@ export function EbookReader({ book, client, onBack }) {
               visibility: isPaginating ? "hidden" : "visible",
             }}
           />
+
+          {/* Visual bookmark indicator/button directly on the book page */}
+          {!isPaginating && (
+            <button
+              onClick={toggleCurrentPageBookmark}
+              className={`absolute right-1/2 translate-x-[370px] max-lg:right-10 max-lg:translate-x-0 top-8 z-30 p-2 cursor-pointer transition-all duration-200 group focus:outline-none ${
+                isBookmarked
+                  ? "text-zinc-900 dark:text-zinc-100 hover:text-zinc-700 dark:hover:text-zinc-300 scale-110"
+                  : "text-zinc-300 dark:text-zinc-700 hover:text-zinc-500 dark:hover:text-zinc-400 hover:scale-105"
+              }`}
+              title={isBookmarked ? `Bookmarked: ${currentPageBookmark.label} (Click to remove)` : "Bookmark this page"}
+            >
+              <Bookmark
+                size={26}
+                fill={isBookmarked ? "currentColor" : "none"}
+                className="stroke-2 transition-transform group-hover:translate-y-0.5"
+              />
+            </button>
+          )}
+
           {isPaginating && (
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-white dark:bg-zinc-950">
               <ReaderContentSkeleton />
@@ -621,6 +688,8 @@ export function EbookReader({ book, client, onBack }) {
         activeRoom={activeRoom}
         totalPages={totalPages}
         client={client}
+        bookmarks={bookmarks}
+        onBookmarksChanged={loadBookmarks}
       />
 
       <ReaderControls

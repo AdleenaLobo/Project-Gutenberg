@@ -13,6 +13,8 @@ export default function ChapterSidebar({
   activeRoom,
   totalPages,
   client,
+  bookmarks,
+  onBookmarksChanged,
 }) {
   const [activeTab, setActiveTab] = useState("contents");
   const { warmth } = useReaderTheme();
@@ -121,6 +123,8 @@ export default function ChapterSidebar({
                 onSelectChapter(page);
                 onClose();
               }}
+              bookmarks={bookmarks}
+              onBookmarksChanged={onBookmarksChanged}
             />
           )}
         </div>
