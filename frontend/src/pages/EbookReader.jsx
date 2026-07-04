@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { parseBook } from "../utils/ebookParser";
+import { parseBook, formatBlockText } from "../utils/ebookParser";
 import ReaderControls from "../components/ReaderControls";
 import ReaderSidePanel from "../components/ReaderSidePanel";
 import { List } from "lucide-react";
@@ -40,17 +40,35 @@ function paginateText(text, charsPerPage = 5000) {
   return pages;
 }
 
+function updateQuoteState(text, initialState) {
+  let state = initialState;
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    if (char === "“" || char === "”" || char === '"') {
+      state = !state;
+    }
+  }
+  return state;
+}
+
 function splitIntoSentences(text) {
   if (!text) return [];
-  // Split on punctuation followed by space or end of string, but avoid splitting on &nbsp;
-  const candidates = text.match(/[^.!?]+[.!?]+(?:\s+|$)|[^.!?]+$/g) || [text];
+  // Split on punctuation followed by space or end of string, using lookbehind so we do not discard punctuation
+  const candidates = text.split(/(?<=[.!?])\s+/);
   const sentences = [];
   let currentSentence = "";
   // Added common prefixes/abbreviations to ignore
   const abbreviations = /^(?:Mr|Mrs|Ms|Dr|Prof|Sr|Jr|Gen|Col|Capt|Lieut|St|Rev|Hon|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec|vs)\.?$/i;
 
   for (const candidate of candidates) {
-    currentSentence += candidate;
+    if (!candidate) continue;
+
+    if (currentSentence) {
+      currentSentence += " " + candidate;
+    } else {
+      currentSentence = candidate;
+    }
+
     const trimmed = currentSentence.trim();
     // Support non-breaking spaces as word delimiters too by replacing &nbsp; with standard space for word-splitting checks
     const words = trimmed.replace(/&nbsp;/g, " ").split(/\s+/);
@@ -204,7 +222,7 @@ export function EbookReader({ book, client, onBack }) {
     candidateBlocks.forEach((block) => {
       const el = document.createElement(block.type === "heading" ? "h2" : "p");
 
-      el.innerHTML = block.text;
+      el.innerHTML = formatBlockText(block.text, block.quoteOpenAtStart);
 
       if (block.type === "heading") {
         el.style.cssText = `
@@ -236,6 +254,7 @@ export function EbookReader({ book, client, onBack }) {
     const pages = [];
     const chapters = [];
     let currentPage = [];
+    let quoteOpen = false;
 
     for (const block of blocks) {
       if (block.type === "heading") {
@@ -249,6 +268,7 @@ export function EbookReader({ book, client, onBack }) {
           pageIndex: pages.length,
         });
         currentPage = [block];
+        quoteOpen = false;
         continue;
       }
 
@@ -271,11 +291,13 @@ export function EbookReader({ book, client, onBack }) {
             type: "paragraph",
             text: sentence,
             isContinuation: isContinuation,
+            quoteOpenAtStart: quoteOpen,
           };
 
           const candidate = [...currentPage, newBlock];
           if (fitsOnPage(candidate)) {
             currentPage.push(newBlock);
+            quoteOpen = updateQuoteState(sentence, quoteOpen);
             isFirstSentenceOfParagraph = false;
             sentenceIndex++;
           } else {
@@ -296,12 +318,14 @@ export function EbookReader({ book, client, onBack }) {
 
                 while (low <= high) {
                   const mid = Math.floor((low + high) / 2);
+                  const chunkText = words.slice(start, mid).join(" ");
                   const test = [
                     ...currentPage,
                     {
                       type: "paragraph",
-                      text: words.slice(start, mid).join(" "),
+                      text: chunkText,
                       isContinuation: isContinuation || start > 0,
+                      quoteOpenAtStart: quoteOpen,
                     },
                   ];
 
@@ -315,12 +339,16 @@ export function EbookReader({ book, client, onBack }) {
 
                 if (best === start) best++;
 
-                currentPage.push({
+                const chunkText = words.slice(start, best).join(" ");
+                const newChunkBlock = {
                   type: "paragraph",
-                  text: words.slice(start, best).join(" "),
+                  text: chunkText,
                   isContinuation: isContinuation || start > 0,
-                });
-
+                  quoteOpenAtStart: quoteOpen,
+                };
+                
+                currentPage.push(newChunkBlock);
+                quoteOpen = updateQuoteState(chunkText, quoteOpen);
                 start = best;
 
                 if (start < words.length) {
@@ -346,6 +374,7 @@ export function EbookReader({ book, client, onBack }) {
           const candidate = [...currentPage.slice(0, lastBlockIndex), testBlock];
           if (fitsOnPage(candidate)) {
             currentPage[lastBlockIndex] = testBlock;
+            quoteOpen = updateQuoteState(sentence, quoteOpen);
             sentenceIndex++;
           } else {
             pages.push({

@@ -1,5 +1,6 @@
 import React, { useRef, forwardRef } from "react";
 import { useReaderTheme } from "../context/ReaderThemeContext";
+import { formatBlockText } from "../utils/ebookParser";
 
 const getFontStack = (font) => {
   switch (font) {
@@ -90,7 +91,7 @@ const ReaderContent = forwardRef(function ReaderContent({
                 lineHeight: lineHeight,
                 fontFamily: fontStack,
               }}
-              dangerouslySetInnerHTML={{ __html: block.text }}
+              dangerouslySetInnerHTML={{ __html: formatBlockText(block.text, block.quoteOpenAtStart) }}
             />
           );
         })}
@@ -138,7 +139,7 @@ const ReaderContent = forwardRef(function ReaderContent({
               lineHeight: lineHeight,
               fontFamily: fontStack,
             }}
-            dangerouslySetInnerHTML={{ __html: block.text }}
+            dangerouslySetInnerHTML={{ __html: formatBlockText(block.text, block.quoteOpenAtStart) }}
           />
         );
       })}

@@ -4,15 +4,40 @@ export const HEADING_REGEX =
 /* -------------------------------------------------- */
 /* Normalize headings to canonical identifiers        */
 /* -------------------------------------------------- */
+function romanToArabic(roman) {
+  const map = {
+    i: 1, v: 5, x: 10, l: 50, c: 100, d: 500, m: 1000
+  };
+  let arabic = 0;
+  const str = roman.toLowerCase();
+  for (let i = 0; i < str.length; i++) {
+    const current = map[str[i]];
+    const next = map[str[i + 1]];
+    if (next && current < next) {
+      arabic += next - current;
+      i++;
+    } else {
+      arabic += current;
+    }
+  }
+  return arabic;
+}
+
 function getHeadingIdentifier(line) {
   const trimmed = line.trim();
-  const match = trimmed.match(/^(?:CHAPTER|Chapter|LETTER|Letter|ACT|Act)\s+([IVXLCDM]+|\d+)\b/i);
+  const match = trimmed.match(/^(?:(CHAPTER|Chapter|LETTER|Letter|ACT|Act))\s+([IVXLCDM]+|\d+)\b/i);
   if (match) {
-    return `chapter_${match[1].toLowerCase()}`;
+    const type = match[1].toLowerCase();
+    let val = match[2].toLowerCase();
+    if (/^[ivxlcdm]+$/.test(val)) {
+      val = String(romanToArabic(val));
+    }
+    return `${type}_${val}`;
   }
   const romanMatch = trimmed.match(/^([IVXLCDM]+)\.?\s*$/i);
   if (romanMatch) {
-    return `chapter_${romanMatch[1].toLowerCase()}`;
+    const val = String(romanToArabic(romanMatch[1].toLowerCase()));
+    return `chapter_${val}`;
   }
   return null;
 }
@@ -141,13 +166,6 @@ export function parseBook(book) {
   ebookText = ebookText.replace(/--/g, " ");
   ebookText = ebookText.replace(/^\s*\]\s*$/gm, "");
 
-  // Replace space after titles/prefixes with non-breaking space to keep them on the same line
-  ebookText = ebookText.replace(/\b(Mr|Mrs|Ms|Dr|Prof|Sr|Jr|Gen|Col|Capt|Lieut|St|Rev|Hon)\.\s+([A-Z])/g, "$1.&nbsp;$2");
-
-  // Make everything in double quotes italic
-  ebookText = ebookText.replace(/“([^”]+)”/g, "<i>“$1”</i>");
-  ebookText = ebookText.replace(/"([^"]+)"/g, "<i>\"$1\"</i>");
-
   // 3. Remove duplicated Table of Contents if duplicate headings are found
   let cleanedText = removeTableOfContents(ebookText);
 
@@ -160,7 +178,7 @@ export function parseBook(book) {
       const line = cleanedLines[i].trim();
 
       // Match Chapter, Letter, Act, Preface, Foreword, Introduction, or Roman numeral on its own line
-      const headingMatch = line.match(/^(?:CHAPTER|Chapter|LETTER|Letter|ACT|Act|PREFACE|Preface|FOREWORD|Foreword|INTRODUCTION|Introduction)\b/i);
+      const headingMatch = line.match(/^(?:CHAPTER|Chapter|LETTER|Letter|ACT|Act)\s+(?:[IVXLCDM]+|\d+)\b/i);
       const romanMatch = line.match(/^([IVXLCDM]+)\.?\s*$/i);
 
       if (headingMatch || romanMatch) {
@@ -192,4 +210,51 @@ export function parseBook(book) {
     blocks,
     chapters,
   };
+}
+
+export function formatBlockText(text, quoteOpenAtStart = false) {
+  if (!text) return "";
+  let formatted = text;
+
+  // Replace space after titles/prefixes with non-breaking space to keep them on the same line
+  formatted = formatted.replace(/\b(Mr|Mrs|Ms|Dr|Prof|Sr|Jr|Gen|Col|Capt|Lieut|St|Rev|Hon)\.\s+([A-Z])/g, "$1.&nbsp;$2");
+
+  let result = "";
+  let i = 0;
+  let inQuote = quoteOpenAtStart;
+  let currentSegment = "";
+
+  while (i < formatted.length) {
+    const char = formatted[i];
+
+    if (char === "“" || char === '"') {
+      if (!inQuote) {
+        result += currentSegment;
+        currentSegment = "“";
+        inQuote = true;
+      } else {
+        currentSegment += char;
+      }
+    } else if (char === "”" || char === '"') {
+      if (inQuote) {
+        currentSegment += "”";
+        result += `<i>${currentSegment}</i>`;
+        currentSegment = "";
+        inQuote = false;
+      } else {
+        currentSegment += char;
+      }
+    } else {
+      currentSegment += char;
+    }
+    i++;
+  }
+
+  if (inQuote) {
+    result += `<i>${currentSegment}</i>`;
+  } else {
+    result += currentSegment;
+  }
+
+  return result;
 }
