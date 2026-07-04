@@ -81,16 +81,17 @@ const ReaderContent = forwardRef(function ReaderContent({
             <p
               key={index}
               id={`block-${index}`}
-              className="mb-4 text-justify text-zinc-800 dark:text-zinc-200"
+              className="text-justify text-zinc-800 dark:text-zinc-200"
               style={{
-                textIndent: "2em",
+                textIndent: block.isContinuation ? "0" : "2em",
+                marginBottom: block.isContinuation ? "0" : "1rem",
+                marginTop: block.isContinuation ? "-1rem" : "0",
                 fontSize: `${fontSize}px`,
                 lineHeight: lineHeight,
                 fontFamily: fontStack,
               }}
-            >
-              {block.text}
-            </p>
+              dangerouslySetInnerHTML={{ __html: block.text }}
+            />
           );
         })}
       </div>
@@ -128,16 +129,17 @@ const ReaderContent = forwardRef(function ReaderContent({
         return (
           <p
             key={index}
-            className="mb-4 text-justify text-zinc-800 dark:text-zinc-200"
+            className="text-justify text-zinc-800 dark:text-zinc-200"
             style={{
-              textIndent: "2em",
+              textIndent: block.isContinuation ? "0" : "2em",
+              marginBottom: block.isContinuation ? "0" : "1rem",
+              marginTop: block.isContinuation ? "-1rem" : "0",
               fontSize: `${fontSize}px`,
               lineHeight: lineHeight,
               fontFamily: fontStack,
             }}
-          >
-            {block.text}
-          </p>
+            dangerouslySetInnerHTML={{ __html: block.text }}
+          />
         );
       })}
     </div>

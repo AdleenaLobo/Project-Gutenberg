@@ -55,8 +55,6 @@ function removeTableOfContents(text) {
 /* -------------------------------------------------- */
 /* Convert raw text into blocks                        */
 /* -------------------------------------------------- */
-const WORDS_PER_BLOCK = 100;
-
 function createBlocks(text) {
   const lines = text.split("\n");
 
@@ -66,14 +64,10 @@ function createBlocks(text) {
   const flushParagraph = () => {
     if (!paragraph.length) return;
 
-    const words = paragraph.join(" ").trim().split(/\s+/);
-
-    for (let i = 0; i < words.length; i += WORDS_PER_BLOCK) {
-      blocks.push({
-        type: "paragraph",
-        text: words.slice(i, i + WORDS_PER_BLOCK).join(" "),
-      });
-    }
+    blocks.push({
+      type: "paragraph",
+      text: paragraph.join(" ").trim(),
+    });
 
     paragraph = [];
   };
@@ -115,7 +109,7 @@ export function parseBook(book) {
     };
   }
 
-  // Strip Gutenberg header and footer
+  // 1. Strip Gutenberg header and footer
   const startRegex = /^\s*\*\*\*\s*START OF (?:THE|THIS) PROJECT GUTENBERG EBOOK[^*]*\*\*\*/i;
   const endRegex = /^\s*\*\*\*\s*END OF (?:THE|THIS) PROJECT GUTENBERG EBOOK[^*]*\*\*\*/i;
 
@@ -135,7 +129,50 @@ export function parseBook(book) {
 
   ebookText = lines.slice(startIndex, endIndex).join("\n");
 
-  const cleanedText = removeTableOfContents(ebookText);
+  // 2. Strip nested brackets first, then [Illustration: ... ] blocks, [Illustration] tags, and underscores globally
+  ebookText = ebookText.replace(/\[\s*_[^\]]*?\]/g, "");
+  ebookText = ebookText.replace(/\[Illustration:([\s\S]*?)\]/gi, (match, contents) => {
+    const headingRegex = /(?:CHAPTER|Chapter|LETTER|Letter|ACT|Act)\s+(?:[IVXLCDM]+|\d+)\b\.?/i;
+    const headingMatch = contents.match(headingRegex);
+    return headingMatch ? headingMatch[0] : "";
+  });
+  ebookText = ebookText.replace(/\[\s*Illustration\s*\]/gi, "");
+  ebookText = ebookText.replace(/_/g, "");
+  ebookText = ebookText.replace(/--/g, " ");
+  ebookText = ebookText.replace(/^\s*\]\s*$/gm, "");
+
+  // Replace space after titles/prefixes with non-breaking space to keep them on the same line
+  ebookText = ebookText.replace(/\b(Mr|Mrs|Ms|Dr|Prof|Sr|Jr|Gen|Col|Capt|Lieut|St|Rev|Hon)\.\s+([A-Z])/g, "$1.&nbsp;$2");
+
+  // Make everything in double quotes italic
+  ebookText = ebookText.replace(/“([^”]+)”/g, "<i>“$1”</i>");
+  ebookText = ebookText.replace(/"([^"]+)"/g, "<i>\"$1\"</i>");
+
+  // 3. Remove duplicated Table of Contents if duplicate headings are found
+  let cleanedText = removeTableOfContents(ebookText);
+
+  // 4. If no TOC duplicate was removed, slice from the first actual Preface/Chapter heading
+  if (cleanedText === ebookText) {
+    const cleanedLines = cleanedText.split("\n");
+    let contentStartLineIndex = -1;
+
+    for (let i = 0; i < cleanedLines.length; i++) {
+      const line = cleanedLines[i].trim();
+
+      // Match Chapter, Letter, Act, Preface, Foreword, Introduction, or Roman numeral on its own line
+      const headingMatch = line.match(/^(?:CHAPTER|Chapter|LETTER|Letter|ACT|Act|PREFACE|Preface|FOREWORD|Foreword|INTRODUCTION|Introduction)\b/i);
+      const romanMatch = line.match(/^([IVXLCDM]+)\.?\s*$/i);
+
+      if (headingMatch || romanMatch) {
+        contentStartLineIndex = i;
+        break;
+      }
+    }
+
+    if (contentStartLineIndex !== -1) {
+      cleanedText = cleanedLines.slice(contentStartLineIndex).join("\n");
+    }
+  }
 
   const blocks = createBlocks(cleanedText);
 

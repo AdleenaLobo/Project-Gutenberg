@@ -40,6 +40,37 @@ function paginateText(text, charsPerPage = 5000) {
   return pages;
 }
 
+function splitIntoSentences(text) {
+  if (!text) return [];
+  // Split on punctuation followed by space or end of string, but avoid splitting on &nbsp;
+  const candidates = text.match(/[^.!?]+[.!?]+(?:\s+|$)|[^.!?]+$/g) || [text];
+  const sentences = [];
+  let currentSentence = "";
+  // Added common prefixes/abbreviations to ignore
+  const abbreviations = /^(?:Mr|Mrs|Ms|Dr|Prof|Sr|Jr|Gen|Col|Capt|Lieut|St|Rev|Hon|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec|vs)\.?$/i;
+
+  for (const candidate of candidates) {
+    currentSentence += candidate;
+    const trimmed = currentSentence.trim();
+    // Support non-breaking spaces as word delimiters too by replacing &nbsp; with standard space for word-splitting checks
+    const words = trimmed.replace(/&nbsp;/g, " ").split(/\s+/);
+    const lastWord = words[words.length - 1];
+
+    if (abbreviations.test(lastWord)) {
+      continue;
+    }
+
+    sentences.push(currentSentence);
+    currentSentence = "";
+  }
+
+  if (currentSentence.trim()) {
+    sentences.push(currentSentence);
+  }
+
+  return sentences;
+}
+
 /**
  * EbookReader – renders a book as paginated black‑on‑white pages.
  * It also supports collaborative reading rooms where participants can
@@ -173,7 +204,7 @@ export function EbookReader({ book, client, onBack }) {
     candidateBlocks.forEach((block) => {
       const el = document.createElement(block.type === "heading" ? "h2" : "p");
 
-      el.textContent = block.text;
+      el.innerHTML = block.text;
 
       if (block.type === "heading") {
         el.style.cssText = `
@@ -188,9 +219,9 @@ export function EbookReader({ book, client, onBack }) {
         el.style.cssText = `
         font-size: ${fontSize}px;
         line-height: ${lineHeight};
-        margin: 0 0 18px;
+        margin: ${block.isContinuation ? "-18px 0 18px" : "0 0 18px"};
         text-align: justify;
-        text-indent: 2em;
+        text-indent: ${block.isContinuation ? "0" : "2em"};
         font-family: ${fontFamily};
       `;
       }
@@ -221,55 +252,109 @@ export function EbookReader({ book, client, onBack }) {
         continue;
       }
 
-      const candidate = [...currentPage, block];
+      // Split paragraph block into sentences
+      const sentences = splitIntoSentences(block.text);
 
-      // Entire block fits
-      if (fitsOnPage(candidate)) {
-        currentPage = candidate;
-        continue;
-      }
+      let isFirstSentenceOfParagraph = true;
+      let sentenceIndex = 0;
 
-      // Paragraph doesn't fit.
-      // We'll split only the overflowing part.
-      const words = block.text.split(/\s+/);
-      let start = 0;
-
-      while (start < words.length) {
-        let low = start;
-        let high = words.length;
-        let best = start;
-
-        while (low <= high) {
-          const mid = Math.floor((low + high) / 2);
-          const test = [
-            ...currentPage,
-            {
-              type: "paragraph",
-              text: words.slice(start, mid).join(" "),
-            },
-          ];
-
-          if (fitsOnPage(test)) {
-            best = mid;
-            low = mid + 1;
-          } else {
-            high = mid - 1;
-          }
+      while (sentenceIndex < sentences.length) {
+        const sentence = sentences[sentenceIndex].trim();
+        if (!sentence) {
+          sentenceIndex++;
+          continue;
         }
 
-        if (best === start) best++;
+        if (isFirstSentenceOfParagraph || currentPage.length === 0) {
+          const isContinuation = !isFirstSentenceOfParagraph;
+          const newBlock = {
+            type: "paragraph",
+            text: sentence,
+            isContinuation: isContinuation,
+          };
 
-        currentPage.push({
-          type: "paragraph",
-          text: words.slice(start, best).join(" "),
-        });
+          const candidate = [...currentPage, newBlock];
+          if (fitsOnPage(candidate)) {
+            currentPage.push(newBlock);
+            isFirstSentenceOfParagraph = false;
+            sentenceIndex++;
+          } else {
+            if (currentPage.length > 0) {
+              pages.push({
+                lines: currentPage,
+              });
+              currentPage = [];
+            } else {
+              // Fallback: sentence is too long for a single empty page
+              const words = sentence.split(/\s+/);
+              let start = 0;
 
-        pages.push({
-          lines: currentPage,
-        });
+              while (start < words.length) {
+                let low = start;
+                let high = words.length;
+                let best = start;
 
-        currentPage = [];
-        start = best;
+                while (low <= high) {
+                  const mid = Math.floor((low + high) / 2);
+                  const test = [
+                    ...currentPage,
+                    {
+                      type: "paragraph",
+                      text: words.slice(start, mid).join(" "),
+                      isContinuation: isContinuation || start > 0,
+                    },
+                  ];
+
+                  if (fitsOnPage(test)) {
+                    best = mid;
+                    low = mid + 1;
+                  } else {
+                    high = mid - 1;
+                  }
+                }
+
+                if (best === start) best++;
+
+                currentPage.push({
+                  type: "paragraph",
+                  text: words.slice(start, best).join(" "),
+                  isContinuation: isContinuation || start > 0,
+                });
+
+                start = best;
+
+                if (start < words.length) {
+                  pages.push({
+                    lines: currentPage,
+                  });
+                  currentPage = [];
+                }
+              }
+              isFirstSentenceOfParagraph = false;
+              sentenceIndex++;
+            }
+          }
+        } else {
+          const lastBlockIndex = currentPage.length - 1;
+          const originalText = currentPage[lastBlockIndex].text;
+
+          const testBlock = {
+            ...currentPage[lastBlockIndex],
+            text: originalText + " " + sentence,
+          };
+
+          const candidate = [...currentPage.slice(0, lastBlockIndex), testBlock];
+          if (fitsOnPage(candidate)) {
+            currentPage[lastBlockIndex] = testBlock;
+            sentenceIndex++;
+          } else {
+            pages.push({
+              lines: currentPage,
+            });
+            currentPage = [];
+            isFirstSentenceOfParagraph = false;
+          }
+        }
       }
     }
 
