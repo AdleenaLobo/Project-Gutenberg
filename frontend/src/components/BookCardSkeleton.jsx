@@ -12,10 +12,9 @@ export function BookCardSkeleton() {
         <div className="bg-zinc-200 dark:bg-zinc-800 animate-pulse h-4 w-2/3 mb-6 rounded-none" />
       </div>
 
-      {/* Footer placeholder – copies info and action button */}
-      <div className="flex items-center justify-between mt-6 pt-4 border-t-2 border-zinc-300 dark:border-zinc-700">
-        <div className="bg-zinc-200 dark:bg-zinc-800 animate-pulse h-3 w-12 rounded-none" />
-        <div className="bg-zinc-200 dark:bg-zinc-800 animate-pulse h-8 w-16 rounded-none ml-auto" />
+      {/* Footer placeholder – action button */}
+      <div className="mt-6 pt-4 border-t-2 border-zinc-300 dark:border-zinc-700">
+        <div className="bg-zinc-200 dark:bg-zinc-800 animate-pulse h-8 w-16 rounded-lg" />
       </div>
     </div>
   );

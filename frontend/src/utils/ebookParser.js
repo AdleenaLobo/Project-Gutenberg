@@ -1,5 +1,21 @@
 export const HEADING_REGEX =
-  /^\s*(?:CHAPTER|Chapter|LETTER|Letter)\s+([IVXLCDM]+|\d+)\.?\s*$|^\s*[IVXLCDM]+\.\s*$/i;
+  /^\s*(?:CHAPTER|Chapter|LETTER|Letter|ACT|Act)\s+([IVXLCDM]+|\d+)\b.*$|^\s*[IVXLCDM]+\.?\s*$/i;
+
+/* -------------------------------------------------- */
+/* Normalize headings to canonical identifiers        */
+/* -------------------------------------------------- */
+function getHeadingIdentifier(line) {
+  const trimmed = line.trim();
+  const match = trimmed.match(/^(?:CHAPTER|Chapter|LETTER|Letter|ACT|Act)\s+([IVXLCDM]+|\d+)\b/i);
+  if (match) {
+    return `chapter_${match[1].toLowerCase()}`;
+  }
+  const romanMatch = trimmed.match(/^([IVXLCDM]+)\.?\s*$/i);
+  if (romanMatch) {
+    return `chapter_${romanMatch[1].toLowerCase()}`;
+  }
+  return null;
+}
 
 /* -------------------------------------------------- */
 /* Remove duplicated table of contents                 */
@@ -7,28 +23,33 @@ export const HEADING_REGEX =
 function removeTableOfContents(text) {
   const lines = text.split("\n");
 
-  let firstHeading = null;
-  let secondOccurrence = -1;
+  let firstHeadingId = null;
+  let firstHeadingLineIndex = -1;
 
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-
-    if (!HEADING_REGEX.test(line)) continue;
-
-    if (!firstHeading) {
-      firstHeading = line.toLowerCase();
-      continue;
-    }
-
-    if (line.toLowerCase() === firstHeading) {
-      secondOccurrence = i;
+    const line = lines[i];
+    const headingId = getHeadingIdentifier(line);
+    if (headingId) {
+      firstHeadingId = headingId;
+      firstHeadingLineIndex = i;
       break;
     }
   }
 
-  if (secondOccurrence === -1) return text;
+  if (!firstHeadingId) return text;
 
-  return lines.slice(secondOccurrence).join("\n");
+  let secondOccurrenceIndex = -1;
+  for (let i = firstHeadingLineIndex + 1; i < lines.length; i++) {
+    const headingId = getHeadingIdentifier(lines[i]);
+    if (headingId === firstHeadingId) {
+      secondOccurrenceIndex = i;
+      break;
+    }
+  }
+
+  if (secondOccurrenceIndex === -1) return text;
+
+  return lines.slice(secondOccurrenceIndex).join("\n");
 }
 
 /* -------------------------------------------------- */
@@ -85,7 +106,7 @@ function createBlocks(text) {
 
 /* Main parser                                         */
 export function parseBook(book) {
-  const ebookText = book?.ebook_text ?? book?.ebook?.text ?? "";
+  let ebookText = book?.ebook_text ?? book?.ebook?.text ?? "";
 
   if (!ebookText) {
     return {
@@ -93,6 +114,26 @@ export function parseBook(book) {
       chapters: [],
     };
   }
+
+  // Strip Gutenberg header and footer
+  const startRegex = /^\s*\*\*\*\s*START OF (?:THE|THIS) PROJECT GUTENBERG EBOOK[^*]*\*\*\*/i;
+  const endRegex = /^\s*\*\*\*\s*END OF (?:THE|THIS) PROJECT GUTENBERG EBOOK[^*]*\*\*\*/i;
+
+  const lines = ebookText.split("\n");
+  let startIndex = 0;
+  let endIndex = lines.length;
+
+  for (let i = 0; i < lines.length; i++) {
+    if (startRegex.test(lines[i])) {
+      startIndex = i + 1;
+    }
+    if (endRegex.test(lines[i])) {
+      endIndex = i;
+      break;
+    }
+  }
+
+  ebookText = lines.slice(startIndex, endIndex).join("\n");
 
   const cleanedText = removeTableOfContents(ebookText);
 

@@ -73,7 +73,7 @@ export function Login({ onLogin }) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-zinc-950 dark:bg-zinc-50 border-2 border-zinc-950 dark:border-zinc-50 text-white dark:text-zinc-950 font-bold text-sm uppercase tracking-wider hover:bg-white hover:text-zinc-950 dark:hover:bg-zinc-950 dark:hover:text-white transition-all hover:shadow-[4px_4px_0px_#000] dark:hover:shadow-[4px_4px_0px_#fff] disabled:opacity-50 mt-6 cursor-pointer"
+            className="w-full rounded-lg py-3 bg-zinc-950 dark:bg-zinc-50 border-2 border-zinc-950 dark:border-zinc-50 text-white dark:text-zinc-950 font-bold text-sm uppercase tracking-wider hover:bg-white hover:text-zinc-950 dark:hover:bg-zinc-950 dark:hover:text-white transition-all hover:shadow-[4px_4px_0px_#000] dark:hover:shadow-[4px_4px_0px_#fff] disabled:opacity-50 mt-6 cursor-pointer"
           >
             {loading ? "Signing in…" : "Sign in"}
           </button>

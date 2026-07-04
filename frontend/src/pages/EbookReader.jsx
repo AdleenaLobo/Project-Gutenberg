@@ -203,70 +203,44 @@ export function EbookReader({ book, client, onBack }) {
 
   function paginate(blocks) {
     const pages = [];
-
     const chapters = [];
     let currentPage = [];
 
     for (const block of blocks) {
-      const candidate = [...currentPage, block];
-
-      // Entire block fits
-      if (fitsOnPage(candidate)) {
-
-        if (block.type === "heading") {
-          chapters.push({
-            title: block.text,
-            pageIndex: pages.length,
-          });
-        }
-
-        currentPage = candidate;
-        continue;
-      }
-
-      // Heading never gets split
       if (block.type === "heading") {
-
-        if (currentPage.length) {
+        if (currentPage.length > 0) {
           pages.push({
             lines: currentPage,
           });
         }
-
         chapters.push({
           title: block.text,
           pageIndex: pages.length,
         });
-
         currentPage = [block];
+        continue;
+      }
+
+      const candidate = [...currentPage, block];
+
+      // Entire block fits
+      if (fitsOnPage(candidate)) {
+        currentPage = candidate;
         continue;
       }
 
       // Paragraph doesn't fit.
       // We'll split only the overflowing part.
-
-      if (block.type === "heading") {
-        if (currentPage.length) {
-          pages.push({ lines: currentPage });
-        }
-
-        currentPage = [block];
-        continue;
-      }
-
       const words = block.text.split(/\s+/);
-
       let start = 0;
 
       while (start < words.length) {
         let low = start;
         let high = words.length;
-
         let best = start;
 
         while (low <= high) {
           const mid = Math.floor((low + high) / 2);
-
           const test = [
             ...currentPage,
             {
@@ -295,7 +269,6 @@ export function EbookReader({ book, client, onBack }) {
         });
 
         currentPage = [];
-
         start = best;
       }
     }
@@ -352,34 +325,7 @@ export function EbookReader({ book, client, onBack }) {
     }
   }
 
-  const headingRegex =
-    /^\s*(?:Chapter|Letter)\s+(\d+|[IVXLCDM]+)\s*$|^\s*[IVXLCDM]+\s*$/i;
 
-  const lines = ebookText.split("\n");
-
-  let firstHeading = null;
-  let secondOccurrenceIndex = -1;
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-
-    if (!headingRegex.test(line)) continue;
-
-    if (!firstHeading) {
-      firstHeading = line.toLowerCase();
-      continue;
-    }
-
-    if (line.toLowerCase() === firstHeading) {
-      secondOccurrenceIndex = i;
-      break;
-    }
-  }
-
-  const actualBookText =
-    secondOccurrenceIndex !== -1
-      ? lines.slice(secondOccurrenceIndex).join("\n")
-      : ebookText;
 
 
 

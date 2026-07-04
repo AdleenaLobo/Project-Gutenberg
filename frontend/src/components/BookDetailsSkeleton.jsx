@@ -1,4 +1,5 @@
 import React from "react";
+import { ArrowLeft } from "lucide-react";
 
 export function BookDetailsSkeleton() {
   return (
@@ -8,7 +9,7 @@ export function BookDetailsSkeleton() {
         disabled
         className="flex items-center gap-2 text-zinc-300 dark:text-zinc-700 text-sm font-bold mb-8 border-none bg-transparent cursor-default p-0 uppercase"
       >
-        ← Back to Collection
+        <ArrowLeft size={16} /> BACK TO COLLECTION
       </button>
 
       <div className="flex flex-col md:flex-row gap-8 items-stretch">
@@ -36,13 +37,8 @@ export function BookDetailsSkeleton() {
           <div className="bg-zinc-200 dark:bg-zinc-800 animate-pulse w-[90%] h-3 mb-2 rounded-none" />
           <div className="bg-zinc-200 dark:bg-zinc-800 animate-pulse w-[85%] h-3 mb-8 rounded-none" />
           
-          {/* Footer action panel */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-between sm:items-center bg-zinc-50 dark:bg-zinc-950/20 p-3.5 px-4 border-2 border-zinc-300 dark:border-zinc-700 rounded-none max-w-xl">
-            {/* Status placeholder */}
-            <div className="bg-zinc-200 dark:bg-zinc-800 animate-pulse w-48 h-3 rounded-none" />
-            {/* Button placeholder */}
-            <div className="bg-zinc-200 dark:bg-zinc-800 animate-pulse w-28 h-8 rounded-none" />
-          </div>
+          {/* Button placeholder */}
+          <div className="bg-zinc-200 dark:bg-zinc-800 animate-pulse w-28 h-8 rounded-lg" />
         </div>
       </div>
     </div>
