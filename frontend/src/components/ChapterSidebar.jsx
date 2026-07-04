@@ -1,14 +1,18 @@
 import React, { useMemo, useState } from "react";
 import { X, BookOpen, ChevronRight, Plus } from "lucide-react";
 import { useReaderTheme } from "../context/ReaderThemeContext";
+import BookmarksManager from "./bookmarks/BookmarksManager";
 
 export default function ChapterSidebar({
   open,
   chapters,
-  bookmarks = [],
   pageIndex,
   onClose,
-  onSelectChapter
+  onSelectChapter,
+  bookId,
+  activeRoom,
+  totalPages,
+  client,
 }) {
   const [activeTab, setActiveTab] = useState("contents");
   const { warmth } = useReaderTheme();
@@ -107,48 +111,26 @@ export default function ChapterSidebar({
               )}
             </>
           ) : (
-            <>
-              {bookmarks.length === 0 ? (
-                <div className="p-10 text-center text-zinc-500 dark:text-zinc-450 flex flex-col gap-2">
-                  <div className="text-sm font-bold text-zinc-900 dark:text-zinc-250 mt-3">
-                    No bookmarks yet
-                  </div>
-                  <div className="text-xs text-zinc-500 mt-1">
-                    Bookmark pages while reading to find them quickly.
-                  </div>
-                </div>
-              ) : (
-                bookmarks.map((bookmark) => (
-                  <button
-                    key={bookmark.id}
-                    onClick={() => {
-                      onSelectChapter(bookmark.pageIndex);
-                      onClose();
-                    }}
-                    className="w-full text-left px-5 py-4 border-b border-zinc-200 dark:border-zinc-800 flex justify-between items-center bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer transition-colors text-zinc-955 dark:text-zinc-350 rounded-none font-serif"
-                  >
-                    <div className="text-left">
-                      <div className="text-sm font-bold">
-                        {bookmark.label || "Bookmark"}
-                      </div>
-                      <div className="text-xs text-zinc-450 dark:text-zinc-500 mt-1 font-sans">
-                        Page {bookmark.pageIndex + 1}
-                      </div>
-                    </div>
-                    <ChevronRight size={16} className="text-zinc-400 dark:text-zinc-650" />
-                  </button>
-                ))
-              )}
-            </>
+            <BookmarksManager
+              bookId={bookId}
+              activeRoom={activeRoom}
+              pageIndex={pageIndex}
+              totalPages={totalPages}
+              client={client}
+              onGoToPage={(page) => {
+                onSelectChapter(page);
+                onClose();
+              }}
+            />
           )}
         </div>
 
         {/* Footer */}
-        <div className="border-t border-zinc-200 dark:border-zinc-800 p-4 text-xs font-bold uppercase tracking-wider text-zinc-950 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-900/40">
-          {activeTab === "contents"
-            ? `${chapters.length} Chapters`
-            : `${bookmarks.length} Bookmarks`}
-        </div>
+        {activeTab === "contents" && (
+          <div className="border-t border-zinc-200 dark:border-zinc-800 p-4 text-xs font-bold uppercase tracking-wider text-zinc-950 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-900/40">
+            {chapters.length} Chapters
+          </div>
+        )}
       </aside>
     </>
   );

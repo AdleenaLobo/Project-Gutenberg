@@ -68,7 +68,7 @@ def init_db():
     CREATE TABLE IF NOT EXISTS reading_rooms (id INTEGER PRIMARY KEY AUTOINCREMENT, book_id INTEGER NOT NULL, name TEXT NOT NULL, created_by INTEGER NOT NULL, created_at TEXT NOT NULL, FOREIGN KEY(book_id) REFERENCES books(id), FOREIGN KEY(created_by) REFERENCES users(id));
     CREATE TABLE IF NOT EXISTS room_members (room_id INTEGER NOT NULL, user_id INTEGER NOT NULL, joined_at TEXT NOT NULL, PRIMARY KEY(room_id,user_id), FOREIGN KEY(room_id) REFERENCES reading_rooms(id), FOREIGN KEY(user_id) REFERENCES users(id));
     CREATE TABLE IF NOT EXISTS notes (id INTEGER PRIMARY KEY AUTOINCREMENT, room_id INTEGER NOT NULL, user_id INTEGER NOT NULL, book_id INTEGER NOT NULL, location TEXT NOT NULL, body TEXT NOT NULL, created_at TEXT NOT NULL);
-    CREATE TABLE IF NOT EXISTS bookmarks (id INTEGER PRIMARY KEY AUTOINCREMENT, room_id INTEGER NOT NULL, user_id INTEGER NOT NULL, book_id INTEGER NOT NULL, location TEXT NOT NULL, label TEXT NOT NULL, created_at TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS bookmarks (id INTEGER PRIMARY KEY AUTOINCREMENT, room_id INTEGER, user_id INTEGER NOT NULL, book_id INTEGER NOT NULL, location TEXT NOT NULL, label TEXT NOT NULL, created_at TEXT NOT NULL);
 
     -- Table for invitation tokens to reading rooms
     CREATE TABLE IF NOT EXISTS room_invites (
@@ -92,6 +92,34 @@ def init_db():
         FOREIGN KEY(user_id) REFERENCES users(id)
     );
     """)
+
+    # Migration: Make room_id in bookmarks table nullable if it is currently NOT NULL
+    cur.execute("PRAGMA table_info(bookmarks)")
+    columns = cur.fetchall()
+    if columns:
+        room_id_col = next((c for c in columns if c[1] == "room_id"), None)
+        if room_id_col and room_id_col[3] == 1:  # 1 means NOT NULL constraint is active
+            cur.execute("ALTER TABLE bookmarks RENAME TO bookmarks_old")
+            cur.execute("""
+                CREATE TABLE bookmarks (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    room_id INTEGER,
+                    user_id INTEGER NOT NULL,
+                    book_id INTEGER NOT NULL,
+                    location TEXT NOT NULL,
+                    label TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    FOREIGN KEY(room_id) REFERENCES reading_rooms(id),
+                    FOREIGN KEY(user_id) REFERENCES users(id),
+                    FOREIGN KEY(book_id) REFERENCES books(id)
+                )
+            """)
+            cur.execute("""
+                INSERT INTO bookmarks (id, room_id, user_id, book_id, location, label, created_at)
+                SELECT id, room_id, user_id, book_id, location, label, created_at FROM bookmarks_old
+            """)
+            cur.execute("DROP TABLE bookmarks_old")
+            conn.commit()
 
     cur.execute("SELECT COUNT(*) FROM users")
     if cur.fetchone()[0] == 0:
@@ -399,8 +427,98 @@ def add_note(room_id):
 def add_bookmark(room_id):
     data = request.get_json(force=True)
     room = one(get_db().execute("SELECT * FROM reading_rooms WHERE id=?", (room_id,)))
+    if not room:
+        return jsonify({"error": "Room not found"}), 404
     run("INSERT INTO bookmarks (room_id,user_id,book_id,location,label,created_at) VALUES (?,?,?,?,?,?)", (room_id, request.user["id"], room["book_id"], data.get("location","Page 1"), data.get("label","Bookmark"), now_iso()))
     return jsonify({"message":"Bookmark added"}), 201
+
+# Get all bookmarks for the current authenticated user across all books
+@app.get("/api/bookmarks")
+@auth("user")
+def get_user_bookmarks():
+    rows = many(get_db().execute("""
+        SELECT bm.*, b.title AS book_title, b.author AS book_author, b.cover_image_url, r.name AS room_name
+        FROM bookmarks bm
+        JOIN books b ON b.id = bm.book_id
+        LEFT JOIN reading_rooms r ON r.id = bm.room_id
+        WHERE bm.user_id = ?
+        ORDER BY bm.created_at DESC
+    """, (request.user["id"],)))
+    return jsonify(rows)
+
+# Get all bookmarks for a specific book for the current user (personal & room-specific)
+@app.get("/api/books/<int:book_id>/bookmarks")
+@auth("user")
+def get_book_bookmarks(book_id):
+    rows = many(get_db().execute("""
+        SELECT bm.*, r.name AS room_name
+        FROM bookmarks bm
+        LEFT JOIN reading_rooms r ON r.id = bm.room_id
+        WHERE bm.user_id = ? AND bm.book_id = ?
+        ORDER BY bm.created_at DESC
+    """, (request.user["id"], book_id)))
+    return jsonify(rows)
+
+# Create a general or room-specific bookmark
+@app.post("/api/bookmarks")
+@auth("user")
+def create_general_bookmark():
+    data = request.get_json(force=True)
+    book_id = data.get("book_id")
+    room_id = data.get("room_id")  # Can be None/null for personal bookmarks
+    location = data.get("location", "Page 1")
+    label = data.get("label", "Bookmark").strip() or "Bookmark"
+    
+    if not book_id:
+        return jsonify({"error": "book_id is required"}), 400
+        
+    book = one(get_db().execute("SELECT * FROM books WHERE id=?", (book_id,)))
+    if not book:
+        return jsonify({"error": "Book not found"}), 404
+        
+    if room_id:
+        # Check that user is in the room
+        membership = one(get_db().execute("SELECT * FROM room_members WHERE room_id=? AND user_id=?", (room_id, request.user["id"])))
+        if not membership:
+            return jsonify({"error": "You are not a member of this room"}), 403
+            
+    cur = run("""
+        INSERT INTO bookmarks (room_id, user_id, book_id, location, label, created_at)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (room_id, request.user["id"], book_id, location, label, now_iso()))
+    
+    return jsonify({"id": cur.lastrowid, "message": "Bookmark created"}), 201
+
+# Delete a bookmark
+@app.delete("/api/bookmarks/<int:bookmark_id>")
+@auth("user")
+def delete_user_bookmark(bookmark_id):
+    bookmark = one(get_db().execute("SELECT * FROM bookmarks WHERE id=?", (bookmark_id,)))
+    if not bookmark:
+        return jsonify({"error": "Bookmark not found"}), 404
+    if bookmark["user_id"] != request.user["id"]:
+        return jsonify({"error": "Permission denied"}), 403
+        
+    run("DELETE FROM bookmarks WHERE id=?", (bookmark_id,))
+    return jsonify({"message": "Bookmark deleted"})
+
+# Edit a bookmark label
+@app.put("/api/bookmarks/<int:bookmark_id>")
+@auth("user")
+def update_user_bookmark(bookmark_id):
+    data = request.get_json(force=True)
+    label = data.get("label", "").strip()
+    if not label:
+        return jsonify({"error": "label is required"}), 400
+        
+    bookmark = one(get_db().execute("SELECT * FROM bookmarks WHERE id=?", (bookmark_id,)))
+    if not bookmark:
+        return jsonify({"error": "Bookmark not found"}), 404
+    if bookmark["user_id"] != request.user["id"]:
+        return jsonify({"error": "Permission denied"}), 403
+        
+    run("UPDATE bookmarks SET label=? WHERE id=?", (label, bookmark_id))
+    return jsonify({"message": "Bookmark updated"})
 
 if __name__ == "__main__":
     init_db()

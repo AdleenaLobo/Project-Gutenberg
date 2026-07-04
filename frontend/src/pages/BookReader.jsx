@@ -19,6 +19,12 @@ export  default function BookReader({ client }) {
       async function fetchBook() {
         try {
           const fetched = await client.request(`/books/${id}`);
+          if (location.state?.initialPageIndex !== undefined) {
+            fetched._initialPageIndex = location.state.initialPageIndex;
+          }
+          if (location.state?.joinRoomId) {
+            fetched._joinRoomId = location.state.joinRoomId;
+          }
           setBook(fetched);
         } catch (e) {
           setMsg(e.message);
@@ -28,10 +34,17 @@ export  default function BookReader({ client }) {
       }
       fetchBook();
     } else {
-      // If navigation passed a joinRoomId, attach it to the book object.
-      if (location.state?.joinRoomId) {
-        setBook((prev) => ({ ...prev, _joinRoomId: location.state.joinRoomId }));
-      }
+      // If navigation passed a joinRoomId or initialPageIndex, attach it to the book object.
+      setBook((prev) => {
+        let updated = prev;
+        if (location.state?.joinRoomId && prev?._joinRoomId !== location.state.joinRoomId) {
+          updated = { ...updated, _joinRoomId: location.state.joinRoomId };
+        }
+        if (location.state?.initialPageIndex !== undefined && prev?._initialPageIndex !== location.state.initialPageIndex) {
+          updated = { ...updated, _initialPageIndex: location.state.initialPageIndex };
+        }
+        return updated;
+      });
     }
   }, [id, book, client, location.state]);
 

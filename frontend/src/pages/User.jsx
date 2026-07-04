@@ -6,12 +6,14 @@ import { CategoryFilters } from "../components/CategoryFilters";
 import { CategoryFiltersSkeleton } from "../components/CategoryFiltersSkeleton";
 import { SearchBarSkeleton } from "../components/SearchBarSkeleton";
 import { BookGrid } from "../components/BookGrid";
+import DashboardBookmarks from "../components/bookmarks/DashboardBookmarks";
 
 export function User({ client }) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [books, setBooks] = useState([]);
   const [rooms, setRooms] = useState([]);
+  const [bookmarksCount, setBookmarksCount] = useState(0);
   const [msg, setMsg] = useState("");
   const [activeTab, setActiveTab] = useState("ebooks");
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -27,12 +29,14 @@ export function User({ client }) {
   async function load() {
     setLoading(true);
     try {
-      const [b, r] = await Promise.all([
+      const [b, r, bm] = await Promise.all([
         client.request("/books"),
         client.request("/rooms"),
+        client.request("/bookmarks"),
       ]);
       setBooks(b);
       setRooms(r);
+      setBookmarksCount(bm ? bm.length : 0);
     } catch (e) {
       setMsg(e.message);
     } finally {
@@ -72,6 +76,7 @@ const filteredEbooks = ebooks
   const tabs = [
     { id: "ebooks", label: "Ebooks", count: ebooks.length },
     { id: "rooms", label: "Rooms", count: rooms.length },
+    { id: "bookmarks", label: "Bookmarks", count: bookmarksCount },
   ];
 
   return (
@@ -205,6 +210,14 @@ const filteredEbooks = ebooks
               </div>
             )}
           </>
+        )}
+
+        {/* ── Bookmarks tab ── */}
+        {activeTab === "bookmarks" && (
+          <DashboardBookmarks
+            client={client}
+            onBookmarkDeleted={() => setBookmarksCount((c) => Math.max(0, c - 1))}
+          />
         )}
       </div>
     </div>

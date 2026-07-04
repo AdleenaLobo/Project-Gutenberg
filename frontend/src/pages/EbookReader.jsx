@@ -136,7 +136,7 @@ export function EbookReader({ book, client, onBack }) {
 
     setBlocks(parsed.blocks);
     setChapters(parsed.chapters);
-    setPageIndex(0);
+    setPageIndex(book._initialPageIndex ?? 0);
   }, [book]);
 
   // ---- Keyboard Arrow Navigation ------------------------------------------
@@ -600,7 +600,6 @@ export function EbookReader({ book, client, onBack }) {
       <ChapterSidebar
         open={showChapters}
         chapters={chapters}
-        bookmarks={[]}
         pageIndex={pageIndex}
         onClose={() => setShowChapters(false)}
         onSelectChapter={(page) => {
@@ -618,6 +617,10 @@ export function EbookReader({ book, client, onBack }) {
           }
           setShowChapters(false);
         }}
+        bookId={book.id}
+        activeRoom={activeRoom}
+        totalPages={totalPages}
+        client={client}
       />
 
       <ReaderControls
