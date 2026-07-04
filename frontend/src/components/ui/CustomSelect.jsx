@@ -45,12 +45,12 @@ export default function CustomSelect({ value, options, onChange }) {
                 }}
                 className={`w-full text-left text-sm px-4 py-2.5 flex justify-between items-center rounded-md transition-colors cursor-pointer border-none ${
                   isSelected
-                    ? "bg-zinc-955 text-white dark:bg-zinc-100 dark:text-zinc-950 font-bold"
-                    : "bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-350 hover:text-zinc-955 dark:hover:text-white"
+                    ? "bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950 font-bold"
+                    : "bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white"
                 }`}
               >
                 <span>{option}</span>
-                {isSelected && <Check size={14} className="text-white dark:text-zinc-955" />}
+                {isSelected && <Check size={14} className="text-white dark:text-zinc-950" />}
               </button>
             );
           })}

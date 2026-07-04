@@ -93,7 +93,7 @@ export default function ReaderControls({
 
   const btnBase = "w-12 h-12 rounded-lg border flex items-center justify-center transition-all duration-200 fixed z-20 focus:outline-none";
   const btnActive = showUI
-    ? "border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-800 text-zinc-955 dark:text-white hover:scale-105 cursor-pointer shadow-none focus:outline-none focus:ring-0 focus:border-zinc-300 dark:focus:border-zinc-800"
+    ? "border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-800 text-zinc-950 dark:text-white hover:scale-105 cursor-pointer shadow-none focus:outline-none focus:ring-0 focus:border-zinc-300 dark:focus:border-zinc-800"
     : "border-transparent bg-transparent text-transparent shadow-none pointer-events-none";
 
   const iconOpacity = showUI ? "opacity-100" : "opacity-0 pointer-events-none";
@@ -140,7 +140,7 @@ export default function ReaderControls({
       {/* Page Number */}
       {layoutMode !== "scroll" && (
         <div
-          className={`fixed bottom-6 left-1/2 -translate-x-1/2 px-5 py-2.5 bg-white/80 dark:bg-zinc-800/90 backdrop-blur-sm border border-zinc-200 dark:border-zinc-800 rounded-full text-sm font-medium tracking-wider text-zinc-955 dark:text-white shadow-md pointer-events-none transition-opacity duration-350 z-20 font-serif ${showUI ? "opacity-100" : "opacity-0"
+          className={`fixed bottom-6 left-1/2 -translate-x-1/2 px-5 py-2.5 bg-white/80 dark:bg-zinc-800/90 backdrop-blur-sm border border-zinc-200 dark:border-zinc-800 rounded-full text-sm font-medium tracking-wider text-zinc-950 dark:text-white shadow-md pointer-events-none transition-opacity duration-350 z-20 font-serif ${showUI ? "opacity-100" : "opacity-0"
             }`}
         >
           {pageIndex + 1} / {totalPages}
@@ -287,7 +287,7 @@ export default function ReaderControls({
             <div className="flex flex-col gap-1.5 border-t border-zinc-100 dark:border-zinc-700 pt-3.5">
               <div className="flex items-center justify-between">
                 <label className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Warmth</label>
-                <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-450">{warmth}%</span>
+                <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">{warmth}%</span>
               </div>
 
               <input
