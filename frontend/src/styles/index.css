@@ -76,3 +76,54 @@ input[type="range"].reader-slider::-webkit-slider-thumb {
 .animate-fade-in {
   animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* Highlight styles */
+.highlight-yellow {
+  background-color: #fef08a; /* bg-yellow-200 */
+  color: #1c1917; /* zinc-900 */
+  cursor: pointer;
+  border-radius: 2px;
+}
+.dark .highlight-yellow {
+  background-color: rgba(254, 240, 138, 0.3); /* dark opacity yellow */
+  color: inherit;
+}
+
+.highlight-green {
+  background-color: #bbf7d0; /* bg-green-200 */
+  color: #1c1917;
+  cursor: pointer;
+  border-radius: 2px;
+}
+.dark .highlight-green {
+  background-color: rgba(187, 247, 208, 0.3); /* dark opacity green */
+  color: inherit;
+}
+
+.highlight-pink {
+  background-color: #fbcfe8; /* bg-pink-200 */
+  color: #1c1917;
+  cursor: pointer;
+  border-radius: 2px;
+}
+.dark .highlight-pink {
+  background-color: rgba(251, 207, 232, 0.3); /* dark opacity pink */
+  color: inherit;
+}
+
+.highlight-blue {
+  background-color: #bfdbfe; /* bg-blue-200 */
+  color: #1c1917;
+  cursor: pointer;
+  border-radius: 2px;
+}
+.dark .highlight-blue {
+  background-color: rgba(191, 219, 254, 0.3); /* dark opacity blue */
+  color: inherit;
+}
+
+/* Allow text selection inside paginated reader if highlight tool is active */
+.selectable-content {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}

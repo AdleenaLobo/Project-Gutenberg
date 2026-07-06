@@ -166,6 +166,111 @@ export function EbookReader({ book, client, onBack }) {
       }
     }
   };
+  // ---- Highlights state and operations ----
+  const [highlights, setHighlights] = useState([]);
+  const [deleteTooltip, setDeleteTooltip] = useState(null);
+
+  const loadHighlights = async () => {
+    if (!book) return;
+    try {
+      const data = await client.request(`/books/${book.id}/highlights`);
+      setHighlights(data || []);
+    } catch (_) {}
+  };
+
+  useEffect(() => {
+    loadHighlights();
+  }, [book?.id]);
+
+  useEffect(() => {
+    if (!deleteTooltip) return;
+    const handleDocClick = (e) => {
+      if (!e.target.closest("[data-highlight-id]") && !e.target.closest(".delete-tooltip")) {
+        setDeleteTooltip(null);
+      }
+    };
+    const timeout = setTimeout(() => {
+      document.addEventListener("click", handleDocClick);
+    }, 0);
+    return () => {
+      clearTimeout(timeout);
+      document.removeEventListener("click", handleDocClick);
+    };
+  }, [deleteTooltip]);
+
+  const handleTextSelection = async () => {
+    if (activeHighlightColor === "none") return;
+    
+    const selection = window.getSelection();
+    if (!selection || selection.isCollapsed) return;
+    
+    const selectedText = selection.toString().trim();
+    if (!selectedText) return;
+    
+    let anchorNode = selection.anchorNode;
+    let container = anchorNode;
+    while (container && container !== document.body) {
+      if (container.nodeType === Node.ELEMENT_NODE && container.hasAttribute("data-block-index")) {
+        break;
+      }
+      container = container.parentNode;
+    }
+    
+    if (!container || container === document.body) {
+      return;
+    }
+    
+    const blockIndex = parseInt(container.getAttribute("data-block-index"), 10);
+    const startCharOffsetAttr = parseInt(container.getAttribute("data-start-char-offset"), 10) || 0;
+    
+    const range = selection.getRangeAt(0);
+    const preSelectionRange = range.cloneRange();
+    preSelectionRange.selectNodeContents(container);
+    preSelectionRange.setEnd(range.startContainer, range.startOffset);
+    
+    const rawStartOffset = preSelectionRange.toString().length;
+    const rawLength = range.toString().length;
+    
+    const start_offset = startCharOffsetAttr + rawStartOffset;
+    const end_offset = start_offset + rawLength;
+    
+    try {
+      await client.request("/highlights", {
+        method: "POST",
+        body: JSON.stringify({
+          book_id: book.id,
+          room_id: activeRoom || null,
+          block_index: blockIndex,
+          start_offset: start_offset,
+          end_offset: end_offset,
+          color: activeHighlightColor,
+          text: selectedText
+        })
+      });
+      selection.removeAllRanges();
+      loadHighlights();
+    } catch (err) {
+      console.error("Error creating highlight:", err);
+    }
+  };
+
+  const handleReaderClick = (e) => {
+    const highlightEl = e.target.closest("[data-highlight-id]");
+    if (highlightEl) {
+      const hlId = highlightEl.getAttribute("data-highlight-id");
+      const hl = highlights.find(h => h.id === parseInt(hlId, 10));
+      if (hl) {
+        setDeleteTooltip({
+          highlight: hl,
+          x: e.clientX,
+          y: e.clientY
+        });
+        return;
+      }
+    }
+    setDeleteTooltip(null);
+  };
+
   // Chapter index for navigation
   const [chapters, setChapters] = useState([]);
   const [showChapters, setShowChapters] = useState(false);
@@ -174,7 +279,7 @@ export function EbookReader({ book, client, onBack }) {
   const ebookText = book?.ebook_text ?? book?.ebook?.text ?? "";
 
   const [blocks, setBlocks] = useState([]);
-  const { theme, warmth, fontFamily, fontSize, lineHeight, layoutMode } = useReaderTheme();
+  const { theme, warmth, fontFamily, fontSize, lineHeight, layoutMode, activeHighlightColor } = useReaderTheme();
 
   useEffect(() => {
     if (!book) return;
@@ -303,7 +408,8 @@ export function EbookReader({ book, client, onBack }) {
     let currentPage = [];
     let quoteOpen = false;
 
-    for (const block of blocks) {
+    for (let i = 0; i < blocks.length; i++) {
+      const block = blocks[i];
       if (block.type === "heading") {
         if (currentPage.length > 0) {
           pages.push({
@@ -314,7 +420,7 @@ export function EbookReader({ book, client, onBack }) {
           title: block.text,
           pageIndex: pages.length,
         });
-        currentPage = [block];
+        currentPage = [{ ...block, blockIndex: i, startCharOffset: 0 }];
         quoteOpen = false;
         continue;
       }
@@ -324,12 +430,20 @@ export function EbookReader({ book, client, onBack }) {
 
       let isFirstSentenceOfParagraph = true;
       let sentenceIndex = 0;
+      let currentOffset = 0;
 
       while (sentenceIndex < sentences.length) {
-        const sentence = sentences[sentenceIndex].trim();
+        const rawSentence = sentences[sentenceIndex];
+        const sentence = rawSentence.trim();
         if (!sentence) {
+          currentOffset = block.text.indexOf(rawSentence, currentOffset) + rawSentence.length;
           sentenceIndex++;
           continue;
+        }
+
+        let sentenceStart = block.text.indexOf(rawSentence, currentOffset);
+        if (sentenceStart === -1) {
+          sentenceStart = currentOffset;
         }
 
         if (isFirstSentenceOfParagraph || currentPage.length === 0) {
@@ -339,6 +453,8 @@ export function EbookReader({ book, client, onBack }) {
             text: sentence,
             isContinuation: isContinuation,
             quoteOpenAtStart: quoteOpen,
+            blockIndex: i,
+            startCharOffset: sentenceStart,
           };
 
           const candidate = [...currentPage, newBlock];
@@ -346,6 +462,7 @@ export function EbookReader({ book, client, onBack }) {
             currentPage.push(newBlock);
             quoteOpen = updateQuoteState(sentence, quoteOpen);
             isFirstSentenceOfParagraph = false;
+            currentOffset = sentenceStart + rawSentence.length;
             sentenceIndex++;
           } else {
             if (currentPage.length > 0) {
@@ -373,6 +490,8 @@ export function EbookReader({ book, client, onBack }) {
                       text: chunkText,
                       isContinuation: isContinuation || start > 0,
                       quoteOpenAtStart: quoteOpen,
+                      blockIndex: i,
+                      startCharOffset: sentenceStart + sentence.indexOf(chunkText),
                     },
                   ];
 
@@ -392,6 +511,8 @@ export function EbookReader({ book, client, onBack }) {
                   text: chunkText,
                   isContinuation: isContinuation || start > 0,
                   quoteOpenAtStart: quoteOpen,
+                  blockIndex: i,
+                  startCharOffset: sentenceStart + sentence.indexOf(chunkText),
                 };
                 
                 currentPage.push(newChunkBlock);
@@ -406,6 +527,7 @@ export function EbookReader({ book, client, onBack }) {
                 }
               }
               isFirstSentenceOfParagraph = false;
+              currentOffset = sentenceStart + rawSentence.length;
               sentenceIndex++;
             }
           }
@@ -422,6 +544,7 @@ export function EbookReader({ book, client, onBack }) {
           if (fitsOnPage(candidate)) {
             currentPage[lastBlockIndex] = testBlock;
             quoteOpen = updateQuoteState(sentence, quoteOpen);
+            currentOffset = sentenceStart + rawSentence.length;
             sentenceIndex++;
           } else {
             pages.push({
@@ -607,7 +730,11 @@ export function EbookReader({ book, client, onBack }) {
 
       <div className="flex h-full w-full relative">
         {/* Main reader area */}
-        <div className="flex-1 flex justify-center items-center relative h-full">
+        <div 
+          onClick={handleReaderClick}
+          onMouseUp={handleTextSelection}
+          className="flex-1 flex justify-center items-center relative h-full"
+        >
           <ReaderContent
             ref={pageRef}
             currentPage={currentPage}
@@ -616,6 +743,7 @@ export function EbookReader({ book, client, onBack }) {
             totalPages={totalPages}
             onPrevious={() => setPageIndex((p) => Math.max(0, p - 1))}
             onNext={() => setPageIndex((p) => Math.min(totalPages - 1, p + 1))}
+            highlights={highlights}
             style={{
               visibility: isPaginating ? "hidden" : "visible",
             }}
@@ -690,6 +818,31 @@ export function EbookReader({ book, client, onBack }) {
         client={client}
         bookmarks={bookmarks}
         onBookmarksChanged={loadBookmarks}
+        highlights={highlights}
+        onDeleteHighlight={async (id) => {
+          try {
+            await client.request(`/highlights/${id}`, { method: "DELETE" });
+            loadHighlights();
+          } catch (e) {
+            setMsg(e.message);
+          }
+        }}
+        onSelectBlock={(blockIndex) => {
+          let targetPage = 0;
+          for (let p = 0; p < pages.length; p++) {
+            const pageLines = pages[p]?.lines || [];
+            if (pageLines.some(line => line.blockIndex === blockIndex)) {
+              targetPage = p;
+              break;
+            }
+          }
+          if (layoutMode === "scroll") {
+            const el = document.getElementById("block-" + blockIndex);
+            if (el) el.scrollIntoView({ behavior: "smooth" });
+          } else {
+            setPageIndex(targetPage);
+          }
+        }}
       />
 
       <ReaderControls
@@ -700,6 +853,29 @@ export function EbookReader({ book, client, onBack }) {
         onOpenChapters={() => setShowChapters(true)}
         onBack={onBack}
       />
+
+      {deleteTooltip && (
+        <div
+          className="delete-tooltip fixed z-50 px-3.5 py-2 bg-zinc-950 dark:bg-zinc-800 text-white text-xs font-semibold rounded-lg shadow-xl flex items-center gap-2.5 -translate-x-1/2 -translate-y-full mb-3 animate-fade-in border border-zinc-800 dark:border-zinc-700"
+          style={{ top: deleteTooltip.y, left: deleteTooltip.x }}
+        >
+          <button
+            onClick={async (e) => {
+              e.stopPropagation();
+              try {
+                await client.request(`/highlights/${deleteTooltip.highlight.id}`, { method: "DELETE" });
+                loadHighlights();
+                setDeleteTooltip(null);
+              } catch (e) {
+                setMsg(e.message);
+              }
+            }}
+            className="text-red-400 hover:text-red-300 font-bold cursor-pointer"
+          >
+            Remove
+          </button>
+        </div>
+      )}
     </div>
   );
 }

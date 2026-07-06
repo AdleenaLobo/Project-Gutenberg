@@ -30,6 +30,9 @@ export function ReaderThemeProvider({ children }) {
   const [layoutMode, setLayoutMode] = useState(() => {
     return localStorage.getItem("reader-layoutMode") || "paginated";
   });
+  const [activeHighlightColor, setActiveHighlightColor] = useState(() => {
+    return localStorage.getItem("reader-highlightColor") || "none";
+  });
 
   useEffect(() => {
     localStorage.setItem("reader-theme", theme);
@@ -54,6 +57,10 @@ export function ReaderThemeProvider({ children }) {
   useEffect(() => {
     localStorage.setItem("reader-layoutMode", layoutMode);
   }, [layoutMode]);
+
+  useEffect(() => {
+    localStorage.setItem("reader-highlightColor", activeHighlightColor);
+  }, [activeHighlightColor]);
 
   const style = useMemo(() => {
     return {
@@ -82,6 +89,9 @@ export function ReaderThemeProvider({ children }) {
 
     layoutMode,
     setLayoutMode,
+
+    activeHighlightColor,
+    setActiveHighlightColor,
   };
 
   return (

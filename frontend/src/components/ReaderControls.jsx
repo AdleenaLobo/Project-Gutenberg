@@ -29,6 +29,8 @@ export default function ReaderControls({
     lineHeight,
     layoutMode,
     setLayoutMode,
+    activeHighlightColor,
+    setActiveHighlightColor,
   } = useReaderTheme();
 
   const [visible, setVisible] = useState(true);
@@ -250,6 +252,71 @@ export default function ReaderControls({
                 >
                   Dark
                 </button>
+              </div>
+            </div>
+
+            {/* Highlighting Tool */}
+            <div className="flex flex-col gap-1.5 border-t border-zinc-100 dark:border-zinc-700 pt-3.5">
+              <label className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                Highlighting Tool
+              </label>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setActiveHighlightColor("none")}
+                  className={`w-8 h-8 rounded-full border flex items-center justify-center cursor-pointer transition-all ${
+                    activeHighlightColor === "none"
+                      ? "border-zinc-950 dark:border-white ring-2 ring-zinc-950/20 dark:ring-white/20 scale-110"
+                      : "border-zinc-200 dark:border-zinc-700 hover:scale-105"
+                  }`}
+                  title="Disable Highlighting"
+                >
+                  <span className="text-[10px] text-zinc-500 font-bold dark:text-zinc-400">Off</span>
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={() => setActiveHighlightColor("yellow")}
+                  className={`w-8 h-8 rounded-full cursor-pointer transition-all bg-yellow-200 border ${
+                    activeHighlightColor === "yellow"
+                      ? "border-zinc-950 dark:border-white ring-2 ring-yellow-400 scale-110"
+                      : "border-transparent hover:scale-105"
+                  }`}
+                  title="Highlight Yellow"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setActiveHighlightColor("green")}
+                  className={`w-8 h-8 rounded-full cursor-pointer transition-all bg-green-200 border ${
+                    activeHighlightColor === "green"
+                      ? "border-zinc-950 dark:border-white ring-2 ring-green-400 scale-110"
+                      : "border-transparent hover:scale-105"
+                  }`}
+                  title="Highlight Green"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setActiveHighlightColor("pink")}
+                  className={`w-8 h-8 rounded-full cursor-pointer transition-all bg-pink-200 border ${
+                    activeHighlightColor === "pink"
+                      ? "border-zinc-950 dark:border-white ring-2 ring-pink-400 scale-110"
+                      : "border-transparent hover:scale-105"
+                  }`}
+                  title="Highlight Pink"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setActiveHighlightColor("blue")}
+                  className={`w-8 h-8 rounded-full cursor-pointer transition-all bg-blue-200 border ${
+                    activeHighlightColor === "blue"
+                      ? "border-zinc-950 dark:border-white ring-2 ring-blue-400 scale-110"
+                      : "border-transparent hover:scale-105"
+                  }`}
+                  title="Highlight Blue"
+                />
               </div>
             </div>
 

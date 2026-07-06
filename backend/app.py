@@ -69,6 +69,21 @@ def init_db():
     CREATE TABLE IF NOT EXISTS room_members (room_id INTEGER NOT NULL, user_id INTEGER NOT NULL, joined_at TEXT NOT NULL, PRIMARY KEY(room_id,user_id), FOREIGN KEY(room_id) REFERENCES reading_rooms(id), FOREIGN KEY(user_id) REFERENCES users(id));
     CREATE TABLE IF NOT EXISTS notes (id INTEGER PRIMARY KEY AUTOINCREMENT, room_id INTEGER NOT NULL, user_id INTEGER NOT NULL, book_id INTEGER NOT NULL, location TEXT NOT NULL, body TEXT NOT NULL, created_at TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS bookmarks (id INTEGER PRIMARY KEY AUTOINCREMENT, room_id INTEGER, user_id INTEGER NOT NULL, book_id INTEGER NOT NULL, location TEXT NOT NULL, label TEXT NOT NULL, created_at TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS highlights (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        book_id INTEGER NOT NULL,
+        room_id INTEGER,
+        block_index INTEGER NOT NULL,
+        start_offset INTEGER NOT NULL,
+        end_offset INTEGER NOT NULL,
+        color TEXT NOT NULL,
+        text TEXT,
+        created_at TEXT NOT NULL,
+        FOREIGN KEY(user_id) REFERENCES users(id),
+        FOREIGN KEY(book_id) REFERENCES books(id),
+        FOREIGN KEY(room_id) REFERENCES reading_rooms(id)
+    );
 
     -- Table for invitation tokens to reading rooms
     CREATE TABLE IF NOT EXISTS room_invites (
@@ -519,6 +534,65 @@ def update_user_bookmark(bookmark_id):
         
     run("UPDATE bookmarks SET label=? WHERE id=?", (label, bookmark_id))
     return jsonify({"message": "Bookmark updated"})
+
+# Get all highlights for a specific book for the current user
+@app.get("/api/books/<int:book_id>/highlights")
+@auth("user")
+def get_book_highlights(book_id):
+    rows = many(get_db().execute("""
+        SELECT h.*, r.name AS room_name
+        FROM highlights h
+        LEFT JOIN reading_rooms r ON r.id = h.room_id
+        WHERE h.user_id = ? AND h.book_id = ?
+        ORDER BY h.created_at DESC
+    """, (request.user["id"], book_id)))
+    return jsonify(rows)
+
+# Create a general or room-specific highlight
+@app.post("/api/highlights")
+@auth("user")
+def create_highlight():
+    data = request.get_json(force=True)
+    book_id = data.get("book_id")
+    room_id = data.get("room_id")  # Can be None/null
+    block_index = data.get("block_index")
+    start_offset = data.get("start_offset")
+    end_offset = data.get("end_offset")
+    color = data.get("color")
+    text = data.get("text")
+    
+    if not book_id or block_index is None or start_offset is None or end_offset is None or not color:
+        return jsonify({"error": "Missing required fields"}), 400
+        
+    book = one(get_db().execute("SELECT * FROM books WHERE id=?", (book_id,)))
+    if not book:
+        return jsonify({"error": "Book not found"}), 404
+        
+    if room_id:
+        # Check that user is in the room
+        membership = one(get_db().execute("SELECT * FROM room_members WHERE room_id=? AND user_id=?", (room_id, request.user["id"])))
+        if not membership:
+            return jsonify({"error": "You are not a member of this room"}), 403
+            
+    cur = run("""
+        INSERT INTO highlights (room_id, user_id, book_id, block_index, start_offset, end_offset, color, text, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (room_id, request.user["id"], book_id, block_index, start_offset, end_offset, color, text, now_iso()))
+    
+    return jsonify({"id": cur.lastrowid, "message": "Highlight created"}), 201
+
+# Delete a highlight
+@app.delete("/api/highlights/<int:highlight_id>")
+@auth("user")
+def delete_highlight(highlight_id):
+    highlight = one(get_db().execute("SELECT * FROM highlights WHERE id=?", (highlight_id,)))
+    if not highlight:
+        return jsonify({"error": "Highlight not found"}), 404
+    if highlight["user_id"] != request.user["id"]:
+        return jsonify({"error": "Permission denied"}), 403
+        
+    run("DELETE FROM highlights WHERE id=?", (highlight_id,))
+    return jsonify({"message": "Highlight deleted"})
 
 if __name__ == "__main__":
     init_db()
