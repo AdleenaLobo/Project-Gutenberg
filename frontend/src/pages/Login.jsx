@@ -79,8 +79,9 @@ export function Login({ onLogin }) {
           </button>
         </form>
 
-        <div className="text-center text-xs text-zinc-500 dark:text-zinc-400 mt-2 border-t-2 border-zinc-300 dark:border-zinc-700 pt-4">
-          <p>Reader: reader@library.test / reader123</p>
+        <div className="text-center text-xs text-zinc-500 dark:text-zinc-400 mt-2 border-t-2 border-zinc-300 dark:border-zinc-700 pt-4 space-y-1">
+          <p>Reader 1: reader@library.test / reader123</p>
+          <p>Reader 2: reader2@library.test / reader123</p>
         </div>
       </div>
     </div>

@@ -141,8 +141,20 @@ def init_db():
         cur.executemany("INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)", [
             ("Admin","admin@library.test","admin123","admin"),
             ("Reader One","reader@library.test","reader123","user"),
+            ("Reader Two","reader2@library.test","reader123","user"),
+            ("User Two","user2@library.test","reader123","user"),
             ("Maya Friend","maya@library.test","reader123","user")
         ])
+    else:
+        # Ensure Reader Two and User Two exist in existing database configurations
+        cur.execute("SELECT COUNT(*) FROM users WHERE email=?", ("reader2@library.test",))
+        if cur.fetchone()[0] == 0:
+            cur.execute("INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)",
+                        ("Reader Two","reader2@library.test","reader123","user"))
+        cur.execute("SELECT COUNT(*) FROM users WHERE email=?", ("user2@library.test",))
+        if cur.fetchone()[0] == 0:
+            cur.execute("INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)",
+                        ("User Two","user2@library.test","reader123","user"))
 
     cur.execute("SELECT COUNT(*) FROM books")
     if cur.fetchone()[0] == 0:
@@ -318,10 +330,22 @@ def add_book():
     run("INSERT INTO books (title,author,type,total_copies,ebook_source,ebook_text) VALUES (?,?,?,?,?,?)", (data.get("title",""), data.get("author",""), data.get("type","hardcover"), int(data.get("total_copies") or 0), data.get("ebook_source"), data.get("ebook_text")))
     return jsonify({"message":"Book created"}), 201
 
+def is_member(room_id, user_id):
+    row = one(get_db().execute("SELECT 1 FROM room_members WHERE room_id=? AND user_id=?", (room_id, user_id)))
+    return row is not None
+
 @app.get("/api/rooms")
 @auth("user")
 def rooms():
-    return jsonify(many(get_db().execute("SELECT r.*,b.title,b.author,COUNT(DISTINCT rm.user_id) AS member_count FROM reading_rooms r JOIN books b ON b.id=r.book_id LEFT JOIN room_members rm ON rm.room_id=r.id GROUP BY r.id ORDER BY r.created_at DESC")))
+    return jsonify(many(get_db().execute("""
+        SELECT r.*, b.title, b.author,
+               (SELECT COUNT(*) FROM room_members WHERE room_id = r.id) AS member_count
+        FROM reading_rooms r
+        JOIN books b ON b.id = r.book_id
+        JOIN room_members rm ON rm.room_id = r.id
+        WHERE rm.user_id = ?
+        ORDER BY r.created_at DESC
+    """, (request.user["id"],))))
 
 @app.post("/api/rooms")
 @auth("user")
@@ -344,6 +368,8 @@ def join_room(room_id):
 @app.get("/api/rooms/<int:room_id>")
 @auth("user")
 def room_detail(room_id):
+    if not is_member(room_id, request.user["id"]):
+        return jsonify({"error": "Access denied: not a member of this room"}), 403
     room = one(get_db().execute("SELECT r.*,b.title,b.author,b.ebook_text,b.ebook_source FROM reading_rooms r JOIN books b ON b.id=r.book_id WHERE r.id=?", (room_id,)))
     if not room:
         return jsonify({"error":"Room not found"}), 404
@@ -359,6 +385,8 @@ def room_detail(room_id):
 @app.get("/api/rooms/<int:room_id>/presence")
 @auth("user")
 def get_presence(room_id):
+    if not is_member(room_id, request.user["id"]):
+        return jsonify({"error": "Access denied: not a member of this room"}), 403
     participants = many(
         get_db().execute(
             """
@@ -377,6 +405,8 @@ def get_presence(room_id):
 @app.post("/api/rooms/<int:room_id>/presence")
 @auth("user")
 def update_presence(room_id):
+    if not is_member(room_id, request.user["id"]):
+        return jsonify({"error": "Access denied: not a member of this room"}), 403
     data = request.get_json(force=True)
     page_index = data.get("page_index")
     if page_index is None:
@@ -396,10 +426,10 @@ def update_presence(room_id):
 @app.post("/api/rooms/<int:room_id>/invite")
 @auth("user")
 def create_invite(room_id):
+    if not is_member(room_id, request.user["id"]):
+        return jsonify({"error": "Access denied: not a member of this room"}), 403
     data = request.get_json(force=True)
-    email = data.get("email")
-    if not email:
-        return jsonify({"error": "Email is required"}), 400
+    email = data.get("email", "")
     token = secrets.token_urlsafe(16)
     now = now_iso()
     run(
@@ -428,10 +458,32 @@ def accept_invite():
     run("DELETE FROM room_invites WHERE id = ?", (invite["id"],))
     return jsonify({"message": "Joined room", "room_id": invite["room_id"]})
 
+@app.delete("/api/rooms/<int:room_id>")
+@auth("user")
+def delete_room(room_id):
+    room = one(get_db().execute("SELECT * FROM reading_rooms WHERE id=?", (room_id,)))
+    if not room:
+        return jsonify({"error": "Room not found"}), 404
+    if room["created_by"] != request.user["id"]:
+        return jsonify({"error": "Permission denied: only the creator can delete this room"}), 403
+    
+    # Delete all associated data
+    run("DELETE FROM room_members WHERE room_id = ?", (room_id,))
+    run("DELETE FROM room_presence WHERE room_id = ?", (room_id,))
+    run("DELETE FROM room_invites WHERE room_id = ?", (room_id,))
+    run("DELETE FROM notes WHERE room_id = ?", (room_id,))
+    run("DELETE FROM bookmarks WHERE room_id = ?", (room_id,))
+    run("DELETE FROM highlights WHERE room_id = ?", (room_id,))
+    run("DELETE FROM reading_rooms WHERE id = ?", (room_id,))
+    
+    return jsonify({"message": "Room deleted successfully"}), 200
+
 
 @app.post("/api/rooms/<int:room_id>/notes")
 @auth("user")
 def add_note(room_id):
+    if not is_member(room_id, request.user["id"]):
+        return jsonify({"error": "Access denied: not a member of this room"}), 403
     data = request.get_json(force=True)
     room = one(get_db().execute("SELECT * FROM reading_rooms WHERE id=?", (room_id,)))
     run("INSERT INTO notes (room_id,user_id,book_id,location,body,created_at) VALUES (?,?,?,?,?,?)", (room_id, request.user["id"], room["book_id"], data.get("location","Page 1"), data.get("body",""), now_iso()))
@@ -440,6 +492,8 @@ def add_note(room_id):
 @app.post("/api/rooms/<int:room_id>/bookmarks")
 @auth("user")
 def add_bookmark(room_id):
+    if not is_member(room_id, request.user["id"]):
+        return jsonify({"error": "Access denied: not a member of this room"}), 403
     data = request.get_json(force=True)
     room = one(get_db().execute("SELECT * FROM reading_rooms WHERE id=?", (room_id,)))
     if not room:
@@ -535,17 +589,19 @@ def update_user_bookmark(bookmark_id):
     run("UPDATE bookmarks SET label=? WHERE id=?", (label, bookmark_id))
     return jsonify({"message": "Bookmark updated"})
 
-# Get all highlights for a specific book for the current user
+# Get all highlights for a specific book (user's personal highlights + collaborative highlights for active rooms)
 @app.get("/api/books/<int:book_id>/highlights")
 @auth("user")
 def get_book_highlights(book_id):
     rows = many(get_db().execute("""
-        SELECT h.*, r.name AS room_name
+        SELECT h.*, r.name AS room_name, u.name AS user_name
         FROM highlights h
+        JOIN users u ON u.id = h.user_id
         LEFT JOIN reading_rooms r ON r.id = h.room_id
-        WHERE h.user_id = ? AND h.book_id = ?
+        WHERE (h.user_id = ? AND h.book_id = ?)
+           OR (h.room_id IS NOT NULL AND h.book_id = ? AND h.room_id IN (SELECT room_id FROM room_members WHERE user_id = ?))
         ORDER BY h.created_at DESC
-    """, (request.user["id"], book_id)))
+    """, (request.user["id"], book_id, book_id, request.user["id"])))
     return jsonify(rows)
 
 # Create a general or room-specific highlight

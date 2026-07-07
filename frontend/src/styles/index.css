@@ -127,3 +127,12 @@ input[type="range"].reader-slider::-webkit-slider-thumb {
   user-select: text !important;
   -webkit-user-select: text !important;
 }
+
+/* Custom blink animation for map pin locator */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+.animate-blink {
+  animation: blink 1.2s infinite ease-in-out;
+}

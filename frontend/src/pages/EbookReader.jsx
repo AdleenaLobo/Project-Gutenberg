@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { parseBook, formatBlockText } from "../utils/ebookParser";
 import ReaderControls from "../components/ReaderControls";
-import ReaderSidePanel from "../components/ReaderSidePanel";
 import { List } from "lucide-react";
 import {
   Bookmark,
@@ -111,7 +110,6 @@ export function EbookReader({ book, client, onBack }) {
   const [activeRoom, setActiveRoom] = useState(null);
   const [roomData, setRoomData] = useState(null);
   const [participants, setParticipants] = useState([]);
-  const [inviteEmail, setInviteEmail] = useState("");
   const [inviteToken, setInviteToken] = useState("");
   const [inviteTokenInput, setInviteTokenInput] = useState("");
 
@@ -333,22 +331,38 @@ export function EbookReader({ book, client, onBack }) {
     }
   }, []);
 
-  // ---- When a room becomes active, fetch its details and start polling -----
+  // ---- When a room becomes active, fetch its details, generate room secret, and start polling -----
   useEffect(() => {
-    if (activeRoom) loadRoom();
+    if (activeRoom) {
+      loadRoom();
+      fetchRoomSecret(activeRoom);
+    } else {
+      setInviteToken("");
+    }
   }, [activeRoom]);
 
-  // ---- Poll participants every 5 seconds ----------------------------------
+  // ---- Poll room details (chats/notes) and participants every 4 seconds ----
   useEffect(() => {
     if (!activeRoom) return undefined;
     const poll = async () => {
+      try {
+        const data = await client.request(`/rooms/${activeRoom}`);
+        setRoomData(data);
+      } catch (e) {
+        // If room is deleted or access is lost, reset active room and alert the user
+        setActiveRoom(null);
+        setRoomData(null);
+        alert("This reading room has been deleted by the creator.");
+        return;
+      }
+
       try {
         const data = await client.request(`/rooms/${activeRoom}/presence`);
         setParticipants(data.participants || []);
       } catch (_) { }
     };
     poll(); // initial fetch
-    const interval = setInterval(poll, 5000);
+    const interval = setInterval(poll, 4000);
     return () => clearInterval(interval);
   }, [activeRoom]);
 
@@ -639,6 +653,21 @@ export function EbookReader({ book, client, onBack }) {
     }
   }
 
+  async function deleteRoom(id) {
+    if (!window.confirm("Are you sure you want to delete this reading room? This will delete all chats and data associated with it.")) return;
+    try {
+      await client.request(`/rooms/${id}`, { method: "DELETE" });
+      if (activeRoom === id) {
+        setActiveRoom(null);
+        setRoomData(null);
+      }
+      const updated = await client.request("/rooms");
+      setRooms(updated);
+    } catch (e) {
+      setMsg(e.message);
+    }
+  }
+
   async function addNote(e) {
     e.preventDefault();
     try {
@@ -673,21 +702,17 @@ export function EbookReader({ book, client, onBack }) {
     }
   }
 
-  // Invite creation – returns a token that can be shared with another user.
-  async function createInvite() {
-    if (!inviteEmail) {
-      setMsg("Email is required to create an invite");
-      return;
-    }
+  // Fetch/generate room secret (invite token) automatically
+  async function fetchRoomSecret(roomId) {
+    if (!roomId) return;
     try {
-      const data = await client.request(`/rooms/${activeRoom}/invite`, {
+      const data = await client.request(`/rooms/${roomId}/invite`, {
         method: "POST",
-        body: JSON.stringify({ email: inviteEmail }),
+        body: JSON.stringify({ email: "" }),
       });
       setInviteToken(data.invite_token);
-      setMsg("Invite token generated – share it with the other reader");
     } catch (e) {
-      setMsg(e.message);
+      console.error("Error generating room secret:", e);
     }
   }
 
@@ -710,6 +735,11 @@ export function EbookReader({ book, client, onBack }) {
       setMsg(e.message);
     }
   }
+
+  const currentUser = JSON.parse(localStorage.getItem("libraryUser") || "{}");
+  const activeFriendsOnPage = participants.filter(
+    (p) => p.id !== currentUser.id && p.page_index === pageIndex
+  );
 
   const bookRooms = rooms.filter(
     (r) => r.book_id === book.id || r.title === book.title,
@@ -735,6 +765,51 @@ export function EbookReader({ book, client, onBack }) {
           onMouseUp={handleTextSelection}
           className="flex-1 flex justify-center items-center relative h-full"
         >
+          {activeRoom && activeFriendsOnPage.length > 0 && (
+            <div className="absolute top-6 left-1/2 -translate-x-1/2 flex gap-3 z-30 pointer-events-auto select-none animate-fade-in">
+              {activeFriendsOnPage.map((friend) => {
+                const initials = friend.name
+                  ? friend.name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .toUpperCase()
+                      .slice(0, 2)
+                  : "U";
+                return (
+                  <div
+                    key={friend.id}
+                    className="relative flex flex-col items-center animate-blink hover:scale-110 transition-transform cursor-pointer"
+                    title={`${friend.name} is reading this page`}
+                  >
+                    <svg
+                      width="32"
+                      height="40"
+                      viewBox="0 0 24 30"
+                      className="text-zinc-950 dark:text-zinc-50 drop-shadow-sm filter"
+                    >
+                      <path
+                        d="M12 0C5.37 0 0 5.37 0 12C0 21 12 30 12 30C12 30 24 21 24 12C24 5.37 18.63 0 12 0Z"
+                        fill="currentColor"
+                      />
+                      <circle
+                        cx="12"
+                        cy="12"
+                        r="7"
+                        className="fill-white dark:fill-zinc-900"
+                      />
+                    </svg>
+                    <div className="absolute top-0 w-8 h-8 flex items-center justify-center pointer-events-none select-none">
+                      <span className="text-[9px] font-black tracking-tighter text-zinc-950 dark:text-zinc-50 uppercase">
+                        {initials}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
           <ReaderContent
             ref={pageRef}
             currentPage={currentPage}
@@ -790,6 +865,7 @@ export function EbookReader({ book, client, onBack }) {
             }}
           />
         </div>
+
       </div>
 
       <ChapterSidebar
@@ -814,6 +890,24 @@ export function EbookReader({ book, client, onBack }) {
         }}
         bookId={book.id}
         activeRoom={activeRoom}
+        setActiveRoom={setActiveRoom}
+        roomData={roomData}
+        setRoomData={setRoomData}
+        rooms={rooms}
+        bookRooms={bookRooms}
+        createRoom={createRoom}
+        joinRoom={joinRoom}
+        inviteToken={inviteToken}
+        inviteTokenInput={inviteTokenInput}
+        setInviteTokenInput={setInviteTokenInput}
+        deleteRoom={deleteRoom}
+        acceptInvite={acceptInvite}
+        noteBody={noteBody}
+        setNoteBody={setNoteBody}
+        addNote={addNote}
+        bookmarkLabel={bookmarkLabel}
+        setBookmarkLabel={setBookmarkLabel}
+        addBookmark={addBookmark}
         totalPages={totalPages}
         client={client}
         bookmarks={bookmarks}
@@ -843,6 +937,7 @@ export function EbookReader({ book, client, onBack }) {
             setPageIndex(targetPage);
           }
         }}
+        participants={participants}
       />
 
       <ReaderControls

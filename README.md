@@ -4,7 +4,9 @@ Flask + raw SQL backend with a React + Tailwind frontend.
 
 Demo accounts:
 - Admin: admin@library.test / admin123
-- User: reader@library.test / reader123
+- Reader 1 / User 1: reader@library.test / reader123
+- Reader 2: reader2@library.test / reader123
+- User 2: user2@library.test / reader123
 - Friend: maya@library.test / reader123
 
 Run backend:
