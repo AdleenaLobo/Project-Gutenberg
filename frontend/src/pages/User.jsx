@@ -80,8 +80,8 @@ const filteredEbooks = ebooks
   ];
 
   return (
-    <div className="min-h-full bg-zinc-50 dark:bg-zinc-950">
-            <nav className="flex items-center gap-1 border-b-2 border-zinc-300 dark:border-zinc-700 px-6 bg-white dark:bg-zinc-900 sticky top-0 z-20">
+    <div className="min-h-full bg-transparent relative z-10">
+            <nav className="flex items-center gap-1 border-b-2 border-zinc-300 dark:border-zinc-700 px-6 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md sticky top-0 z-20">
         {tabs.map((t) => (
           <button
             key={t.id}

@@ -6,7 +6,7 @@ export function BookDetails({ book, isEbook, onBack, onAction }) {
   const navigate = useNavigate();
 
   return (
-    <div className="px-6 py-8 max-w-4xl mx-auto">
+    <div className="px-6 py-8 max-w-4xl mx-auto relative z-10">
       {/* Back Button */}
       <button
         onClick={onBack}

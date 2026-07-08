@@ -20,6 +20,12 @@ html, body, #root {
   margin: 0;
   padding: 0;
   font-family: Georgia, yingping, "New York", serif;
+  background-color: #ffffff;
+  color: #18181b;
+}
+.dark html, .dark body, .dark #root {
+  background-color: #09090b; /* zinc-950 default */
+  color: #f4f4f5; /* zinc-100 default */
 }
 
 /* Warmth overlay for reader screen shading */
@@ -135,4 +141,225 @@ input[type="range"].reader-slider::-webkit-slider-thumb {
 }
 .animate-blink {
   animation: blink 1.2s infinite ease-in-out;
+}
+
+/* Falling Cherry Blossom Petals Animation */
+@keyframes fall {
+  0% {
+    transform: translateY(-10%) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) translateX(120px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.petal {
+  position: fixed;
+  top: -20px;
+  background: linear-gradient(135deg, #FFDCE9 0%, #FFA1A1 100%); /* Blush Petal to Warm Embrace */
+  border-radius: 90% 0% 90% 90%; /* Tear-shaped organic petal */
+  transform-origin: center;
+  pointer-events: none;
+  animation-name: fall;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+  box-shadow: 0 1px 3px rgba(157, 23, 77, 0.2); /* Deep Rose shadow */
+  will-change: transform, opacity;
+}
+
+.dark .petal {
+  background: linear-gradient(135deg, #FFDCE9 0%, #FFA1A1 50%, #9D174D 100%); /* Blush Petal to Deep Rose */
+  box-shadow: 0 1px 4px rgba(157, 23, 77, 0.35);
+}
+
+/* ──────────────────────────────────────────────────────────
+   GLOBAL COLOR OVERRIDES: Minimalist White Theme
+   Scoped to .petal-theme-active to prevent affecting the reader
+   ────────────────────────────────────────────────────────── */
+
+/* Page Wrapper Backgrounds */
+.petal-theme-active {
+  background-color: #ffffff !important; /* Pure White */
+  color: #18181b !important; /* Zinc-900 text */
+}
+.dark .petal-theme-active {
+  background-color: #09090b !important; /* Zinc-950 default */
+  color: #f4f4f5 !important; /* Zinc-100 text */
+}
+
+/* Page & Section Backgrounds */
+.petal-theme-active .bg-zinc-50, 
+.petal-theme-active .bg-white, 
+.petal-theme-active .bg-white\/70 {
+  background-color: #ffffff !important; /* Pure White */
+}
+.dark .petal-theme-active .bg-zinc-950, 
+.dark .petal-theme-active .bg-zinc-900, 
+.dark .petal-theme-active .bg-zinc-955, 
+.dark .petal-theme-active .bg-zinc-955\/70, 
+.dark .petal-theme-active .bg-zinc-850 {
+  background-color: #09090b !important; /* Zinc-950 default */
+}
+
+/* Specific Cards, Sidebar, & Input Backgrounds */
+.petal-theme-active .bg-zinc-50\/50, 
+.petal-theme-active .bg-zinc-50\/60, 
+.petal-theme-active .bg-zinc-50\/40, 
+.petal-theme-active .bg-white\/70 {
+  background-color: rgba(255, 255, 255, 0.75) !important; /* Translucent White */
+}
+.dark .petal-theme-active .bg-zinc-900\/50, 
+.dark .petal-theme-active .bg-zinc-850, 
+.dark .petal-theme-active .bg-zinc-800, 
+.dark .petal-theme-active .bg-zinc-955\/70 {
+  background-color: rgba(24, 24, 27, 0.75) !important; /* Translucent Zinc-900 */
+}
+
+/* Badges / Small Items Backgrounds */
+.petal-theme-active .bg-zinc-100 {
+  background-color: #f4f4f5 !important; /* Zinc-100 */
+  color: #18181b !important; /* Black text */
+}
+.dark .petal-theme-active .bg-zinc-900 {
+  background-color: #27272a !important; /* Zinc-800 */
+  color: #f4f4f5 !important; /* White text */
+}
+
+/* Primary Accent Backgrounds (Buttons) */
+.petal-theme-active .bg-zinc-955,
+.petal-theme-active .bg-zinc-950 {
+  background-color: #18181b !important; /* Zinc-900 button */
+  color: #ffffff !important; /* White text */
+}
+.dark .petal-theme-active .bg-zinc-50, 
+.dark .petal-theme-active .bg-zinc-100 {
+  background-color: #f4f4f5 !important; /* White button */
+  color: #18181b !important; /* Black text */
+}
+
+/* Hover States */
+.petal-theme-active .hover\:bg-zinc-955:hover, 
+.petal-theme-active .hover\:bg-zinc-950:hover, 
+.petal-theme-active .hover\:bg-zinc-850:hover, 
+.petal-theme-active .hover\:bg-zinc-800:hover, 
+.petal-theme-active .hover\:bg-white:hover {
+  background-color: #27272a !important; /* Zinc-800 hover */
+  color: #ffffff !important;
+}
+.dark .petal-theme-active .hover\:bg-white:hover, 
+.dark .petal-theme-active .hover\:bg-zinc-800:hover, 
+.dark .petal-theme-active .hover\:bg-zinc-750:hover, 
+.dark .hover\:bg-zinc-200:hover {
+  background-color: #e4e4e7 !important; /* Zinc-200 hover */
+  color: #18181b !important;
+}
+
+/* Text Colors */
+.petal-theme-active .text-zinc-955, 
+.petal-theme-active .text-zinc-800, 
+.petal-theme-active .text-zinc-750, 
+.petal-theme-active .text-current {
+  color: #18181b !important; /* Zinc-900 text */
+}
+/* Main headings and titles in white backgrounds */
+.petal-theme-active .text-zinc-955, 
+.petal-theme-active .text-zinc-950, 
+.petal-theme-active .text-zinc-900 {
+  color: #18181b !important; /* Zinc-900 text */
+}
+.dark .petal-theme-active .text-zinc-955, 
+.dark .petal-theme-active .text-zinc-950, 
+.dark .petal-theme-active .text-zinc-900, 
+.dark .petal-theme-active .text-zinc-50, 
+.dark .petal-theme-active .text-zinc-100, 
+.dark .petal-theme-active .text-white {
+  color: #f4f4f5 !important; /* Zinc-100 text */
+}
+.petal-theme-active .text-zinc-500, 
+.petal-theme-active .text-zinc-555, 
+.petal-theme-active .text-zinc-450 {
+  color: #71717a !important; /* Zinc-500 muted text */
+}
+.dark .petal-theme-active .text-zinc-500, 
+.dark .petal-theme-active .text-zinc-455, 
+.dark .petal-theme-active .text-zinc-400 {
+  color: #a1a1aa !important; /* Zinc-400 muted text */
+}
+
+/* Soft theme-integrated borders */
+.petal-theme-active .border-zinc-300, 
+.petal-theme-active .border-zinc-200, 
+.petal-theme-active .border-zinc-350, 
+.petal-theme-active .border-zinc-250 {
+  border-color: rgba(24, 24, 27, 0.28) !important; /* Soft Zinc border */
+}
+.dark .petal-theme-active .border-zinc-700, 
+.dark .petal-theme-active .border-zinc-800, 
+.dark .petal-theme-active .border-zinc-750 {
+  border-color: rgba(244, 244, 245, 0.22) !important; /* Soft White/Zinc border */
+}
+
+/* Force thin border-width to make borders softer and modern */
+.petal-theme-active .border-2 {
+  border-width: 1px !important;
+}
+.petal-theme-active .border-t-2 {
+  border-top-width: 1px !important;
+}
+.petal-theme-active .border-b-2 {
+  border-bottom-width: 1px !important;
+}
+
+/* Replaced sharp Neo-Brutalist shadows with premium, soft-blur shadows */
+.petal-theme-active .shadow-\[8px_8px_0px_\#000\] {
+  box-shadow: 0 12px 24px -4px rgba(24, 24, 27, 0.04), 0 4px 12px -2px rgba(24, 24, 27, 0.02) !important;
+}
+.dark .petal-theme-active .shadow-\[8px_8px_0px_\#fff\] {
+  box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.4), 0 4px 12px -2px rgba(0, 0, 0, 0.25) !important;
+}
+.petal-theme-active .shadow-\[4px_4px_0px_\#000\] {
+  box-shadow: 0 8px 16px -4px rgba(24, 24, 27, 0.03), 0 2px 8px -2px rgba(24, 24, 27, 0.01) !important;
+}
+.dark .petal-theme-active .shadow-\[4px_4px_0px_\#fff\] {
+  box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.35), 0 2px 8px -2px rgba(0, 0, 0, 0.2) !important;
+}
+.petal-theme-active .shadow-\[2px_2px_0px_\#000\] {
+  box-shadow: 0 4px 8px -2px rgba(24, 24, 27, 0.02), 0 1px 4px -1px rgba(24, 24, 27, 0.01) !important;
+}
+.dark .petal-theme-active .shadow-\[2px_2px_0px_\#fff\] {
+  box-shadow: 0 4px 8px -2px rgba(0, 0, 0, 0.2), 0 1px 4px -1px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Hover state shadow overrides */
+.petal-theme-active .hover\:shadow-\[4px_4px_0px_\#000\]:hover {
+  box-shadow: 0 10px 15px -3px rgba(24, 24, 27, 0.06), 0 4px 6px -4px rgba(24, 24, 27, 0.03) !important;
+}
+.dark .petal-theme-active .hover\:shadow-\[4px_4px_0px_\#fff\]:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.35), 0 4px 6px -4px rgba(0, 0, 0, 0.18) !important;
+}
+.petal-theme-active .hover\:shadow-\[6px_6px_0px_\#000\]:hover {
+  box-shadow: 0 14px 20px -3px rgba(24, 24, 27, 0.08), 0 6px 8px -4px rgba(24, 24, 27, 0.04) !important;
+}
+.dark .petal-theme-active .hover\:shadow-\[6px_6px_0px_\#fff\]:hover {
+  box-shadow: 0 14px 20px -3px rgba(0, 0, 0, 0.4), 0 6px 8px -4px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Soften all elements with 'rounded-none' class under the petal theme */
+.petal-theme-active .rounded-none {
+  border-radius: 1rem !important; /* rounded-xl (16px) */
+}
+
+/* Inputs and text areas get slightly tighter, more standard rounded corners */
+.petal-theme-active input.rounded-none,
+.petal-theme-active select.rounded-none,
+.petal-theme-active textarea.rounded-none {
+  border-radius: 0.75rem !important; /* rounded-lg (12px) */
 }

@@ -6,6 +6,7 @@ import { Login } from "./pages/Login";
 import { BookDetail } from "./pages/BookDetail";
 import { User } from "./pages/User";
 import BookReader from "./pages/BookReader";
+import { CherryBlossoms } from "./components/CherryBlossoms";
 import "./styles/index.css";
 
 function AppContent({ client, initials, firstName, logout, user, greeting }) {
@@ -13,7 +14,8 @@ function AppContent({ client, initials, firstName, logout, user, greeting }) {
   const isReading = location.pathname.includes("/read");
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
+    <div className={`flex flex-col h-screen overflow-hidden bg-white dark:bg-zinc-955 text-zinc-900 dark:text-zinc-100 relative ${!isReading ? "petal-theme-active" : ""}`}>
+      {!isReading && <CherryBlossoms />}
       {/* Greeting overlay */}
       {greeting && (
         <div
@@ -33,7 +35,7 @@ function AppContent({ client, initials, firstName, logout, user, greeting }) {
 
       {/* Hide header if on /books/:id/read route */}
       {!isReading && (
-        <header className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-955 sticky top-0 z-30 flex-shrink-0">
+        <header className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-955/70 backdrop-blur-md sticky top-0 z-30 flex-shrink-0">
           <Link to="/" className="flex items-center gap-3 no-underline text-current group">
             <div className="w-8 h-8 rounded bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
               <Library size={16} className="text-white dark:text-zinc-900" />
