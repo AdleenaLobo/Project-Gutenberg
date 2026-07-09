@@ -1,6 +1,8 @@
 import { useMemo } from "react";
 
-const API = "http://localhost:5000/api";
+const API = import.meta.env.VITE_API_URL 
+  ? import.meta.env.VITE_API_URL + "/api"
+  : "http://localhost:5000/api";
 
 export function useClient(token) {
   return useMemo(
