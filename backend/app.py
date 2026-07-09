@@ -56,9 +56,25 @@ class PostgresConnectionWrapper:
         sql = sql.replace('?', '%s')
         if "INSERT OR IGNORE INTO" in sql:
             sql = sql.replace("INSERT OR IGNORE INTO", "INSERT INTO") + " ON CONFLICT DO NOTHING"
+            
+        is_insert = sql.strip().upper().startswith("INSERT")
+        is_ignored_table = "ROOM_MEMBERS" in sql.upper() or "ROOM_PRESENCE" in sql.upper()
+        
+        lastrowid = None
+        if is_insert and not is_ignored_table and "RETURNING" not in sql.upper():
+            sql = sql.rstrip("; ") + " RETURNING id"
+            
         cur = self.conn.cursor()
         cur.execute(sql, params)
-        return PostgresCursorWrapper(cur)
+        
+        if is_insert and not is_ignored_table:
+            try:
+                row = cur.fetchone()
+                lastrowid = row[0] if row else None
+            except Exception:
+                pass
+                
+        return PostgresCursorWrapper(cur, lastrowid=lastrowid)
 
     def executemany(self, sql, params_list):
         sql = sql.replace('?', '%s')
@@ -68,7 +84,6 @@ class PostgresConnectionWrapper:
         cur.executemany(sql, params_list)
         return PostgresCursorWrapper(cur)
 
-
     def commit(self):
         self.conn.commit()
 
@@ -76,8 +91,9 @@ class PostgresConnectionWrapper:
         self.conn.close()
 
 class PostgresCursorWrapper:
-    def __init__(self, cursor):
+    def __init__(self, cursor, lastrowid=None):
         self.cursor = cursor
+        self._lastrowid = lastrowid
 
     def fetchone(self):
         row = self.cursor.fetchone()
@@ -93,14 +109,8 @@ class PostgresCursorWrapper:
 
     @property
     def lastrowid(self):
-        try:
-            conn = self.cursor.connection
-            with conn.cursor() as temp_cur:
-                temp_cur.execute("SELECT lastval()")
-                row = temp_cur.fetchone()
-                return row[0] if row else None
-        except Exception:
-            return None
+        return self._lastrowid
+
 
 
 def get_db():
