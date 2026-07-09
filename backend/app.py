@@ -70,9 +70,10 @@ class PostgresConnectionWrapper:
         if is_insert and not is_ignored_table:
             try:
                 row = cur.fetchone()
-                lastrowid = row[0] if row else None
+                lastrowid = list(row.values())[0] if row else None
             except Exception:
                 pass
+
                 
         return PostgresCursorWrapper(cur, lastrowid=lastrowid)
 
