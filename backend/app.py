@@ -54,15 +54,20 @@ class PostgresConnectionWrapper:
 
     def execute(self, sql, params=()):
         sql = sql.replace('?', '%s')
+        if "INSERT OR IGNORE INTO" in sql:
+            sql = sql.replace("INSERT OR IGNORE INTO", "INSERT INTO") + " ON CONFLICT DO NOTHING"
         cur = self.conn.cursor()
         cur.execute(sql, params)
         return PostgresCursorWrapper(cur)
 
     def executemany(self, sql, params_list):
         sql = sql.replace('?', '%s')
+        if "INSERT OR IGNORE INTO" in sql:
+            sql = sql.replace("INSERT OR IGNORE INTO", "INSERT INTO") + " ON CONFLICT DO NOTHING"
         cur = self.conn.cursor()
         cur.executemany(sql, params_list)
         return PostgresCursorWrapper(cur)
+
 
     def commit(self):
         self.conn.commit()
