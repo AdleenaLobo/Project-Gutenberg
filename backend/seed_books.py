@@ -75,24 +75,54 @@ books_to_seed = [
 ]
 
 def run_seed():
-    conn = sqlite3.connect(DB_PATH)
-    cur = conn.cursor()
+    database_url = os.environ.get("DATABASE_URL")
+    
+    has_postgres = False
+    if database_url:
+        try:
+            import psycopg2
+            has_postgres = True
+        except ImportError:
+            print("Warning: DATABASE_URL is set but psycopg2 is not installed. Falling back to SQLite.")
 
-    # Create the modern structure with new table headers if they don't exist yet
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS books (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT NOT NULL,
-            author TEXT NOT NULL,
-            type TEXT NOT NULL CHECK (type IN ('hardcover','ebook')),
-            total_copies INTEGER NOT NULL DEFAULT 0,
-            ebook_source TEXT,
-            ebook_text TEXT,
-            summary TEXT,
-            cover_image_url TEXT,
-            category TEXT
-        )
-    """)
+    if has_postgres:
+        conn = psycopg2.connect(database_url)
+        cur = conn.cursor()
+        
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS books (
+                id SERIAL PRIMARY KEY,
+                title TEXT NOT NULL,
+                author TEXT NOT NULL,
+                type TEXT NOT NULL CHECK (type IN ('hardcover','ebook')),
+                total_copies INTEGER NOT NULL DEFAULT 0,
+                ebook_source TEXT,
+                ebook_text TEXT,
+                summary TEXT,
+                cover_image_url TEXT,
+                category TEXT
+            )
+        """)
+        placeholder = "%s"
+    else:
+        conn = sqlite3.connect(DB_PATH)
+        cur = conn.cursor()
+        
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS books (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                author TEXT NOT NULL,
+                type TEXT NOT NULL CHECK (type IN ('hardcover','ebook')),
+                total_copies INTEGER NOT NULL DEFAULT 0,
+                ebook_source TEXT,
+                ebook_text TEXT,
+                summary TEXT,
+                cover_image_url TEXT,
+                category TEXT
+            )
+        """)
+        placeholder = "?"
 
     # Clear previous books data to guarantee fresh inserts on rerun
     cur.execute("DELETE FROM books")
@@ -110,9 +140,9 @@ def run_seed():
             else:
                 print(f" -> Notice: Text file missing at {filepath}. Seeding without text body contents.")
 
-        cur.execute("""
+        cur.execute(f"""
             INSERT INTO books (title, author, type, total_copies, ebook_source, ebook_text, summary, cover_image_url, category)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES ({", ".join([placeholder] * 9)})
         """, (title, author, type_, total_copies, ebook_source, ebook_text, summary, cover_url, category))
         print(f"Inserted: {title} ({type_}) ── Type Tag: [{category}]")
 

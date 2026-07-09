@@ -6,19 +6,92 @@ from functools import wraps
 from flask import Flask, g, jsonify, request
 from flask_cors import CORS
 
+DATABASE_URL = os.environ.get("DATABASE_URL")
+HAS_POSTGRES = False
+
+try:
+    import psycopg2
+    from psycopg2.extras import RealDictCursor
+    if DATABASE_URL:
+        HAS_POSTGRES = True
+except ImportError:
+    psycopg2 = None
+    RealDictCursor = None
+
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, "library.db")
+DB_PATH = os.environ.get("DB_PATH", os.path.join(BASE_DIR, "library.db"))
 TOKENS = {}
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}}, supports_credentials=True, allow_headers=["Content-Type", "Authorization"])
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173")
+CORS(app, resources={r"/api/*": {"origins": [FRONTEND_URL, "http://localhost:5173"]}}, supports_credentials=True, allow_headers=["Content-Type", "Authorization"])
 
 def now_iso():
     return datetime.now(timezone.utc).isoformat()
 
+class PostgresRow(dict):
+    """
+    A custom dictionary subclass that mimics SQLite's row access.
+    Allows accessing columns both by name (row['id']) and by index (row[0]).
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._values = list(self.values())
+
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            try:
+                return self._values[key]
+            except IndexError:
+                raise KeyError(key)
+        return super().__getitem__(key)
+
+class PostgresConnectionWrapper:
+    def __init__(self, conn):
+        self.conn = conn
+
+    def execute(self, sql, params=()):
+        sql = sql.replace('?', '%s')
+        cur = self.conn.cursor()
+        cur.execute(sql, params)
+        return PostgresCursorWrapper(cur)
+
+    def executemany(self, sql, params_list):
+        sql = sql.replace('?', '%s')
+        cur = self.conn.cursor()
+        cur.executemany(sql, params_list)
+        return PostgresCursorWrapper(cur)
+
+    def commit(self):
+        self.conn.commit()
+
+    def close(self):
+        self.conn.close()
+
+class PostgresCursorWrapper:
+    def __init__(self, cursor):
+        self.cursor = cursor
+
+    def fetchone(self):
+        row = self.cursor.fetchone()
+        return PostgresRow(row) if row is not None else None
+
+    def fetchall(self):
+        rows = self.cursor.fetchall()
+        return [PostgresRow(row) for row in rows]
+
+    @property
+    def rowcount(self):
+        return self.cursor.rowcount
+
 def get_db():
     if "db" not in g:
-        g.db = sqlite3.connect(DB_PATH)
-        g.db.row_factory = sqlite3.Row
+        if HAS_POSTGRES:
+            raw_conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
+            g.db = PostgresConnectionWrapper(raw_conn)
+        else:
+            g.db = sqlite3.connect(DB_PATH)
+            g.db.row_factory = sqlite3.Row
     return g.db
 
 @app.teardown_appcontext
@@ -39,160 +112,337 @@ def run(sql, params=()):
     get_db().commit()
     return cur
 def init_db():
-    conn = sqlite3.connect(DB_PATH)
-    cur = conn.cursor()
-    cur.executescript("""
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        email TEXT NOT NULL UNIQUE,
-        password TEXT NOT NULL,
-        role TEXT NOT NULL CHECK (role IN ('user','admin'))
-    );
+    if HAS_POSTGRES:
+        # Postgres implementation
+        conn = psycopg2.connect(DATABASE_URL)
+        cur = conn.cursor()
+        
+        schema_sql = """
+        CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            name TEXT NOT NULL,
+            email TEXT NOT NULL UNIQUE,
+            password TEXT NOT NULL,
+            role TEXT NOT NULL CHECK (role IN ('user','admin'))
+        );
 
-    /* ── Updated books table layout containing category, summary, and cover fields ── */
-    CREATE TABLE IF NOT EXISTS books (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
-        author TEXT NOT NULL,
-        type TEXT NOT NULL CHECK (type IN ('hardcover','ebook')),
-        total_copies INTEGER NOT NULL DEFAULT 0,
-        ebook_source TEXT,
-        ebook_text TEXT,
-        summary TEXT,
-        cover_image_url TEXT,
-        category TEXT
-    );
+        CREATE TABLE IF NOT EXISTS books (
+            id SERIAL PRIMARY KEY,
+            title TEXT NOT NULL,
+            author TEXT NOT NULL,
+            type TEXT NOT NULL CHECK (type IN ('hardcover','ebook')),
+            total_copies INTEGER NOT NULL DEFAULT 0,
+            ebook_source TEXT,
+            ebook_text TEXT,
+            summary TEXT,
+            cover_image_url TEXT,
+            category TEXT
+        );
 
-    CREATE TABLE IF NOT EXISTS leases (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, book_id INTEGER NOT NULL, leased_at TEXT NOT NULL, returned_at TEXT, FOREIGN KEY(user_id) REFERENCES users(id), FOREIGN KEY(book_id) REFERENCES books(id));
-    CREATE TABLE IF NOT EXISTS reading_rooms (id INTEGER PRIMARY KEY AUTOINCREMENT, book_id INTEGER NOT NULL, name TEXT NOT NULL, created_by INTEGER NOT NULL, created_at TEXT NOT NULL, FOREIGN KEY(book_id) REFERENCES books(id), FOREIGN KEY(created_by) REFERENCES users(id));
-    CREATE TABLE IF NOT EXISTS room_members (room_id INTEGER NOT NULL, user_id INTEGER NOT NULL, joined_at TEXT NOT NULL, PRIMARY KEY(room_id,user_id), FOREIGN KEY(room_id) REFERENCES reading_rooms(id), FOREIGN KEY(user_id) REFERENCES users(id));
-    CREATE TABLE IF NOT EXISTS notes (id INTEGER PRIMARY KEY AUTOINCREMENT, room_id INTEGER NOT NULL, user_id INTEGER NOT NULL, book_id INTEGER NOT NULL, location TEXT NOT NULL, body TEXT NOT NULL, created_at TEXT NOT NULL);
-    CREATE TABLE IF NOT EXISTS bookmarks (id INTEGER PRIMARY KEY AUTOINCREMENT, room_id INTEGER, user_id INTEGER NOT NULL, book_id INTEGER NOT NULL, location TEXT NOT NULL, label TEXT NOT NULL, created_at TEXT NOT NULL);
-    CREATE TABLE IF NOT EXISTS highlights (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        book_id INTEGER NOT NULL,
-        room_id INTEGER,
-        block_index INTEGER NOT NULL,
-        start_offset INTEGER NOT NULL,
-        end_offset INTEGER NOT NULL,
-        color TEXT NOT NULL,
-        text TEXT,
-        created_at TEXT NOT NULL,
-        FOREIGN KEY(user_id) REFERENCES users(id),
-        FOREIGN KEY(book_id) REFERENCES books(id),
-        FOREIGN KEY(room_id) REFERENCES reading_rooms(id)
-    );
+        CREATE TABLE IF NOT EXISTS leases (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            book_id INTEGER NOT NULL,
+            leased_at TEXT NOT NULL,
+            returned_at TEXT,
+            FOREIGN KEY(user_id) REFERENCES users(id),
+            FOREIGN KEY(book_id) REFERENCES books(id)
+        );
 
-    -- Table for invitation tokens to reading rooms
-    CREATE TABLE IF NOT EXISTS room_invites (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        room_id INTEGER NOT NULL,
-        invitee_email TEXT NOT NULL,
-        token TEXT NOT NULL UNIQUE,
-        created_at TEXT NOT NULL,
-        expires_at TEXT,
-        FOREIGN KEY(room_id) REFERENCES reading_rooms(id)
-    );
+        CREATE TABLE IF NOT EXISTS reading_rooms (
+            id SERIAL PRIMARY KEY,
+            book_id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            created_by INTEGER NOT NULL,
+            created_at TEXT NOT NULL,
+            FOREIGN KEY(book_id) REFERENCES books(id),
+            FOREIGN KEY(created_by) REFERENCES users(id)
+        );
 
-    -- Table to track online presence and cursor position per user per room
-    CREATE TABLE IF NOT EXISTS room_presence (
-        room_id INTEGER NOT NULL,
-        user_id INTEGER NOT NULL,
-        last_seen TEXT NOT NULL,
-        page_index INTEGER NOT NULL,
-        PRIMARY KEY(room_id, user_id),
-        FOREIGN KEY(room_id) REFERENCES reading_rooms(id),
-        FOREIGN KEY(user_id) REFERENCES users(id)
-    );
-    """)
+        CREATE TABLE IF NOT EXISTS room_members (
+            room_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            joined_at TEXT NOT NULL,
+            PRIMARY KEY(room_id, user_id),
+            FOREIGN KEY(room_id) REFERENCES reading_rooms(id),
+            FOREIGN KEY(user_id) REFERENCES users(id)
+        );
 
-    # Migration: Make room_id in bookmarks table nullable if it is currently NOT NULL
-    cur.execute("PRAGMA table_info(bookmarks)")
-    columns = cur.fetchall()
-    if columns:
-        room_id_col = next((c for c in columns if c[1] == "room_id"), None)
-        if room_id_col and room_id_col[3] == 1:  # 1 means NOT NULL constraint is active
-            cur.execute("ALTER TABLE bookmarks RENAME TO bookmarks_old")
-            cur.execute("""
-                CREATE TABLE bookmarks (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    room_id INTEGER,
-                    user_id INTEGER NOT NULL,
-                    book_id INTEGER NOT NULL,
-                    location TEXT NOT NULL,
-                    label TEXT NOT NULL,
-                    created_at TEXT NOT NULL,
-                    FOREIGN KEY(room_id) REFERENCES reading_rooms(id),
-                    FOREIGN KEY(user_id) REFERENCES users(id),
-                    FOREIGN KEY(book_id) REFERENCES books(id)
-                )
-            """)
-            cur.execute("""
-                INSERT INTO bookmarks (id, room_id, user_id, book_id, location, label, created_at)
-                SELECT id, room_id, user_id, book_id, location, label, created_at FROM bookmarks_old
-            """)
-            cur.execute("DROP TABLE bookmarks_old")
+        CREATE TABLE IF NOT EXISTS notes (
+            id SERIAL PRIMARY KEY,
+            room_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            book_id INTEGER NOT NULL,
+            location TEXT NOT NULL,
+            body TEXT NOT NULL,
+            created_at TEXT NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS bookmarks (
+            id SERIAL PRIMARY KEY,
+            room_id INTEGER,
+            user_id INTEGER NOT NULL,
+            book_id INTEGER NOT NULL,
+            location TEXT NOT NULL,
+            label TEXT NOT NULL,
+            created_at TEXT NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS highlights (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            book_id INTEGER NOT NULL,
+            room_id INTEGER,
+            block_index INTEGER NOT NULL,
+            start_offset INTEGER NOT NULL,
+            end_offset INTEGER NOT NULL,
+            color TEXT NOT NULL,
+            text TEXT,
+            created_at TEXT NOT NULL,
+            FOREIGN KEY(user_id) REFERENCES users(id),
+            FOREIGN KEY(book_id) REFERENCES books(id),
+            FOREIGN KEY(room_id) REFERENCES reading_rooms(id)
+        );
+
+        CREATE TABLE IF NOT EXISTS room_invites (
+            id SERIAL PRIMARY KEY,
+            room_id INTEGER NOT NULL,
+            invitee_email TEXT NOT NULL,
+            token TEXT NOT NULL UNIQUE,
+            created_at TEXT NOT NULL,
+            expires_at TEXT,
+            FOREIGN KEY(room_id) REFERENCES reading_rooms(id)
+        );
+
+        CREATE TABLE IF NOT EXISTS room_presence (
+            room_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            last_seen TEXT NOT NULL,
+            page_index INTEGER NOT NULL,
+            PRIMARY KEY(room_id, user_id),
+            FOREIGN KEY(room_id) REFERENCES reading_rooms(id),
+            FOREIGN KEY(user_id) REFERENCES users(id)
+        );
+        """
+        cur.execute(schema_sql)
+        conn.commit()
+
+        # Seed users if empty
+        cur.execute("SELECT COUNT(*) FROM users")
+        if cur.fetchone()[0] == 0:
+            cur.executemany("INSERT INTO users (name,email,password,role) VALUES (%s,%s,%s,%s)", [
+                ("Admin","admin@library.test","admin123","admin"),
+                ("Reader One","reader@library.test","reader123","user"),
+                ("Reader Two","reader2@library.test","reader123","user"),
+                ("User Two","user2@library.test","reader123","user"),
+                ("Maya Friend","maya@library.test","reader123","user")
+            ])
+            conn.commit()
+        else:
+            # Ensure Reader Two and User Two exist
+            cur.execute("SELECT COUNT(*) FROM users WHERE email=%s", ("reader2@library.test",))
+            if cur.fetchone()[0] == 0:
+                cur.execute("INSERT INTO users (name,email,password,role) VALUES (%s,%s,%s,%s)",
+                            ("Reader Two","reader2@library.test","reader123","user"))
+            cur.execute("SELECT COUNT(*) FROM users WHERE email=%s", ("user2@library.test",))
+            if cur.fetchone()[0] == 0:
+                cur.execute("INSERT INTO users (name,email,password,role) VALUES (%s,%s,%s,%s)",
+                            ("User Two","user2@library.test","reader123","user"))
             conn.commit()
 
-    cur.execute("SELECT COUNT(*) FROM users")
-    if cur.fetchone()[0] == 0:
-        cur.executemany("INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)", [
-            ("Admin","admin@library.test","admin123","admin"),
-            ("Reader One","reader@library.test","reader123","user"),
-            ("Reader Two","reader2@library.test","reader123","user"),
-            ("User Two","user2@library.test","reader123","user"),
-            ("Maya Friend","maya@library.test","reader123","user")
-        ])
+        # Seed books if empty
+        cur.execute("SELECT COUNT(*) FROM books")
+        if cur.fetchone()[0] == 0:
+            cur.executemany("""
+                INSERT INTO books (title,author,type,total_copies,ebook_source,ebook_text,summary,cover_image_url,category)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
+            """, [
+                (
+                    "Pride and Prejudice", "Jane Austen", "ebook", 0, "Project Gutenberg",
+                    "It is a truth universally acknowledged...",
+                    "A classic romantic novel of manners exploring the emotional growth of Elizabeth Bennet as she navigates societal pressures.",
+                    "https://covers.openlibrary.org/b/id/14571901-L.jpg", "Fiction"
+                ),
+                (
+                    "Frankenstein", "Mary Shelley", "ebook", 0, "Project Gutenberg",
+                    "You will rejoice to hear that no disaster...",
+                    "The chilling tale of Victor Frankenstein, a brilliant scientist who succeeds in bringing an artificial creature to life, with tragic consequences.",
+                    "https://covers.openlibrary.org/b/id/14539129-L.jpg", "Sci-Fi"
+                ),
+                (
+                    "Clean Code", "Robert C. Martin", "hardcover", 4, None, None,
+                    "Even bad code can function. But if code isn't clean, it can bring a development organization to its knees. This book teaches software craftsmen how to write better code.",
+                    None, "Tech"
+                ),
+                (
+                    "Designing Data-Intensive Applications", "Martin Kleppmann", "hardcover", 3, None, None,
+                    "An excellent guide to the principles and architectures underlying modern data systems like databases, streams, and processing pipelines.",
+                    None, "Tech"
+                ),
+                (
+                    "The Pragmatic Programmer", "Andrew Hunt and David Thomas", "hardcover", 5, None, None,
+                    "Direct advice ranging from career development to architectural techniques for writing clean, flexible, and maintainable code.",
+                    None, "Tech"
+                )
+            ])
+            conn.commit()
+        cur.close()
+        conn.close()
     else:
-        # Ensure Reader Two and User Two exist in existing database configurations
-        cur.execute("SELECT COUNT(*) FROM users WHERE email=?", ("reader2@library.test",))
-        if cur.fetchone()[0] == 0:
-            cur.execute("INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)",
-                        ("Reader Two","reader2@library.test","reader123","user"))
-        cur.execute("SELECT COUNT(*) FROM users WHERE email=?", ("user2@library.test",))
-        if cur.fetchone()[0] == 0:
-            cur.execute("INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)",
-                        ("User Two","user2@library.test","reader123","user"))
+        # SQLite implementation
+        conn = sqlite3.connect(DB_PATH)
+        cur = conn.cursor()
+        cur.executescript("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT NOT NULL UNIQUE,
+            password TEXT NOT NULL,
+            role TEXT NOT NULL CHECK (role IN ('user','admin'))
+        );
 
-    cur.execute("SELECT COUNT(*) FROM books")
-    if cur.fetchone()[0] == 0:
-        cur.executemany("""
-            INSERT INTO books (title,author,type,total_copies,ebook_source,ebook_text,summary,cover_image_url,category)
-            VALUES (?,?,?,?,?,?,?,?,?)
-        """, [
-            (
-                "Pride and Prejudice", "Jane Austen", "ebook", 0, "Project Gutenberg",
-                "It is a truth universally acknowledged...", # Truncated here for script readability
-                "A classic romantic novel of manners exploring the emotional growth of Elizabeth Bennet as she navigates societal pressures.",
-                "https://covers.openlibrary.org/b/id/14571901-L.jpg", "Fiction"
-            ),
-            (
-                "Frankenstein", "Mary Shelley", "ebook", 0, "Project Gutenberg",
-                "You will rejoice to hear that no disaster...",
-                "The chilling tale of Victor Frankenstein, a brilliant scientist who succeeds in bringing an artificial creature to life, with tragic consequences.",
-                "https://covers.openlibrary.org/b/id/14539129-L.jpg", "Sci-Fi"
-            ),
-            (
-                "Clean Code", "Robert C. Martin", "hardcover", 4, None, None,
-                "Even bad code can function. But if code isn't clean, it can bring a development organization to its knees. This book teaches software craftsmen how to write better code.",
-                None, "Tech"
-            ),
-            (
-                "Designing Data-Intensive Applications", "Martin Kleppmann", "hardcover", 3, None, None,
-                "An excellent guide to the principles and architectures underlying modern data systems like databases, streams, and processing pipelines.",
-                None, "Tech"
-            ),
-            (
-                "The Pragmatic Programmer", "Andrew Hunt and David Thomas", "hardcover", 5, None, None,
-                "Direct advice ranging from career development to architectural techniques for writing clean, flexible, and maintainable code.",
-                None, "Tech"
-            )
-        ])
-    conn.commit()
-    conn.close()
-    
+        /* ── Updated books table layout containing category, summary, and cover fields ── */
+        CREATE TABLE IF NOT EXISTS books (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            author TEXT NOT NULL,
+            type TEXT NOT NULL CHECK (type IN ('hardcover','ebook')),
+            total_copies INTEGER NOT NULL DEFAULT 0,
+            ebook_source TEXT,
+            ebook_text TEXT,
+            summary TEXT,
+            cover_image_url TEXT,
+            category TEXT
+        );
+
+        CREATE TABLE IF NOT EXISTS leases (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, book_id INTEGER NOT NULL, leased_at TEXT NOT NULL, returned_at TEXT, FOREIGN KEY(user_id) REFERENCES users(id), FOREIGN KEY(book_id) REFERENCES books(id));
+        CREATE TABLE IF NOT EXISTS reading_rooms (id INTEGER PRIMARY KEY AUTOINCREMENT, book_id INTEGER NOT NULL, name TEXT NOT NULL, created_by INTEGER NOT NULL, created_at TEXT NOT NULL, FOREIGN KEY(book_id) REFERENCES books(id), FOREIGN KEY(created_by) REFERENCES users(id));
+        CREATE TABLE IF NOT EXISTS room_members (room_id INTEGER NOT NULL, user_id INTEGER NOT NULL, joined_at TEXT NOT NULL, PRIMARY KEY(room_id,user_id), FOREIGN KEY(room_id) REFERENCES reading_rooms(id), FOREIGN KEY(user_id) REFERENCES users(id));
+        CREATE TABLE IF NOT EXISTS notes (id INTEGER PRIMARY KEY AUTOINCREMENT, room_id INTEGER NOT NULL, user_id INTEGER NOT NULL, book_id INTEGER NOT NULL, location TEXT NOT NULL, body TEXT NOT NULL, created_at TEXT NOT NULL);
+        CREATE TABLE IF NOT EXISTS bookmarks (id INTEGER PRIMARY KEY AUTOINCREMENT, room_id INTEGER, user_id INTEGER NOT NULL, book_id INTEGER NOT NULL, location TEXT NOT NULL, label TEXT NOT NULL, created_at TEXT NOT NULL);
+        CREATE TABLE IF NOT EXISTS highlights (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            book_id INTEGER NOT NULL,
+            room_id INTEGER,
+            block_index INTEGER NOT NULL,
+            start_offset INTEGER NOT NULL,
+            end_offset INTEGER NOT NULL,
+            color TEXT NOT NULL,
+            text TEXT,
+            created_at TEXT NOT NULL,
+            FOREIGN KEY(user_id) REFERENCES users(id),
+            FOREIGN KEY(book_id) REFERENCES books(id),
+            FOREIGN KEY(room_id) REFERENCES reading_rooms(id)
+        );
+
+        -- Table for invitation tokens to reading rooms
+        CREATE TABLE IF NOT EXISTS room_invites (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            room_id INTEGER NOT NULL,
+            invitee_email TEXT NOT NULL,
+            token TEXT NOT NULL UNIQUE,
+            created_at TEXT NOT NULL,
+            expires_at TEXT,
+            FOREIGN KEY(room_id) REFERENCES reading_rooms(id)
+        );
+
+        -- Table to track online presence and cursor position per user per room
+        CREATE TABLE IF NOT EXISTS room_presence (
+            room_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            last_seen TEXT NOT NULL,
+            page_index INTEGER NOT NULL,
+            PRIMARY KEY(room_id, user_id),
+            FOREIGN KEY(room_id) REFERENCES reading_rooms(id),
+            FOREIGN KEY(user_id) REFERENCES users(id)
+        );
+        """)
+
+        # Migration: Make room_id in bookmarks table nullable if it is currently NOT NULL
+        cur.execute("PRAGMA table_info(bookmarks)")
+        columns = cur.fetchall()
+        if columns:
+            room_id_col = next((c for c in columns if c[1] == "room_id"), None)
+            if room_id_col and room_id_col[3] == 1:  # 1 means NOT NULL constraint is active
+                cur.execute("ALTER TABLE bookmarks RENAME TO bookmarks_old")
+                cur.execute("""
+                    CREATE TABLE bookmarks (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        room_id INTEGER,
+                        user_id INTEGER NOT NULL,
+                        book_id INTEGER NOT NULL,
+                        location TEXT NOT NULL,
+                        label TEXT NOT NULL,
+                        created_at TEXT NOT NULL,
+                        FOREIGN KEY(room_id) REFERENCES reading_rooms(id),
+                        FOREIGN KEY(user_id) REFERENCES users(id),
+                        FOREIGN KEY(book_id) REFERENCES books(id)
+                    )
+                """)
+                cur.execute("""
+                    INSERT INTO bookmarks (id, room_id, user_id, book_id, location, label, created_at)
+                    SELECT id, room_id, user_id, book_id, location, label, created_at FROM bookmarks_old
+                """)
+                cur.execute("DROP TABLE bookmarks_old")
+                conn.commit()
+
+        cur.execute("SELECT COUNT(*) FROM users")
+        if cur.fetchone()[0] == 0:
+            cur.executemany("INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)", [
+                ("Admin","admin@library.test","admin123","admin"),
+                ("Reader One","reader@library.test","reader123","user"),
+                ("Reader Two","reader2@library.test","reader123","user"),
+                ("User Two","user2@library.test","reader123","user"),
+                ("Maya Friend","maya@library.test","reader123","user")
+            ])
+        else:
+            # Ensure Reader Two and User Two exist in existing database configurations
+            cur.execute("SELECT COUNT(*) FROM users WHERE email=?", ("reader2@library.test",))
+            if cur.fetchone()[0] == 0:
+                cur.execute("INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)",
+                            ("Reader Two","reader2@library.test","reader123","user"))
+            cur.execute("SELECT COUNT(*) FROM users WHERE email=?", ("user2@library.test",))
+            if cur.fetchone()[0] == 0:
+                cur.execute("INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)",
+                            ("User Two","user2@library.test","reader123","user"))
+
+        cur.execute("SELECT COUNT(*) FROM books")
+        if cur.fetchone()[0] == 0:
+            cur.executemany("""
+                INSERT INTO books (title,author,type,total_copies,ebook_source,ebook_text,summary,cover_image_url,category)
+                VALUES (?,?,?,?,?,?,?,?,?)
+            """, [
+                (
+                    "Pride and Prejudice", "Jane Austen", "ebook", 0, "Project Gutenberg",
+                    "It is a truth universally acknowledged...",
+                    "A classic romantic novel of manners exploring the emotional growth of Elizabeth Bennet as she navigates societal pressures.",
+                    "https://covers.openlibrary.org/b/id/14571901-L.jpg", "Fiction"
+                ),
+                (
+                    "Frankenstein", "Mary Shelley", "ebook", 0, "Project Gutenberg",
+                    "You will rejoice to hear that no disaster...",
+                    "The chilling tale of Victor Frankenstein, a brilliant scientist who succeeds in bringing an artificial creature to life, with tragic consequences.",
+                    "https://covers.openlibrary.org/b/id/14539129-L.jpg", "Sci-Fi"
+                ),
+                (
+                    "Clean Code", "Robert C. Martin", "hardcover", 4, None, None,
+                    "Even bad code can function. But if code isn't clean, it can bring a development organization to its knees. This book teaches software craftsmen how to write better code.",
+                    None, "Tech"
+                ),
+                (
+                    "Designing Data-Intensive Applications", "Martin Kleppmann", "hardcover", 3, None, None,
+                    "An excellent guide to the principles and architectures underlying modern data systems like databases, streams, and processing pipelines.",
+                    None, "Tech"
+                ),
+                (
+                    "The Pragmatic Programmer", "Andrew Hunt and David Thomas", "hardcover", 5, None, None,
+                    "Direct advice ranging from career development to architectural techniques for writing clean, flexible, and maintainable code.",
+                    None, "Tech"
+                )
+            ])
+        conn.commit()
+        conn.close()    
 def current_user():
     token = request.headers.get("Authorization", "").replace("Bearer ", "", 1).strip()
     uid = TOKENS.get(token)
