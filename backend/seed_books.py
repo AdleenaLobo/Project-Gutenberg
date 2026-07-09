@@ -124,9 +124,15 @@ def run_seed():
         """)
         placeholder = "?"
 
-    # Clear previous books data to guarantee fresh inserts on rerun
-    cur.execute("DELETE FROM books")
-    print("Flushed historical 'books' records...")
+    # Check if books already exist to avoid foreign key violations and allow idempotent redeploys
+    cur.execute("SELECT COUNT(*) FROM books")
+    book_count = cur.fetchone()[0]
+    
+    if book_count > 0:
+        print("Database already seeded with books. Skipping seeding to prevent foreign key violations.")
+        conn.close()
+        return
+
 
     for item in books_to_seed:
         title, author, type_, total_copies, ebook_source, filepath, summary, cover_url, category = item
