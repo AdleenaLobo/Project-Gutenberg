@@ -24,7 +24,9 @@ DB_PATH = os.environ.get("DB_PATH", os.path.join(BASE_DIR, "library.db"))
 TOKENS = {}
 app = Flask(__name__)
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173")
-CORS(app, resources={r"/api/*": {"origins": [FRONTEND_URL, "http://localhost:5173"]}}, supports_credentials=True, allow_headers=["Content-Type", "Authorization"])
+import re
+CORS(app, resources={r"/api/*": {"origins": [FRONTEND_URL, "http://localhost:5173", re.compile(r"https://.*\.vercel\.app")]}}, supports_credentials=True, allow_headers=["Content-Type", "Authorization"])
+
 
 def now_iso():
     return datetime.now(timezone.utc).isoformat()
