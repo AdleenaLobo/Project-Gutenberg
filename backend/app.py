@@ -86,6 +86,18 @@ class PostgresCursorWrapper:
     def rowcount(self):
         return self.cursor.rowcount
 
+    @property
+    def lastrowid(self):
+        try:
+            conn = self.cursor.connection
+            with conn.cursor() as temp_cur:
+                temp_cur.execute("SELECT lastval()")
+                row = temp_cur.fetchone()
+                return row[0] if row else None
+        except Exception:
+            return None
+
+
 def get_db():
     if "db" not in g:
         if HAS_POSTGRES:
