@@ -22,6 +22,11 @@ html, body, #root {
   font-family: Georgia, yingping, "New York", serif;
 }
 
+/* Prevent layout shift when scrollbars toggle visibility */
+html, .overflow-auto, .overflow-y-auto, .overflow-y-scroll {
+  scrollbar-gutter: stable;
+}
+
 /* Warmth overlay for reader screen shading */
 .warmth-overlay {
   background-color: #f6d7a8;

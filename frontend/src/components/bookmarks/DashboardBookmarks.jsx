@@ -76,7 +76,7 @@ export default function DashboardBookmarks({ client, onBookmarkDeleted }) {
 
   if (error) {
     return (
-      <div className="p-4 border border-red-200 bg-red-50 dark:bg-red-950/10 dark:border-red-900 text-red-600 dark:text-red-400 flex items-center gap-2 rounded text-sm mb-6">
+      <div className="p-4 border border-red-200 bg-red-50 dark:bg-red-955/10 dark:border-red-900 text-red-600 dark:text-red-400 flex items-center gap-2 rounded text-base mb-6">
         <AlertCircle size={18} className="flex-shrink-0" />
         <span>{error}</span>
       </div>
@@ -87,8 +87,8 @@ export default function DashboardBookmarks({ client, onBookmarkDeleted }) {
     return (
       <div className="flex flex-col items-center justify-center p-16 border-2 border-dashed border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-none text-center">
         <Bookmark className="text-zinc-300 dark:text-zinc-700 mb-3" size={36} />
-        <p className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">No bookmarks saved yet</p>
-        <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-1 max-w-sm">
+        <p className="text-base font-semibold text-zinc-500 dark:text-zinc-400">No bookmarks saved yet</p>
+        <p className="text-base text-zinc-400 dark:text-zinc-500 mt-1 max-w-sm">
           Bookmark pages while reading in any ebook, and they'll show up here so you can jump right back in.
         </p>
       </div>
@@ -96,50 +96,42 @@ export default function DashboardBookmarks({ client, onBookmarkDeleted }) {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block">
-        {bookmarks.length} saved {bookmarks.length === 1 ? "bookmark" : "bookmarks"}
-      </p>
-      
-      <div className="flex flex-col gap-4 animate-fade-in">
-        {bookmarks.map((b) => (
-          <div
-            key={b.id}
-            onClick={() => handleRead(b)}
-            className="group flex items-center justify-between p-4 border-2 border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] hover:scale-[1.005] hover:shadow-[6px_6px_0px_#000] dark:hover:shadow-[6px_6px_0px_#fff] transition-all duration-200 rounded-none w-full"
-          >
-            <div className="flex-1 min-w-0 pr-6">
-              <div className="font-bold text-base text-zinc-955 dark:text-white truncate">
-                {b.label}
-              </div>
-              <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1.5 flex items-center gap-1.5 flex-wrap">
-                <span className="font-semibold text-zinc-900 dark:text-zinc-200">{b.book_title}</span>
-                <span>· by {b.book_author}</span>
-                <span>·</span>
-                <span className="px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 font-mono text-[10px] text-zinc-600 dark:text-zinc-400">{b.location}</span>
-                {b.room_name && (
-                  <>
-                    <span>·</span>
-                    <span className="text-[10px] uppercase font-bold text-zinc-500 dark:text-zinc-400 tracking-wider">Room: {b.room_name}</span>
-                  </>
-                )}
-                <span>· Saved {formatDate(b.created_at)}</span>
-              </div>
+    <div className="grid grid-cols-1 gap-6 animate-fade-in w-full">
+      {bookmarks.map((b) => (
+        <div
+          key={b.id}
+          onClick={() => handleRead(b)}
+          className="group flex items-center justify-between p-4 border-2 border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 cursor-pointer transition-all duration-300 ease-out rounded-none hover:-translate-y-1 hover:-translate-x-1 shadow-none hover:shadow-[4px_4px_0px_#000] dark:hover:shadow-[4px_4px_0px_#fff] w-full"
+        >
+          <div className="flex-1 min-w-0 pr-6">
+            <div className="font-bold text-base text-zinc-955 dark:text-white truncate">
+              {b.label}
             </div>
-            
-            <div className="flex items-center gap-4 flex-shrink-0">
-              <button
-                onClick={(e) => handleDelete(b.id, e)}
-                className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-red-500 dark:hover:text-red-400 rounded-lg transition-colors cursor-pointer flex items-center justify-center"
-                title="Delete Bookmark"
-              >
-                <Trash2 size={16} />
-              </button>
-              <ArrowRight size={16} className="text-zinc-400 group-hover:text-zinc-950 dark:group-hover:text-white group-hover:translate-x-1 transition-all" />
+            <div className="text-base text-zinc-500 dark:text-zinc-400 mt-1.5 flex items-center gap-1.5 flex-wrap">
+              <span className="font-semibold text-zinc-900 dark:text-zinc-200">{b.book_title}</span>
+              <span>· by {b.book_author}</span>
+              {b.room_name && (
+                <>
+                  <span>·</span>
+                  <span className="text-sm font-bold text-zinc-500 dark:text-zinc-400">Room: {b.room_name}</span>
+                </>
+              )}
+              <span>· Saved {formatDate(b.created_at)}</span>
             </div>
           </div>
-        ))}
-      </div>
+          
+          <div className="flex items-center gap-4 flex-shrink-0">
+            <button
+              onClick={(e) => handleDelete(b.id, e)}
+              className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-red-500 dark:hover:text-red-400 rounded-lg transition-colors cursor-pointer flex items-center justify-center border border-transparent"
+              title="Delete Bookmark"
+            >
+              <Trash2 size={16} />
+            </button>
+            <ArrowRight size={16} className="text-zinc-400 group-hover:text-zinc-955 dark:group-hover:text-white group-hover:translate-x-1 transition-all" />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

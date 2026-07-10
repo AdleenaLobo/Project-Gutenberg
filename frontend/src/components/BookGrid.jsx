@@ -31,40 +31,43 @@ export function BookGrid({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-fade-in">
       {books.map((b) => {
         const isHovered = hoveredId === b.id;
 
         return (
           <div
             key={b.id}
-            className="group relative border-2 border-zinc-300 dark:border-zinc-700 p-6 bg-white dark:bg-zinc-900 cursor-pointer transition-all duration-300 ease-out rounded-none hover:-translate-y-1 hover:-translate-x-1 shadow-none hover:shadow-[4px_4px_0px_#000] dark:hover:shadow-[4px_4px_0px_#fff]"
+            className="group relative border-2 border-zinc-300 dark:border-zinc-700 px-8 py-4 bg-white dark:bg-zinc-900 cursor-pointer transition-all duration-300 ease-out rounded-none hover:-translate-y-1 hover:-translate-x-1 shadow-none hover:shadow-[4px_4px_0px_#000] dark:hover:shadow-[4px_4px_0px_#fff]"
             onMouseEnter={() => setHoveredId(b.id)}
             onMouseLeave={() => setHoveredId(null)}
             onClick={() => onSelectBook(b)}
           >
             <div>
-              <span className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-450 uppercase tracking-widest block mb-2">
-                {isEbook ? "Ebook" : "Hardcover"} {b.ebook?.category || b.category ? `· ${b.ebook?.category || b.category}` : ""}
-              </span>
+              <div className="flex justify-between items-start gap-4 mb-1.5">
+                <span className="text-lg font-bold font-serif text-zinc-955 dark:text-white leading-snug block transition-colors">
+                  {b.title}
+                </span>
 
-              <span className="text-lg font-bold text-zinc-955 dark:text-white mb-1 leading-snug block transition-colors">
-                {b.title}
-              </span>
+                {(b.ebook?.category || b.category) && (
+                  <span className="flex-shrink-0 inline-block text-sm font-normal text-zinc-500 dark:text-zinc-400 bg-transparent border border-zinc-200 dark:border-zinc-800 px-2 py-0.5 rounded tracking-wider">
+                    {b.ebook?.category || b.category}
+                  </span>
+                )}
+              </div>
 
-              <span className="text-sm text-zinc-500 dark:text-zinc-450 mb-6 block">
+              <span className="text-base text-zinc-500 dark:text-zinc-455 mb-3 block">
                 by {b.author}
               </span>
             </div>
 
-            <div className=" mt-6 pt-4 border-t-2 border-zinc-300 dark:border-zinc-700">
-
+            <div className="mt-3">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   navigate(`/books/${b.id}/read`);
                 }}
-                className="px-4 py-2 bg-zinc-950 border border-zinc-950 dark:bg-zinc-50 dark:border-zinc-50 text-white dark:text-zinc-950 font-semibold text-xs uppercase tracking-wider hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-all duration-200 rounded-lg cursor-pointer"
+                className="px-3 py-1 border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-800 text-zinc-955 dark:text-zinc-50 font-normal text-base tracking-wider hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all duration-200 rounded-lg cursor-pointer"
               >
                 Read
               </button>
