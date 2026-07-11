@@ -104,7 +104,7 @@ export default function DashboardBookmarks({ client, onBookmarkDeleted }) {
           className="group flex items-center justify-between p-4 border-2 border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 cursor-pointer transition-all duration-300 ease-out rounded-none hover:-translate-y-1 hover:-translate-x-1 shadow-none hover:shadow-[4px_4px_0px_#000] dark:hover:shadow-[4px_4px_0px_#fff] w-full"
         >
           <div className="flex-1 min-w-0 pr-6">
-            <div className="font-bold text-base text-zinc-955 dark:text-white truncate">
+            <div className="font-sans font-bold text-base text-zinc-955 dark:text-white truncate">
               {b.label}
             </div>
             <div className="text-base text-zinc-500 dark:text-zinc-400 mt-1.5 flex items-center gap-1.5 flex-wrap">

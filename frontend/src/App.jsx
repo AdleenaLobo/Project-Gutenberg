@@ -83,7 +83,11 @@ function AppContent({ client, initials, firstName, logout, user, greeting }) {
                 setActiveTab("ebooks");
                 setSearchQuery("");
               }}
-              className="flex items-center gap-3 no-underline text-current group"
+              className={`flex items-center gap-3 no-underline text-current group pt-1.5 border-t-2 transition-all ${
+                activeTab === "ebooks"
+                  ? "border-zinc-900 dark:border-white text-zinc-900 dark:text-white"
+                  : "border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+              }`}
             >
               <div className="w-8 h-8 rounded bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
                 <Library size={16} className="text-white dark:text-zinc-900" />
@@ -95,10 +99,10 @@ function AppContent({ client, initials, firstName, logout, user, greeting }) {
             <nav className="hidden sm:flex items-center gap-1">
               <button
                 onClick={() => handleTabClick("rooms")}
-                className={`h-9 px-3.5 text-base font-normal rounded-lg transition-all flex items-center gap-1.5 focus:outline-none cursor-pointer ${
+                className={`h-9 px-3.5 pt-1.5 text-base font-normal transition-all flex items-center gap-1.5 focus:outline-none cursor-pointer border-t-2 bg-transparent rounded-none ${
                   activeTab === "rooms"
-                    ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-white"
-                    : "text-zinc-500 hover:text-zinc-955 dark:hover:text-zinc-200"
+                    ? "border-zinc-900 text-zinc-900 dark:border-white dark:text-white"
+                    : "border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
                 }`}
               >
                 <span>Rooms</span>
@@ -109,10 +113,10 @@ function AppContent({ client, initials, firstName, logout, user, greeting }) {
 
               <button
                 onClick={() => handleTabClick("bookmarks")}
-                className={`h-9 px-3.5 text-base font-normal rounded-lg transition-all flex items-center gap-1.5 focus:outline-none cursor-pointer ${
+                className={`h-9 px-3.5 pt-1.5 text-base font-normal transition-all flex items-center gap-1.5 focus:outline-none cursor-pointer border-t-2 bg-transparent rounded-none ${
                   activeTab === "bookmarks"
-                    ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-white"
-                    : "text-zinc-500 hover:text-zinc-955 dark:hover:text-zinc-200"
+                    ? "border-zinc-900 text-zinc-900 dark:border-white dark:text-white"
+                    : "border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
                 }`}
               >
                 <span>Bookmarks</span>

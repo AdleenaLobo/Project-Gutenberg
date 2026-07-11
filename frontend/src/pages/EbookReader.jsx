@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { parseBook, formatBlockText } from "../utils/ebookParser";
 import ReaderControls from "../components/ReaderControls";
 import { List } from "lucide-react";
@@ -117,6 +118,36 @@ export function EbookReader({ book, client, onBack }) {
   const [noteBody, setNoteBody] = useState("");
   const [bookmarkLabel, setBookmarkLabel] = useState("");
   const [msg, setMsg] = useState("");
+  const [toast, setToast] = useState(null);
+  const [deleteConfirmRoomId, setDeleteConfirmRoomId] = useState(null);
+  const [guideStep, setGuideStep] = useState(null);
+
+  useEffect(() => {
+    const showGuide = localStorage.getItem("showReaderGuide") === "true";
+    if (showGuide) {
+      setGuideStep(1);
+    }
+  }, []);
+
+  const closeGuide = () => {
+    localStorage.removeItem("showReaderGuide");
+    setGuideStep(null);
+  };
+
+  useEffect(() => {
+    if (guideStep === 4) {
+      setShowChapters(true);
+    } else if (guideStep !== null) {
+      setShowChapters(false);
+    }
+  }, [guideStep]);
+
+  const showToast = (message) => {
+    setToast(message);
+    setTimeout(() => {
+      setToast(null);
+    }, 3000);
+  };
 
   // ---- Bookmarks state and operations ----
   const [bookmarks, setBookmarks] = useState([]);
@@ -144,6 +175,7 @@ export function EbookReader({ book, client, onBack }) {
       try {
         await client.request(`/bookmarks/${currentPageBookmark.id}`, { method: "DELETE" });
         loadBookmarks();
+        showToast("Bookmark removed successfully");
       } catch (e) {
         setMsg(e.message);
       }
@@ -159,6 +191,7 @@ export function EbookReader({ book, client, onBack }) {
           }),
         });
         loadBookmarks();
+        showToast("Bookmark added successfully");
       } catch (e) {
         setMsg(e.message);
       }
@@ -318,17 +351,23 @@ export function EbookReader({ book, client, onBack }) {
     };
   }, [pages.length, layoutMode]);
 
-  // ---- Load available rooms for the user ----------------------------------
+  // ---- Load available rooms for the user & poll every 4s ------------------
   useEffect(() => {
-    client
-      .request("/rooms")
-      .then(setRooms)
-      .catch(() => { });
+    const fetchRooms = () => {
+      client.request("/rooms")
+        .then(setRooms)
+        .catch(() => { });
+    };
+    fetchRooms();
+    const t = setInterval(fetchRooms, 4000);
+
     // If a room was passed via navigation (book._joinRoomId), auto‑join it.
     if (book._joinRoomId) {
       joinRoom(book._joinRoomId);
       setShowPanel("notes");
     }
+
+    return () => clearInterval(t);
   }, []);
 
   // ---- When a room becomes active, fetch its details, generate room secret, and start polling -----
@@ -349,10 +388,10 @@ export function EbookReader({ book, client, onBack }) {
         const data = await client.request(`/rooms/${activeRoom}`);
         setRoomData(data);
       } catch (e) {
-        // If room is deleted or access is lost, reset active room and alert the user
+        // If room is deleted or access is lost, reset active room and show toast
         setActiveRoom(null);
         setRoomData(null);
-        alert("This reading room has been deleted by the creator.");
+        showToast("The reading room has been deleted by the owner");
         return;
       }
 
@@ -640,6 +679,7 @@ export function EbookReader({ book, client, onBack }) {
       const updated = await client.request("/rooms");
       setRooms(updated);
     } catch (e) {
+      alert("Error starting room: " + e.message);
       setMsg(e.message);
     }
   }
@@ -649,27 +689,18 @@ export function EbookReader({ book, client, onBack }) {
       await client.request(`/rooms/${id}/join`, { method: "POST" });
       setActiveRoom(id);
     } catch (e) {
+      alert("Error joining room: " + e.message);
       setMsg(e.message);
     }
   }
 
-  async function deleteRoom(id) {
-    if (!window.confirm("Are you sure you want to delete this reading room? This will delete all chats and data associated with it.")) return;
-    try {
-      await client.request(`/rooms/${id}`, { method: "DELETE" });
-      if (activeRoom === id) {
-        setActiveRoom(null);
-        setRoomData(null);
-      }
-      const updated = await client.request("/rooms");
-      setRooms(updated);
-    } catch (e) {
-      setMsg(e.message);
-    }
+  function deleteRoom(id) {
+    setDeleteConfirmRoomId(id);
   }
 
   async function addNote(e) {
     e.preventDefault();
+    if (!noteBody.trim()) return;
     try {
       await client.request(`/rooms/${activeRoom}/notes`, {
         method: "POST",
@@ -740,6 +771,91 @@ export function EbookReader({ book, client, onBack }) {
   const activeFriendsOnPage = participants.filter(
     (p) => p.id !== currentUser.id && p.page_index === pageIndex
   );
+
+  const guideSteps = [
+    {
+      title: "Highlight and Annotate",
+      description: "Click and drag to select any sentence in the book. A popup tool will let you highlight it in yellow, green, pink, or blue, and view it later in your Saved tab.",
+      icon: <NotebookPen size={20} className="text-amber-500" />,
+      preview: (
+        <div className="bg-[#FAF7F2] dark:bg-zinc-950 p-4 border border-zinc-200 dark:border-zinc-800/80 rounded-xl flex flex-col gap-2 font-serif text-xs italic text-zinc-700 dark:text-zinc-350 select-none">
+          <p>
+            Alice was beginning to get very tired of sitting by her sister on the bank...
+          </p>
+          <div className="flex gap-1.5 justify-center mt-1">
+            <span className="w-5 h-5 rounded-full bg-[#fef08a] border border-yellow-300 cursor-pointer shadow-sm" />
+            <span className="w-5 h-5 rounded-full bg-[#bbf7d0] border border-green-300 cursor-pointer shadow-sm" />
+            <span className="w-5 h-5 rounded-full bg-[#fbcfe8] border border-pink-300 cursor-pointer shadow-sm" />
+            <span className="w-5 h-5 rounded-full bg-[#bfdbfe] border border-blue-300 cursor-pointer shadow-sm" />
+          </div>
+        </div>
+      ),
+      positionClass: "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-w-sm w-full mx-4",
+      spotlightClass: "fixed inset-x-8 top-1/3 bottom-1/3 border-2 border-emerald-500 ring-[9999px] ring-zinc-950/40 rounded-2xl pointer-events-none z-[10002] animate-pulse"
+    },
+    {
+      title: "Reading Customization",
+      description: "Adjust reading preference from the top toolbar: switch between Light/Dark mode, enable warmth screen shaders, change text font sizes, or toggle between paginated pages and scrolling flow.",
+      icon: <BookOpen size={20} className="text-indigo-500" />,
+      preview: (
+        <div className="bg-[#FAF7F2] dark:bg-zinc-950 p-4 border border-zinc-200 dark:border-zinc-800/80 rounded-xl flex flex-col gap-2.5 select-none font-sans text-xs">
+          <div className="flex justify-between items-center gap-4">
+            <span className="text-zinc-500 font-sans">Font Size</span>
+            <div className="flex gap-1.5">
+              <span className="px-2 py-0.5 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded cursor-pointer hover:bg-zinc-50 font-bold">A-</span>
+              <span className="px-2 py-0.5 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded cursor-pointer hover:bg-zinc-50 font-bold">A+</span>
+            </div>
+          </div>
+          <div className="flex justify-between items-center gap-4">
+            <span className="text-zinc-500">Screen Warmth</span>
+            <span className="text-zinc-700 dark:text-zinc-305 font-medium">Comfort Mode</span>
+          </div>
+        </div>
+      ),
+      positionClass: "fixed top-[88px] right-[30px] w-[320px] max-w-[calc(100vw-60px)]",
+      arrowOffset: "right-[70px]",
+      spotlightClass: "fixed top-[24px] right-[76px] w-[48px] h-[48px] border-2 border-emerald-500 ring-[9999px] ring-zinc-950/40 rounded-lg pointer-events-none z-[10002] animate-pulse"
+    },
+    {
+      title: "Bookmarks",
+      description: "Save your page location by toggling the bookmark button in the bottom reader controls. The bookmark is fully saved with your room data so you can resume exactly where you left off.",
+      icon: <Bookmark size={20} className="text-blue-500" />,
+      preview: (
+        <div className="bg-[#FAF7F2] dark:bg-zinc-950 p-4 border border-zinc-200 dark:border-zinc-800/80 rounded-xl flex items-center justify-center gap-4 select-none">
+          <div className="p-2.5 bg-white dark:bg-zinc-900 border border-zinc-250 dark:border-zinc-850 rounded-full text-blue-500 shadow-sm">
+            <Bookmark size={18} fill="currentColor" />
+          </div>
+          <div className="flex flex-col gap-0.5">
+            <span className="text-[11px] font-bold text-zinc-705 dark:text-zinc-300">Page Bookmark Saved</span>
+            <p className="text-[9.5px] text-zinc-450">Added Page 12 to Bookmarks tab</p>
+          </div>
+        </div>
+      ),
+      positionClass: "fixed top-[88px] right-[90px] w-[320px] max-w-[calc(100vw-120px)]",
+      arrowOffset: "right-[70px]",
+      spotlightClass: "fixed top-[24px] right-[136px] w-[48px] h-[48px] border-2 border-emerald-500 ring-[9999px] ring-zinc-950/40 rounded-lg pointer-events-none z-[10002] animate-pulse"
+    },
+    {
+      title: "Collaborative Rooms",
+      description: "Open the 'Rooms' tab to start a shared reading session. Invite friends to join, see their current reading page in real-time, and discuss together on the live Discussion Board.",
+      icon: <Users size={20} className="text-emerald-500" />,
+      preview: (
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3 flex flex-col gap-2 shadow-sm font-sans select-none">
+          <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-550">Discussion Board</span>
+            <span className="text-[9px] bg-zinc-100 dark:bg-zinc-700 text-zinc-500 px-1.5 py-0.5 rounded-full font-medium">Page 5</span>
+          </div>
+          <div className="bg-[#FAF7F2] dark:bg-zinc-950/50 p-2.5 rounded-lg border border-zinc-150 dark:border-zinc-850 flex flex-col gap-1 text-[11px]">
+            <span className="font-semibold text-zinc-700 dark:text-zinc-305">Alice Liddell</span>
+            <p className="text-zinc-500 dark:text-zinc-400">Wow, this chapter has so many references!</p>
+          </div>
+        </div>
+      ),
+      positionClass: "fixed top-[88px] right-[10px] w-[300px] max-w-[calc(100vw-30px)]",
+      arrowOffset: "right-[85px]",
+      spotlightClass: "fixed top-[2px] right-[50px] w-[90px] h-[48px] border-2 border-emerald-500 ring-[9999px] ring-zinc-950/40 rounded-lg pointer-events-none z-[10002] animate-pulse"
+    }
+  ];
 
   const bookRooms = rooms.filter(
     (r) => r.book_id === book.id || r.title === book.title,
@@ -824,24 +940,7 @@ export function EbookReader({ book, client, onBack }) {
             }}
           />
 
-          {/* Visual bookmark indicator/button directly on the book page */}
-          {!isPaginating && (
-            <button
-              onClick={toggleCurrentPageBookmark}
-              className={`absolute right-1/2 translate-x-[370px] max-lg:right-10 max-lg:translate-x-0 top-8 z-30 p-2 cursor-pointer transition-all duration-200 group focus:outline-none ${
-                isBookmarked
-                  ? "text-zinc-900 dark:text-zinc-100 hover:text-zinc-700 dark:hover:text-zinc-300 scale-110"
-                  : "text-zinc-300 dark:text-zinc-700 hover:text-zinc-500 dark:hover:text-zinc-400 hover:scale-105"
-              }`}
-              title={isBookmarked ? `Bookmarked: ${currentPageBookmark.label} (Click to remove)` : "Bookmark this page"}
-            >
-              <Bookmark
-                size={26}
-                fill={isBookmarked ? "currentColor" : "none"}
-                className="stroke-2 transition-transform group-hover:translate-y-0.5"
-              />
-            </button>
-          )}
+
 
           {isPaginating && (
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-white dark:bg-zinc-950">
@@ -873,6 +972,7 @@ export function EbookReader({ book, client, onBack }) {
         chapters={chapters}
         pageIndex={pageIndex}
         onClose={() => setShowChapters(false)}
+        initialTab={guideStep === 4 ? "community" : "chapters"}
         onSelectChapter={(page) => {
           if (layoutMode === "scroll") {
             let blockIndex = 0;
@@ -917,6 +1017,7 @@ export function EbookReader({ book, client, onBack }) {
           try {
             await client.request(`/highlights/${id}`, { method: "DELETE" });
             loadHighlights();
+            showToast("Highlight deleted successfully");
           } catch (e) {
             setMsg(e.message);
           }
@@ -940,6 +1041,13 @@ export function EbookReader({ book, client, onBack }) {
         participants={participants}
       />
 
+      {/* Toast Notification */}
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] px-4 py-2.5 rounded-lg bg-zinc-900/95 dark:bg-zinc-100 text-white dark:text-zinc-900 border border-zinc-800 dark:border-zinc-200 shadow-xl flex items-center gap-2 animate-slide-up text-xs font-sans font-medium">
+          <span>{toast}</span>
+        </div>
+      )}
+
       <ReaderControls
         pageIndex={pageIndex}
         totalPages={totalPages}
@@ -947,6 +1055,10 @@ export function EbookReader({ book, client, onBack }) {
         onNext={() => setPageIndex((p) => Math.min(totalPages - 1, p + 1))}
         onOpenChapters={() => setShowChapters(true)}
         onBack={onBack}
+        isBookmarked={isBookmarked}
+        toggleBookmark={toggleCurrentPageBookmark}
+        forceOpenSettings={guideStep === 2}
+        forceShowControls={guideStep !== null}
       />
 
       {deleteTooltip && (
@@ -961,6 +1073,7 @@ export function EbookReader({ book, client, onBack }) {
                 await client.request(`/highlights/${deleteTooltip.highlight.id}`, { method: "DELETE" });
                 loadHighlights();
                 setDeleteTooltip(null);
+                showToast("Highlight deleted successfully");
               } catch (e) {
                 setMsg(e.message);
               }
@@ -970,6 +1083,135 @@ export function EbookReader({ book, client, onBack }) {
             Remove
           </button>
         </div>
+      )}
+      {deleteConfirmRoomId !== null && createPortal(
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-zinc-950/40 dark:bg-zinc-950/60 animate-fade-in backdrop-blur-[2px]">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl flex flex-col gap-4 animate-scale-up">
+            <div className="flex flex-col gap-2">
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50 font-sans">
+                Delete Reading Room
+              </h3>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed font-sans">
+                Are you sure you want to delete this reading room? This will permanently delete all messages and data associated with it.
+              </p>
+            </div>
+            <div className="flex items-center justify-end gap-2.5 mt-2">
+              <button
+                onClick={() => setDeleteConfirmRoomId(null)}
+                className="px-3.5 py-2 text-xs font-sans font-medium text-zinc-650 dark:text-zinc-300 border border-zinc-250 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer focus:outline-none"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  const id = deleteConfirmRoomId;
+                  setDeleteConfirmRoomId(null);
+                  try {
+                    await client.request(`/rooms/${id}`, { method: "DELETE" });
+                    if (activeRoom === id) {
+                      setActiveRoom(null);
+                      setRoomData(null);
+                    }
+                    const updated = await client.request("/rooms");
+                    setRooms(updated);
+                    showToast("Reading room deleted successfully");
+                  } catch (e) {
+                    setMsg(e.message);
+                  }
+                }}
+                className="px-3.5 py-2 text-xs font-sans font-medium text-white bg-red-500 hover:bg-red-650 rounded-lg transition-colors cursor-pointer focus:outline-none border-none"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+      {guideStep !== null && createPortal(
+        <>
+          {/* Spotlight Highlight Ring with full-screen dark overlay using ring-[9999px] */}
+          {guideSteps[guideStep - 1].spotlightClass && (
+            <div className={guideSteps[guideStep - 1].spotlightClass} />
+          )}
+
+          {/* Guide Card Box */}
+          <div className={`${guideSteps[guideStep - 1].positionClass || "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"} z-[10003] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-2xl flex flex-col gap-4 animate-scale-up font-sans`}>
+            
+            {/* Pointing Arrow (if defined for the step) */}
+            {guideSteps[guideStep - 1].arrowOffset && (
+              <div className={`absolute -top-1.5 ${guideSteps[guideStep - 1].arrowOffset} w-3 h-3 bg-white dark:bg-zinc-900 border-t border-l border-zinc-200 dark:border-zinc-800 rotate-45 z-[10004]`} />
+            )}
+
+            {/* Step Header */}
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] uppercase tracking-widest font-bold text-zinc-400 dark:text-zinc-550">
+                Step {guideStep} of {guideSteps.length}
+              </span>
+              <button 
+                onClick={closeGuide}
+                className="text-zinc-400 hover:text-zinc-650 bg-transparent border-none p-0 cursor-pointer focus:outline-none"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Icon & Title */}
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#FAF8F5] dark:bg-zinc-805 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center shadow-sm">
+                {guideSteps[guideStep - 1].icon}
+              </div>
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
+                {guideSteps[guideStep - 1].title}
+              </h3>
+            </div>
+
+            {/* Description */}
+            <p className="text-xs text-zinc-505 dark:text-zinc-400 leading-relaxed">
+              {guideSteps[guideStep - 1].description}
+            </p>
+
+            {/* Feature Mockup Preview */}
+            <div className="border border-[#EFEAE2] dark:border-zinc-800 rounded-2xl p-1 bg-[#FAF8F5] dark:bg-zinc-950/30 overflow-hidden">
+              {guideSteps[guideStep - 1].preview}
+            </div>
+
+            {/* Navigation buttons */}
+            <div className="flex items-center justify-between mt-2 border-t border-zinc-150 dark:border-zinc-800 pt-4">
+              <button
+                onClick={closeGuide}
+                className="text-xs font-semibold text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-350 bg-transparent border-none p-0 cursor-pointer focus:outline-none"
+              >
+                Skip Guide
+              </button>
+              
+              <div className="flex items-center gap-2">
+                {guideStep > 1 && (
+                  <button
+                    onClick={() => setGuideStep(guideStep - 1)}
+                    className="px-3 py-1.5 text-xs font-sans font-medium text-zinc-650 dark:text-zinc-300 border border-zinc-250 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer focus:outline-none"
+                  >
+                    Back
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    if (guideStep < guideSteps.length) {
+                      setGuideStep(guideStep + 1);
+                    } else {
+                      closeGuide();
+                    }
+                  }}
+                  className="px-3.5 py-1.5 text-xs font-sans font-semibold text-white bg-zinc-900 hover:bg-zinc-850 dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-955 rounded-lg transition-colors cursor-pointer focus:outline-none border-none shadow-sm"
+                >
+                  {guideStep === guideSteps.length ? "Get Started" : "Next"}
+                </button>
+              </div>
+            </div>
+            
+          </div>
+        </>,
+        document.body
       )}
     </div>
   );

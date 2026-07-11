@@ -4,6 +4,7 @@ import {
   ChevronRight,
   List,
   ArrowLeft,
+  Bookmark,
 } from "lucide-react";
 
 import { useReaderTheme } from "../context/ReaderThemeContext";
@@ -16,6 +17,10 @@ export default function ReaderControls({
   onNext,
   onOpenChapters,
   onBack,
+  isBookmarked,
+  toggleBookmark,
+  forceOpenSettings = false,
+  forceShowControls = false,
 }) {
   const {
     theme,
@@ -36,6 +41,7 @@ export default function ReaderControls({
   const [visible, setVisible] = useState(true);
   const [hoveringControl, setHoveringControl] = useState(false);
   const [showReaderSettings, setShowReaderSettings] = useState(false);
+  const showSettings = showReaderSettings || forceOpenSettings;
   const panelRef = useRef(null);
 
   const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement);
@@ -91,7 +97,7 @@ export default function ReaderControls({
     };
   }, [hoveringControl]);
 
-  const showUI = visible || hoveringControl;
+  const showUI = visible || hoveringControl || forceShowControls;
 
   const btnBase = "w-12 h-12 rounded-lg border flex items-center justify-center transition-all duration-200 fixed z-20 focus:outline-none";
   const btnActive = showUI
@@ -102,16 +108,50 @@ export default function ReaderControls({
 
   return (
     <>
-      {/* Chapters */}
-      <button
-        onClick={onOpenChapters}
+      {/* Top Right Controls Group */}
+      <div
         onMouseEnter={() => setHoveringControl(true)}
         onMouseLeave={() => setHoveringControl(false)}
-        aria-label="Table of contents"
-        className={`${btnBase} ${btnActive} right-7 top-6`}
+        className={`fixed right-7 top-6 flex items-center gap-3 z-20 transition-all duration-200 ${
+          showUI ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
       >
-        <List size={20} className={`transition-all duration-200 ${iconOpacity}`} />
-      </button>
+        {/* Standalone Bookmark Button */}
+        <button
+          onClick={toggleBookmark}
+          aria-label={isBookmarked ? "Remove bookmark" : "Bookmark this page"}
+          className="w-12 h-12 rounded-lg border bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-800 text-zinc-955 dark:text-white hover:scale-105 cursor-pointer flex items-center justify-center transition-all duration-200 focus:outline-none shadow-sm"
+        >
+          <Bookmark
+            size={18}
+            fill={isBookmarked ? "currentColor" : "none"}
+            className="stroke-2 text-zinc-955 dark:text-white"
+          />
+        </button>
+
+        {/* Grouped Aa & Chapters */}
+        <div className="flex items-center bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-800 rounded-lg shadow-sm overflow-hidden divide-x divide-zinc-300 dark:divide-zinc-800">
+          {/* Aa Text Panel Button */}
+          <button
+            onClick={() => setShowReaderSettings((prev) => !prev)}
+            aria-label="Text control panel"
+            className={`w-12 h-12 flex items-center justify-center hover:bg-zinc-50 dark:hover:bg-zinc-700/50 text-zinc-955 dark:text-white cursor-pointer border-none bg-transparent transition-colors focus:outline-none ${
+              showSettings ? "bg-zinc-100 dark:bg-zinc-700" : ""
+            }`}
+          >
+            <span className="text-sm font-bold">Aa</span>
+          </button>
+
+          {/* Chapters Button */}
+          <button
+            onClick={onOpenChapters}
+            aria-label="Table of contents"
+            className="w-12 h-12 flex items-center justify-center hover:bg-zinc-50 dark:hover:bg-zinc-700/50 text-zinc-955 dark:text-white cursor-pointer border-none bg-transparent transition-colors focus:outline-none"
+          >
+            <List size={18} className="text-zinc-955 dark:text-white" />
+          </button>
+        </div>
+      </div>
 
       {/* Previous */}
       {layoutMode !== "scroll" && (
@@ -142,7 +182,7 @@ export default function ReaderControls({
       {/* Page Number */}
       {layoutMode !== "scroll" && (
         <div
-          className={`fixed bottom-6 left-1/2 -translate-x-1/2 px-5 py-2.5 bg-white/80 dark:bg-zinc-800/90 backdrop-blur-sm border border-zinc-200 dark:border-zinc-800 rounded-full text-sm font-medium tracking-wider text-zinc-950 dark:text-white shadow-md pointer-events-none transition-opacity duration-350 z-20 font-serif ${showUI ? "opacity-100" : "opacity-0"
+          className={`fixed bottom-6 left-1/2 -translate-x-1/2 px-5 py-2.5 bg-white/80 dark:bg-zinc-800/90 backdrop-blur-sm border border-zinc-200 dark:border-zinc-800 rounded-full text-sm font-medium tracking-wider text-zinc-955 dark:text-white shadow-md pointer-events-none transition-opacity duration-350 z-20 font-serif ${showUI ? "opacity-100" : "opacity-0"
             }`}
         >
           {pageIndex + 1} / {totalPages}
@@ -162,27 +202,12 @@ export default function ReaderControls({
         </button>
       )}
 
-      {/* Aa Text Panel Button */}
-      <button
-        onClick={() => setShowReaderSettings((prev) => !prev)}
-        onMouseEnter={() => setHoveringControl(true)}
-        onMouseLeave={() => setHoveringControl(false)}
-        aria-label="Text control panel"
-        className={`${btnBase} ${btnActive} right-7 bottom-6`}
-      >
-        <span
-          className={`text-base font-bold transition-all duration-200 ${iconOpacity}`}
-        >
-          Aa
-        </span>
-      </button>
-
-      {showReaderSettings && (
+      {showSettings && (
         <div
           ref={panelRef}
           onMouseEnter={() => setHoveringControl(true)}
           onMouseLeave={() => setHoveringControl(false)}
-          className="fixed bottom-20 right-7 z-30 w-80 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800 shadow-xl transition-all duration-300 origin-bottom-right scale-100 p-6 flex flex-col gap-5 text-zinc-800 dark:text-zinc-200"
+          className="fixed top-20 right-7 z-30 w-80 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800 shadow-xl transition-all duration-300 origin-top-right scale-100 p-6 flex flex-col gap-5 text-zinc-800 dark:text-zinc-200"
         >
           <div className="flex flex-col gap-5">
             {/* Font */}

@@ -28,8 +28,8 @@ export function CategoryFilters({
               onClick={() => onSelectCategory(cat)}
               className={`px-4 py-2 border text-base font-normal tracking-wider rounded-lg cursor-pointer transition-all duration-200 ${
                 isSelected
-                  ? "bg-zinc-100 border-zinc-300 text-zinc-900 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100"
-                  : "bg-transparent border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white"
+                  ? "bg-transparent border-zinc-900 text-zinc-955 dark:border-white dark:text-white"
+                  : "bg-transparent border-zinc-300 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white"
               }`}
             >
               {cat}

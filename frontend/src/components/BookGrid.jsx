@@ -67,7 +67,7 @@ export function BookGrid({
                   e.stopPropagation();
                   navigate(`/books/${b.id}/read`);
                 }}
-                className="px-3 py-1 border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-800 text-zinc-955 dark:text-zinc-50 font-normal text-base tracking-wider hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all duration-200 rounded-lg cursor-pointer"
+                className="h-[38px] px-4 flex items-center justify-center border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-800 text-zinc-955 dark:text-zinc-50 font-normal text-base tracking-wider hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all duration-200 rounded-lg cursor-pointer"
               >
                 Read
               </button>

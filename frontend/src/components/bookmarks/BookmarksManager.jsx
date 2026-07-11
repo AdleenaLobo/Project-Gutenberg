@@ -88,7 +88,7 @@ export default function BookmarksManager({
   };
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 text-sm">
+    <div className="flex flex-col h-full bg-transparent text-zinc-900 dark:text-zinc-100 text-sm">
       {error && (
         <div className="p-3 bg-red-55/10 text-red-600 dark:text-red-400 text-xs border-b border-red-200 dark:border-red-900 flex items-center gap-1.5">
           <AlertCircle size={14} className="flex-shrink-0" />
@@ -114,7 +114,7 @@ export default function BookmarksManager({
             </div>
           </div>
         ) : (
-          <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
+          <div className="flex flex-col gap-3">
             {bookmarks.map((bookmark) => {
               const isCurrent = bookmark.location === currentPageLabel;
               const isEditing = editingId === bookmark.id;
@@ -122,91 +122,78 @@ export default function BookmarksManager({
               return (
                 <div
                   key={bookmark.id}
-                  className={`group relative p-4 flex flex-col gap-2 transition-all ${
+                  className={`p-3 border rounded-xl bg-white dark:bg-zinc-850 flex flex-col gap-2 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors duration-150 ${
                     isCurrent 
-                      ? "bg-zinc-100/50 dark:bg-zinc-800/25 border-l-2 border-zinc-900 dark:border-zinc-100" 
-                      : "hover:bg-zinc-50 dark:hover:bg-zinc-900/30"
+                      ? "border-zinc-900 dark:border-white ring-1 ring-zinc-900/10 dark:ring-white/10" 
+                      : "border-zinc-200 dark:border-zinc-800"
                   }`}
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      {isEditing ? (
-                        <div className="flex gap-1 items-center mt-1">
-                          <input
-                            type="text"
-                            value={editLabel}
-                            onChange={(e) => setEditLabel(e.target.value)}
-                            className="flex-1 px-2 py-1 text-xs rounded border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 outline-none"
-                            autoFocus
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") handleSaveEdit(bookmark.id);
-                              else if (e.key === "Escape") setEditingId(null);
-                            }}
-                          />
-                          <button
-                            onClick={() => handleSaveEdit(bookmark.id)}
-                            className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded text-green-600 cursor-pointer"
-                          >
-                            <Check size={14} />
-                          </button>
-                          <button
-                            onClick={() => setEditingId(null)}
-                            className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded text-zinc-500 cursor-pointer"
-                          >
-                            <X size={14} />
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col">
-                          <span className="font-bold text-zinc-900 dark:text-zinc-100 break-words pr-8">
-                            {bookmark.label}
-                          </span>
-                          <span className="text-[11px] text-zinc-500 dark:text-zinc-500 mt-0.5">
-                            {bookmark.location} {bookmark.room_name && `· Room: ${bookmark.room_name}`}
-                          </span>
-                        </div>
-                      )}
+                  <div className="flex items-center justify-between gap-2.5">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] font-normal font-sans lining-nums uppercase tracking-wider text-zinc-450 dark:text-zinc-500">
+                        {bookmark.location} {bookmark.room_name && `· Room: ${bookmark.room_name}`}
+                      </span>
                     </div>
 
-                    {/* Go to bookmark button */}
                     {!isEditing && (
-                      <button
-                        onClick={() => onGoToPage(parsePageNumber(bookmark.location))}
-                        className="flex-shrink-0 p-1 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-205 dark:hover:bg-zinc-700 rounded text-zinc-700 dark:text-zinc-300 transition-colors flex items-center gap-0.5 text-xs font-semibold cursor-pointer"
-                        title="Jump to page"
-                      >
-                        <ChevronRight size={14} />
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => startEdit(bookmark)}
+                          className="text-[10px] text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white font-bold border-none bg-transparent cursor-pointer hover:underline focus:outline-none"
+                        >
+                          Edit
+                        </button>
+                        <span className="text-zinc-300 dark:text-zinc-700 text-[10px]">•</span>
+                        <button
+                          onClick={() => handleDeleteBookmark(bookmark.id)}
+                          className="text-[10px] text-red-500 hover:text-red-400 font-bold border-none bg-transparent cursor-pointer hover:underline focus:outline-none"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     )}
                   </div>
 
-                  {/* Actions overlay shown on hover */}
-                  {!isEditing && (
-                    <div className="flex gap-2.5 self-start mt-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                  {isEditing ? (
+                    <div className="flex gap-1.5 items-center mt-1">
+                      <input
+                        type="text"
+                        value={editLabel}
+                        onChange={(e) => setEditLabel(e.target.value)}
+                        className="flex-1 px-2.5 py-1 text-xs rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-955 dark:text-white outline-none focus:border-zinc-500 dark:focus:border-zinc-500"
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleSaveEdit(bookmark.id);
+                          else if (e.key === "Escape") setEditingId(null);
+                        }}
+                      />
                       <button
-                        onClick={() => startEdit(bookmark)}
-                        className="text-[11px] font-bold text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300 flex items-center gap-1 cursor-pointer"
+                        onClick={() => handleSaveEdit(bookmark.id)}
+                        className="p-1 hover:bg-zinc-150 dark:hover:bg-zinc-700 rounded text-green-600 cursor-pointer"
                       >
-                        <Edit3 size={11} /> Edit
+                        <Check size={14} />
                       </button>
                       <button
-                        onClick={() => handleDeleteBookmark(bookmark.id)}
-                        className="text-[11px] font-bold text-red-500 hover:text-red-755 flex items-center gap-1 cursor-pointer"
+                        onClick={() => setEditingId(null)}
+                        className="p-1 hover:bg-zinc-150 dark:hover:bg-zinc-700 rounded text-zinc-500 cursor-pointer"
                       >
-                        <Trash2 size={11} /> Delete
+                        <X size={14} />
                       </button>
                     </div>
+                  ) : (
+                    <button
+                      onClick={() => onGoToPage(parsePageNumber(bookmark.location))}
+                      className="text-left font-serif text-xs italic text-zinc-800 dark:text-zinc-200 border-none bg-transparent cursor-pointer p-0 hover:text-zinc-955 dark:hover:text-white focus:outline-none leading-relaxed"
+                      title="Go to bookmark location"
+                    >
+                      {bookmark.label}
+                    </button>
                   )}
                 </div>
               );
             })}
           </div>
         )}
-      </div>
-
-      {/* Footer */}
-      <div className="border-t border-zinc-200 dark:border-zinc-800 p-3 text-[11px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 bg-zinc-50 dark:bg-zinc-900/40 text-center">
-        {bookmarks.length} {bookmarks.length === 1 ? "Bookmark" : "Bookmarks"} saved
       </div>
     </div>
   );

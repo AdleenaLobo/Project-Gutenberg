@@ -316,6 +316,54 @@ def init_db():
                 )
             ])
             conn.commit()
+        
+        # Ensure all ebooks have the latest long summaries
+        ebooks_updates = [
+            (
+                "Pride and Prejudice",
+                "A classic romantic novel of manners exploring the emotional growth of Elizabeth Bennet as she navigates societal pressures, class divisions, and hasty judgments. In her quest for love and independence in Regency-era England, she clashes with the wealthy, proud Mr. Darcy, leading to a timeless struggle between social expectations and personal integrity."
+            ),
+            (
+                "Frankenstein",
+                "The chilling tale of Victor Frankenstein, a brilliant scientist who succeeds in bringing an artificial creature to life, with tragic consequences. As the monster seeks connection but receives only rejection, it embarks on a destructive path of revenge, raising profound philosophical questions about creation, responsibility, and what it truly means to be human."
+            ),
+            (
+                "Moby Dick",
+                "Captain Ahab's obsessive and self-destructive pursuit of the legendary white whale that crippled him on a previous voyage. Narrated by the sailor Ishmael, this epic maritime adventure dives deep into themes of obsession, fate, and nature, exploring the crew's dangerous journey aboard the Pequod into the heart of darkness."
+            ),
+            (
+                "The Great Gatsby",
+                "Set in the roaring twenties, the story follows the lavish, mysterious lifestyle of Jay Gatsby and his unyielding obsession with Daisy Buchanan. Narrated by Nick Carraway, the novel exposes the tragic disillusionment of the American Dream amidst jazz, bootlegging, and the moral decadence of high society."
+            ),
+            (
+                "Alice in Wonderland",
+                "A young girl named Alice tumbles down a rabbit hole into a surreal, whimsical underground world filled with bizarre logic and talking creatures. In this fantastical dreamscape, she encounters iconic characters like the anxious White Rabbit, the eccentric Mad Hatter, the enigmatic Cheshire Cat, and the tyrannical Queen of Hearts. As Alice navigates through a series of absurd adventures, the novel brilliantly satirizes Victorian culture and parodies contemporary children's literature, creating a masterpiece of literary nonsense."
+            ),
+            (
+                "Dracula",
+                "The legendary gothic horror novel documenting Count Dracula's attempt to move from Transylvania to England to find fresh blood and spread his curse. Told through letters and diaries, it follows a band of brave companions led by Professor Van Helsing as they fight to destroy the ancient vampire and save humanity from his shadow."
+            ),
+            (
+                "Sherlock Holmes",
+                "The masterfully structured mysteries and deductions of London's finest consulting detective alongside his trusted companion, Dr. Watson. From the foggy streets of London to grand English estates, the duo untangle complex crimes using Holmes's unparalleled powers of observation, logical deduction, and forensic science."
+            ),
+            (
+                "War of the Worlds",
+                "A pioneering science fiction thriller depicting a sudden, highly advanced Martian invasion of Earth and humanity's frantic fight for survival. Featuring towering tripod war machines and deadly heat-rays, the story follows an unnamed narrator navigating a devastated landscape, exploring the vulnerability of human empire and technology."
+            ),
+            (
+                "Romeo and Juliet",
+                "The timeless tragedy of two young, star-crossed lovers whose ill-fated romance ultimately heals the deep rift between their feuding families of Verona. Defying their parents' ancient grudge, their passionate but brief union ends in heartbreak, serving as the ultimate monument to the power of young love and the cost of hate."
+            ),
+            (
+                "The Metamorphosis",
+                "Gregor Samsa wakes up one morning to find himself inexplicably transformed into a monstrous, giant insect, upending his isolated family dynamics. Struggling to adapt to his new physical reality, Gregor experiences profound alienation and rejection, reflecting existential themes of guilt, absurdity, and the burden of societal expectations."
+            )
+        ]
+        for title, desc in ebooks_updates:
+            cur.execute("UPDATE books SET summary = %s WHERE title = %s", (desc, title))
+        conn.commit()
+
         cur.close()
         conn.close()
     else:
@@ -472,6 +520,53 @@ def init_db():
                 )
             ])
         conn.commit()
+
+        # Ensure all ebooks have the latest long summaries
+        ebooks_updates = [
+            (
+                "Pride and Prejudice",
+                "A classic romantic novel of manners exploring the emotional growth of Elizabeth Bennet as she navigates societal pressures, class divisions, and hasty judgments. In her quest for love and independence in Regency-era England, she clashes with the wealthy, proud Mr. Darcy, leading to a timeless struggle between social expectations and personal integrity."
+            ),
+            (
+                "Frankenstein",
+                "The chilling tale of Victor Frankenstein, a brilliant scientist who succeeds in bringing an artificial creature to life, with tragic consequences. As the monster seeks connection but receives only rejection, it embarks on a destructive path of revenge, raising profound philosophical questions about creation, responsibility, and what it truly means to be human."
+            ),
+            (
+                "Moby Dick",
+                "Captain Ahab's obsessive and self-destructive pursuit of the legendary white whale that crippled him on a previous voyage. Narrated by the sailor Ishmael, this epic maritime adventure dives deep into themes of obsession, fate, and nature, exploring the crew's dangerous journey aboard the Pequod into the heart of darkness."
+            ),
+            (
+                "The Great Gatsby",
+                "Set in the roaring twenties, the story follows the lavish, mysterious lifestyle of Jay Gatsby and his unyielding obsession with Daisy Buchanan. Narrated by Nick Carraway, the novel exposes the tragic disillusionment of the American Dream amidst jazz, bootlegging, and the moral decadence of high society."
+            ),
+            (
+                "Alice in Wonderland",
+                "A young girl named Alice tumbles down a rabbit hole into a surreal, whimsical underground world filled with bizarre logic and talking creatures. In this fantastical dreamscape, she encounters iconic characters like the anxious White Rabbit, the eccentric Mad Hatter, the enigmatic Cheshire Cat, and the tyrannical Queen of Hearts. As Alice navigates through a series of absurd adventures, the novel brilliantly satirizes Victorian culture and parodies contemporary children's literature, creating a masterpiece of literary nonsense."
+            ),
+            (
+                "Dracula",
+                "The legendary gothic horror novel documenting Count Dracula's attempt to move from Transylvania to England to find fresh blood and spread his curse. Told through letters and diaries, it follows a band of brave companions led by Professor Van Helsing as they fight to destroy the ancient vampire and save humanity from his shadow."
+            ),
+            (
+                "Sherlock Holmes",
+                "The masterfully structured mysteries and deductions of London's finest consulting detective alongside his trusted companion, Dr. Watson. From the foggy streets of London to grand English estates, the duo untangle complex crimes using Holmes's unparalleled powers of observation, logical deduction, and forensic science."
+            ),
+            (
+                "War of the Worlds",
+                "A pioneering science fiction thriller depicting a sudden, highly advanced Martian invasion of Earth and humanity's frantic fight for survival. Featuring towering tripod war machines and deadly heat-rays, the story follows an unnamed narrator navigating a devastated landscape, exploring the vulnerability of human empire and technology."
+            ),
+            (
+                "Romeo and Juliet",
+                "The timeless tragedy of two young, star-crossed lovers whose ill-fated romance ultimately heals the deep rift between their feuding families of Verona. Defying their parents' ancient grudge, their passionate but brief union ends in heartbreak, serving as the ultimate monument to the power of young love and the cost of hate."
+            ),
+            (
+                "The Metamorphosis",
+                "Gregor Samsa wakes up one morning to find himself inexplicably transformed into a monstrous, giant insect, upending his isolated family dynamics. Struggling to adapt to his new physical reality, Gregor experiences profound alienation and rejection, reflecting existential themes of guilt, absurdity, and the burden of societal expectations."
+            )
+        ]
+        for title, desc in ebooks_updates:
+            cur.execute("UPDATE books SET summary = ? WHERE title = ?", (desc, title))
+        conn.commit()
         conn.close()    
 def current_user():
     token = request.headers.get("Authorization", "").replace("Bearer ", "", 1).strip()
@@ -502,6 +597,31 @@ def login():
         return jsonify({"error":"Invalid email or password"}), 401
     token = secrets.token_hex(24); TOKENS[token] = user["id"]
     return jsonify({"token":token,"user":user})
+
+@app.post("/api/auth/signup")
+def signup():
+    try:
+        data = request.get_json(force=True)
+        name = data.get("name")
+        email = data.get("email")
+        password = data.get("password")
+        if not name or not email or not password:
+            return jsonify({"error": "Name, email, and password are required"}), 400
+        
+        db = get_db()
+        existing = one(db.execute("SELECT 1 FROM users WHERE email=?", (email,)))
+        if existing:
+            return jsonify({"error": "Email address already registered"}), 400
+            
+        cur = run("INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)", (name, email, password, "user"))
+        user_id = cur.lastrowid
+        
+        user = {"id": user_id, "name": name, "email": email, "role": "user"}
+        token = secrets.token_hex(24); TOKENS[token] = user_id
+        
+        return jsonify({"token": token, "user": user}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.get("/api/books")
 @auth()
@@ -622,22 +742,28 @@ def rooms():
                (SELECT COUNT(*) FROM room_members WHERE room_id = r.id) AS member_count
         FROM reading_rooms r
         JOIN books b ON b.id = r.book_id
-        JOIN room_members rm ON rm.room_id = r.id
-        WHERE rm.user_id = ?
         ORDER BY r.created_at DESC
-    """, (request.user["id"],))))
+    """)))
 
 @app.post("/api/rooms")
 @auth("user")
 def create_room():
-    data = request.get_json(force=True)
-    book = one(get_db().execute("SELECT * FROM books WHERE id=?", (data.get("book_id"),)))
-    if not book or book["type"] != "ebook":
-        return jsonify({"error":"Reading rooms are for ebooks only"}), 400
-    cur = run("INSERT INTO reading_rooms (book_id,name,created_by,created_at) VALUES (?,?,?,?)", (book["id"], data.get("name","Reading room"), request.user["id"], now_iso()))
-    room_id = cur.lastrowid
-    run("INSERT INTO room_members (room_id,user_id,joined_at) VALUES (?,?,?)", (room_id, request.user["id"], now_iso()))
-    return jsonify({"id":room_id,"message":"Room created"}), 201
+    try:
+        data = request.get_json(force=True)
+        book_id = data.get("book_id")
+        book = one(get_db().execute("SELECT * FROM books WHERE id=?", (book_id,)))
+        if not book:
+            return jsonify({"error": f"Book not found for id {book_id}"}), 404
+        if book["type"] != "ebook":
+            return jsonify({"error": f"Book type '{book['type']}' is not ebook"}), 400
+        cur = run("INSERT INTO reading_rooms (book_id,name,created_by,created_at) VALUES (?,?,?,?)", (book["id"], data.get("name","Reading room"), request.user["id"], now_iso()))
+        room_id = cur.lastrowid
+        run("INSERT INTO room_members (room_id,user_id,joined_at) VALUES (?,?,?)", (room_id, request.user["id"], now_iso()))
+        return jsonify({"id":room_id,"message":"Room created"}), 201
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
 
 @app.post("/api/rooms/<int:room_id>/join")
 @auth("user")
@@ -649,12 +775,12 @@ def join_room(room_id):
 @auth("user")
 def room_detail(room_id):
     if not is_member(room_id, request.user["id"]):
-        return jsonify({"error": "Access denied: not a member of this room"}), 403
+        run("INSERT OR IGNORE INTO room_members (room_id,user_id,joined_at) VALUES (?,?,?)", (room_id, request.user["id"], now_iso()))
     room = one(get_db().execute("SELECT r.*,b.title,b.author,b.ebook_text,b.ebook_source FROM reading_rooms r JOIN books b ON b.id=r.book_id WHERE r.id=?", (room_id,)))
     if not room:
         return jsonify({"error":"Room not found"}), 404
     members = many(get_db().execute("SELECT u.id,u.name,u.email FROM room_members rm JOIN users u ON u.id=rm.user_id WHERE rm.room_id=? ORDER BY rm.joined_at", (room_id,)))
-    notes = many(get_db().execute("SELECT n.*,u.name AS user_name FROM notes n JOIN users u ON u.id=n.user_id WHERE n.room_id=? ORDER BY n.created_at DESC", (room_id,)))
+    notes = many(get_db().execute("SELECT n.*,u.name AS user_name FROM notes n JOIN users u ON u.id=n.user_id WHERE n.room_id=? ORDER BY n.created_at ASC", (room_id,)))
     bookmarks = many(get_db().execute("SELECT bm.*,u.name AS user_name FROM bookmarks bm JOIN users u ON u.id=bm.user_id WHERE bm.room_id=? ORDER BY bm.created_at DESC", (room_id,)))
     return jsonify({"room":room,"members":members,"notes":notes,"bookmarks":bookmarks})
 

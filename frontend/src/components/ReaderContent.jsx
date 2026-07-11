@@ -134,36 +134,7 @@ const ReaderContent = forwardRef(function ReaderContent({
 }, ref) {
   const { fontFamily, fontSize, lineHeight, layoutMode, activeHighlightColor } = useReaderTheme();
   const fontStack = getFontStack(fontFamily);
-  const startX = useRef(null);
-
-  const handleMouseDown = (e) => {
-    startX.current = e.clientX;
-  };
-
-  const handleMouseUp = (e) => {
-    if (startX.current === null) return;
-
-    if (activeHighlightColor !== "none") {
-      startX.current = null;
-      return;
-    }
-
-    const distance = e.clientX - startX.current;
-    const threshold = 120;
-
-    if (distance > threshold && pageIndex > 0) {
-      onPrevious();
-    } else if (distance < -threshold && pageIndex < totalPages - 1) {
-      onNext();
-    }
-
-    startX.current = null;
-  };
-
-  const isHighlightingActive = activeHighlightColor !== "none";
-  const selectionClass = isHighlightingActive
-    ? "cursor-text select-text selectable-content"
-    : "cursor-grab select-none";
+  const selectionClass = "cursor-text select-text selectable-content";
 
   if (layoutMode === "scroll") {
     const allBlocks = pages.reduce((acc, p) => [...acc, ...(p.lines || [])], []);
@@ -222,8 +193,6 @@ const ReaderContent = forwardRef(function ReaderContent({
   return (
     <div
       ref={ref}
-      onMouseDown={handleMouseDown}
-      onMouseUp={handleMouseUp}
       className={`w-full max-w-[850px] h-[calc(100vh-80px)] mx-auto px-12 py-10 overflow-hidden bg-transparent border-none shadow-none ${selectionClass}`}
       style={{
         fontFamily: fontStack,

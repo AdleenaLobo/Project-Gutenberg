@@ -128,8 +128,8 @@ export function User({
                         <div className="font-bold text-base text-zinc-955 dark:text-white">
                           {r.name}
                         </div>
-                        <div className="text-base text-zinc-550 dark:text-zinc-455 mt-1">
-                          {r.member_count} {r.member_count === 1 ? "reader" : "readers"} · {r.title}
+                        <div className="text-base text-zinc-500 dark:text-zinc-400 mt-1">
+                          {r.member_count} {r.member_count === 1 ? "reader" : "readers"}
                         </div>
                       </div>
                       <ArrowRight size={15} className="text-zinc-400 group-hover:text-zinc-955 dark:group-hover:text-white group-hover:translate-x-1 transition-all" />

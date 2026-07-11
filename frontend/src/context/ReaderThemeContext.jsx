@@ -31,7 +31,8 @@ export function ReaderThemeProvider({ children }) {
     return localStorage.getItem("reader-layoutMode") || "paginated";
   });
   const [activeHighlightColor, setActiveHighlightColor] = useState(() => {
-    return localStorage.getItem("reader-highlightColor") || "none";
+    const saved = localStorage.getItem("reader-highlightColor");
+    return (saved && saved !== "none") ? saved : "green";
   });
 
   useEffect(() => {
