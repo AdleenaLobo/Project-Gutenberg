@@ -101,7 +101,7 @@ export default function ReaderControls({
 
   const btnBase = "w-12 h-12 rounded-lg border flex items-center justify-center transition-all duration-200 fixed z-20 focus:outline-none";
   const btnActive = showUI
-    ? "border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-800 text-zinc-950 dark:text-white hover:scale-105 cursor-pointer shadow-none focus:outline-none focus:ring-0 focus:border-zinc-300 dark:focus:border-zinc-800"
+    ? "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white hover:scale-105 cursor-pointer shadow-sm focus:outline-none focus:ring-0 focus:border-zinc-300 dark:focus:border-zinc-700"
     : "border-transparent bg-transparent text-transparent shadow-none pointer-events-none";
 
   const iconOpacity = showUI ? "opacity-100" : "opacity-0 pointer-events-none";
@@ -120,22 +120,22 @@ export default function ReaderControls({
         <button
           onClick={toggleBookmark}
           aria-label={isBookmarked ? "Remove bookmark" : "Bookmark this page"}
-          className="w-12 h-12 rounded-lg border bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-800 text-zinc-955 dark:text-white hover:scale-105 cursor-pointer flex items-center justify-center transition-all duration-200 focus:outline-none shadow-sm"
+          className="w-12 h-12 rounded-lg border bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white hover:scale-105 cursor-pointer flex items-center justify-center transition-all duration-200 focus:outline-none shadow-sm"
         >
           <Bookmark
             size={18}
             fill={isBookmarked ? "currentColor" : "none"}
-            className="stroke-2 text-zinc-955 dark:text-white"
+            className="stroke-2 text-zinc-900 dark:text-white"
           />
         </button>
 
         {/* Grouped Aa & Chapters */}
-        <div className="flex items-center bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-800 rounded-lg shadow-sm overflow-hidden divide-x divide-zinc-300 dark:divide-zinc-800">
+        <div className="flex items-center bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-sm overflow-hidden divide-x divide-zinc-200 dark:divide-zinc-800">
           {/* Aa Text Panel Button */}
           <button
             onClick={() => setShowReaderSettings((prev) => !prev)}
             aria-label="Text control panel"
-            className={`w-12 h-12 flex items-center justify-center hover:bg-zinc-50 dark:hover:bg-zinc-700/50 text-zinc-955 dark:text-white cursor-pointer border-none bg-transparent transition-colors focus:outline-none ${
+            className={`w-12 h-12 flex items-center justify-center hover:bg-zinc-50 dark:hover:bg-zinc-700/50 text-zinc-900 dark:text-white cursor-pointer border-none bg-transparent transition-colors focus:outline-none ${
               showSettings ? "bg-zinc-100 dark:bg-zinc-700" : ""
             }`}
           >
@@ -146,9 +146,9 @@ export default function ReaderControls({
           <button
             onClick={onOpenChapters}
             aria-label="Table of contents"
-            className="w-12 h-12 flex items-center justify-center hover:bg-zinc-50 dark:hover:bg-zinc-700/50 text-zinc-955 dark:text-white cursor-pointer border-none bg-transparent transition-colors focus:outline-none"
+            className="w-12 h-12 flex items-center justify-center hover:bg-zinc-50 dark:hover:bg-zinc-700/50 text-zinc-900 dark:text-white cursor-pointer border-none bg-transparent transition-colors focus:outline-none"
           >
-            <List size={18} className="text-zinc-955 dark:text-white" />
+            <List size={18} className="text-zinc-900 dark:text-white" />
           </button>
         </div>
       </div>
@@ -182,7 +182,7 @@ export default function ReaderControls({
       {/* Page Number */}
       {layoutMode !== "scroll" && (
         <div
-          className={`fixed bottom-6 left-1/2 -translate-x-1/2 px-5 py-2.5 bg-white/80 dark:bg-zinc-800/90 backdrop-blur-sm border border-zinc-200 dark:border-zinc-800 rounded-full text-sm font-medium tracking-wider text-zinc-955 dark:text-white shadow-md pointer-events-none transition-opacity duration-350 z-20 font-serif ${showUI ? "opacity-100" : "opacity-0"
+          className={`fixed bottom-6 left-1/2 -translate-x-1/2 px-5 py-2.5 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-sm border border-zinc-200 dark:border-zinc-800 rounded-full text-sm font-bold tracking-wider text-zinc-900 dark:text-white shadow-md pointer-events-none transition-opacity duration-350 z-20 font-serif ${showUI ? "opacity-100" : "opacity-0"
             }`}
         >
           {pageIndex + 1} / {totalPages}

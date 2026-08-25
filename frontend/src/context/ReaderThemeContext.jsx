@@ -37,6 +37,11 @@ export function ReaderThemeProvider({ children }) {
 
   useEffect(() => {
     localStorage.setItem("reader-theme", theme);
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
   }, [theme]);
 
   useEffect(() => {

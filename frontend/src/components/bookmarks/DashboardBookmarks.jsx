@@ -1,7 +1,42 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bookmark, Trash2, ArrowRight, AlertCircle } from "lucide-react";
-import BookmarksSkeleton from "./BookmarksSkeleton";
+// Custom inline skeleton loader matching the design of the bookmarks card
+function BookmarksSkeleton({ count = 3 }) {
+  const placeholders = Array.from({ length: count });
+
+  return (
+    <div className="grid grid-cols-1 gap-6 w-full">
+      {placeholders.map((_, i) => (
+        <div
+          key={i}
+          className="flex items-center justify-between p-4 border border-[#EAD8D8] bg-[#FAF2F2] rounded-2xl w-full animate-pulse"
+        >
+          <div className="flex-1 min-w-0 pr-6">
+            {/* Title / Label placeholder (Page X) */}
+            <div className="bg-[#EAD8D8] dark:bg-zinc-800 h-4 w-20 mb-2 rounded" />
+            
+            {/* Meta details line placeholder */}
+            <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+              <div className="bg-[#EAD8D8] dark:bg-zinc-800 h-3.5 w-32 rounded" />
+              <span className="text-[#EAD8D8]">·</span>
+              <div className="bg-[#EAD8D8] dark:bg-zinc-800 h-3.5 w-24 rounded" />
+              <span className="text-[#EAD8D8]">·</span>
+              <div className="bg-[#EAD8D8] dark:bg-zinc-800 h-3.5 w-28 rounded" />
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-4 flex-shrink-0 text-[#EAD8D8]">
+            <div className="p-2 rounded-lg flex items-center justify-center border border-transparent">
+              <Trash2 size={16} />
+            </div>
+            <ArrowRight size={16} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function DashboardBookmarks({ client, onBookmarkDeleted }) {
   const navigate = useNavigate();
@@ -101,7 +136,7 @@ export default function DashboardBookmarks({ client, onBookmarkDeleted }) {
         <div
           key={b.id}
           onClick={() => handleRead(b)}
-          className="group flex items-center justify-between p-4 border-2 border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 cursor-pointer transition-all duration-300 ease-out rounded-none hover:-translate-y-1 hover:-translate-x-1 shadow-none hover:shadow-[4px_4px_0px_#000] dark:hover:shadow-[4px_4px_0px_#fff] w-full"
+          className="group flex items-center justify-between p-4 border border-[#EAD8D8] bg-[#FAF2F2] cursor-pointer transition-all duration-300 rounded-2xl hover:-translate-y-0.5 hover:shadow-sm w-full"
         >
           <div className="flex-1 min-w-0 pr-6">
             <div className="font-sans font-bold text-base text-zinc-955 dark:text-white truncate">

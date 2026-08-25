@@ -653,6 +653,15 @@ export function EbookReader({ book, client, onBack }) {
     measureRef.current.style.width = `${pageRef.current.clientWidth}px`;
   }, [pages]);
 
+  useEffect(() => {
+    if (book && book.id && pages.length > 0) {
+      localStorage.setItem(
+        `bookProgress_${book.id}`,
+        JSON.stringify({ pageIndex, totalPages: pages.length })
+      );
+    }
+  }, [book, pageIndex, pages.length]);
+
   async function loadRoom() {
     try {
       const data = await client.request(`/rooms/${activeRoom}`);
@@ -866,7 +875,7 @@ export function EbookReader({ book, client, onBack }) {
     <div className={`relative w-full transition-colors duration-200 ${
       theme === "dark" 
         ? "dark bg-zinc-900 text-zinc-100" 
-        : "bg-white text-zinc-900"
+        : "bg-[#FCFBFA] text-zinc-900"
     } ${layoutMode === "scroll" ? "min-h-screen h-auto overflow-y-visible" : "h-screen overflow-hidden"}`}>
       {/* Warmth overlay shade */}
       <div

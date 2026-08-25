@@ -1,3 +1,16 @@
+const MAPPING = {
+  "Alice in Wonderland": "alice-in-wonderland.jpg",
+  "Dracula": "dracula.jpg",
+  "Frankenstein": "frankenstine.jpg",
+  "The Metamorphosis": "metamorphosis.webp",
+  "Moby Dick": "moby-dick.jpg",
+  "Pride and Prejudice": "pride-and-prejudice.webp",
+  "Romeo and Juliet": "romeo-and-juliet.jpg",
+  "Sherlock Holmes": "sherlock-holmes.jpg",
+  "The Great Gatsby": "the-great-gatsby.jpg",
+  "War of the Worlds": "the-war-of-worlds.jpg",
+};
+
 export const HEADING_REGEX =
   /^\s*(?:CHAPTER|Chapter|LETTER|Letter|ACT|Act)\s+([IVXLCDM]+|\d+)\b.*$|^\s*[IVXLCDM]+\.?\s*$/i;
 
@@ -257,4 +270,53 @@ export function formatBlockText(text, quoteOpenAtStart = false) {
   }
 
   return result;
+}
+
+export function getLocalCover(title, fallback) {
+  if (!title) return fallback;
+  const normalizedTitle = title.trim();
+  const filename = MAPPING[normalizedTitle];
+  if (filename) {
+    return new URL(`../assets/${filename}`, import.meta.url).href;
+  }
+  return fallback;
+}
+
+export function getChapterOnePreview(book) {
+  const { blocks, chapters } = parseBook(book);
+  if (!blocks || blocks.length === 0) return null;
+  
+  let startBlockIndex = 0;
+  if (chapters && chapters.length > 0) {
+    const chapter1Index = chapters.findIndex(c => 
+      /chapter\s+(1|i\b|one)/i.test(c.title)
+    );
+    if (chapter1Index !== -1) {
+      startBlockIndex = chapters[chapter1Index].blockIndex + 1;
+    } else {
+      startBlockIndex = chapters[0].blockIndex + 1;
+    }
+  }
+
+  const paragraphs = [];
+  let nextChapterBlockIndex = blocks.length;
+  if (chapters && chapters.length > 0) {
+    const currentChapterIndex = chapters.findIndex(c => c.blockIndex >= startBlockIndex - 1);
+    if (currentChapterIndex !== -1 && currentChapterIndex + 1 < chapters.length) {
+      nextChapterBlockIndex = chapters[currentChapterIndex + 1].blockIndex;
+    }
+  }
+
+  for (let i = startBlockIndex; i < nextChapterBlockIndex; i++) {
+    const block = blocks[i];
+    if (block.type === "paragraph" && block.text.trim()) {
+      paragraphs.push(block.text);
+      if (paragraphs.length >= 3) {
+        break;
+      }
+    }
+  }
+
+  if (paragraphs.length === 0) return null;
+  return paragraphs.join("\n\n");
 }

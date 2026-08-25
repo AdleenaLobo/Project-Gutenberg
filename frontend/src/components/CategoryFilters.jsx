@@ -19,17 +19,17 @@ export function CategoryFilters({
 
   return (
     <div className="mb-10">
-      <div className="flex gap-2.5 flex-wrap">
+      <div className="flex gap-6 flex-wrap">
         {categories.map((cat) => {
           const isSelected = selectedCategory.toLowerCase() === cat.toLowerCase();
           return (
             <button
               key={cat}
               onClick={() => onSelectCategory(cat)}
-              className={`px-4 py-2 border text-base font-normal tracking-wider rounded-lg cursor-pointer transition-all duration-200 ${
+              className={`h-8 px-1.5 text-sm font-medium cursor-pointer transition-all flex items-center duration-200 focus:outline-none bg-transparent border-t-2 rounded-none ${
                 isSelected
-                  ? "bg-transparent border-zinc-900 text-zinc-955 dark:border-white dark:text-white"
-                  : "bg-transparent border-zinc-300 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white"
+                  ? "border-[#851C1C] text-[#851C1C]"
+                  : "border-transparent text-[#851C1C]/70 hover:text-[#851C1C]"
               }`}
             >
               {cat}

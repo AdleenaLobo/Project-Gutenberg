@@ -19,12 +19,58 @@ html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
-  font-family: Georgia, yingping, "New York", serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: #FCFBFA;
+  overflow: hidden;
 }
 
 /* Prevent layout shift when scrollbars toggle visibility */
 .overflow-auto, .overflow-y-auto, .overflow-y-scroll {
   scrollbar-gutter: stable;
+}
+
+/* Custom scrollbar with a clean neutral grey theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #FCFBFA; /* App light background */
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #18181B; /* App dark background */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D4D4D8; /* Neutral zinc-300 grey */
+  border-radius: 9999px;
+  border: 2px solid #FCFBFA; /* Adds inner border for a floating track look */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #A1A1AA; /* Darker zinc-400 grey on hover */
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #3F3F46; /* Neutral zinc-700 grey */
+  border-radius: 9999px;
+  border: 2px solid #18181B;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #52525B; /* Darker zinc-600 grey on hover */
+}
+
+/* Firefox scrollbar support */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #D4D4D8 #FCFBFA;
+}
+
+.dark * {
+  scrollbar-color: #3F3F46 #18181B;
 }
 
 /* Warmth overlay for reader screen shading */

@@ -39,6 +39,7 @@ export  default function BookReader({ client }) {
         }
 
         if (active) {
+          localStorage.setItem("currentlyReadingBookId", id);
           setBook({
             ...bookData,
             _initialPageIndex: initialPage !== undefined ? initialPage : 0,
