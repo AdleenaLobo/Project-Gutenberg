@@ -280,10 +280,8 @@ def init_db():
                             ("User Two","user2@library.test","reader123","user"))
             conn.commit()
 
-        # If the database was partially seeded with only the 2 default books,
-        # clear the books table so that seed_books.py can run a full fresh seeding.
         cur.execute("SELECT COUNT(*) FROM books")
-        if cur.fetchone()[0] < 5:
+        if cur.fetchone()[0] < 10:
             cur.execute("TRUNCATE TABLE books RESTART IDENTITY CASCADE")
             conn.commit()
 
@@ -408,10 +406,8 @@ def init_db():
                 cur.execute("INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)",
                             ("User Two","user2@library.test","reader123","user"))
 
-        # If the database was partially seeded with only the 2 default books,
-        # clear the books table so that seed_books.py can run a full fresh seeding.
         cur.execute("SELECT COUNT(*) FROM books")
-        if cur.fetchone()[0] < 5:
+        if cur.fetchone()[0] < 10:
             cur.execute("DELETE FROM books")
             cur.execute("DELETE FROM sqlite_sequence WHERE name='books'")
             conn.commit()
