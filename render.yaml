@@ -4,8 +4,8 @@ services:
     name: gutenberg-backend
     runtime: python
     rootDir: backend
-    buildCommand: pip install -r requirements.txt && python -c "from app import init_db; init_db()" && python seed_books.py
-    startCommand: gunicorn app:app
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -c "from app import init_db; init_db()" && python seed_books.py && gunicorn app:app
     envVars:
       - key: FRONTEND_URL
         value: https://gutenberg-frontend.onrender.com # TODO: Replace with your actual frontend Render URL after creation
