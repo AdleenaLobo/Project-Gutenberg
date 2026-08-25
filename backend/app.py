@@ -280,89 +280,12 @@ def init_db():
                             ("User Two","user2@library.test","reader123","user"))
             conn.commit()
 
-        # Seed books if empty
+        # If the database was partially seeded with only the 2 default books,
+        # clear the books table so that seed_books.py can run a full fresh seeding.
         cur.execute("SELECT COUNT(*) FROM books")
-        if cur.fetchone()[0] == 0:
-            cur.executemany("""
-                INSERT INTO books (title,author,type,total_copies,ebook_source,ebook_text,summary,cover_image_url,category)
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
-            """, [
-                (
-                    "Pride and Prejudice", "Jane Austen", "ebook", 0, "Project Gutenberg",
-                    "It is a truth universally acknowledged...",
-                    "A classic romantic novel of manners exploring the emotional growth of Elizabeth Bennet as she navigates societal pressures.",
-                    "https://covers.openlibrary.org/b/id/14571901-L.jpg", "Fiction"
-                ),
-                (
-                    "Frankenstein", "Mary Shelley", "ebook", 0, "Project Gutenberg",
-                    "You will rejoice to hear that no disaster...",
-                    "The chilling tale of Victor Frankenstein, a brilliant scientist who succeeds in bringing an artificial creature to life, with tragic consequences.",
-                    "https://covers.openlibrary.org/b/id/14539129-L.jpg", "Sci-Fi"
-                ),
-                (
-                    "Clean Code", "Robert C. Martin", "hardcover", 4, None, None,
-                    "Even bad code can function. But if code isn't clean, it can bring a development organization to its knees. This book teaches software craftsmen how to write better code.",
-                    None, "Tech"
-                ),
-                (
-                    "Designing Data-Intensive Applications", "Martin Kleppmann", "hardcover", 3, None, None,
-                    "An excellent guide to the principles and architectures underlying modern data systems like databases, streams, and processing pipelines.",
-                    None, "Tech"
-                ),
-                (
-                    "The Pragmatic Programmer", "Andrew Hunt and David Thomas", "hardcover", 5, None, None,
-                    "Direct advice ranging from career development to architectural techniques for writing clean, flexible, and maintainable code.",
-                    None, "Tech"
-                )
-            ])
+        if cur.fetchone()[0] < 5:
+            cur.execute("TRUNCATE TABLE books RESTART IDENTITY CASCADE")
             conn.commit()
-        
-        # Ensure all ebooks have the latest long summaries
-        ebooks_updates = [
-            (
-                "Pride and Prejudice",
-                "A classic romantic novel of manners exploring the emotional growth of Elizabeth Bennet as she navigates societal pressures, class divisions, and hasty judgments. In her quest for love and independence in Regency-era England, she clashes with the wealthy, proud Mr. Darcy, leading to a timeless struggle between social expectations and personal integrity."
-            ),
-            (
-                "Frankenstein",
-                "The chilling tale of Victor Frankenstein, a brilliant scientist who succeeds in bringing an artificial creature to life, with tragic consequences. As the monster seeks connection but receives only rejection, it embarks on a destructive path of revenge, raising profound philosophical questions about creation, responsibility, and what it truly means to be human."
-            ),
-            (
-                "Moby Dick",
-                "Captain Ahab's obsessive and self-destructive pursuit of the legendary white whale that crippled him on a previous voyage. Narrated by the sailor Ishmael, this epic maritime adventure dives deep into themes of obsession, fate, and nature, exploring the crew's dangerous journey aboard the Pequod into the heart of darkness."
-            ),
-            (
-                "The Great Gatsby",
-                "Set in the roaring twenties, the story follows the lavish, mysterious lifestyle of Jay Gatsby and his unyielding obsession with Daisy Buchanan. Narrated by Nick Carraway, the novel exposes the tragic disillusionment of the American Dream amidst jazz, bootlegging, and the moral decadence of high society."
-            ),
-            (
-                "Alice in Wonderland",
-                "A young girl named Alice tumbles down a rabbit hole into a surreal, whimsical underground world filled with bizarre logic and talking creatures. In this fantastical dreamscape, she encounters iconic characters like the anxious White Rabbit, the eccentric Mad Hatter, the enigmatic Cheshire Cat, and the tyrannical Queen of Hearts. As Alice navigates through a series of absurd adventures, the novel brilliantly satirizes Victorian culture and parodies contemporary children's literature, creating a masterpiece of literary nonsense."
-            ),
-            (
-                "Dracula",
-                "The legendary gothic horror novel documenting Count Dracula's attempt to move from Transylvania to England to find fresh blood and spread his curse. Told through letters and diaries, it follows a band of brave companions led by Professor Van Helsing as they fight to destroy the ancient vampire and save humanity from his shadow."
-            ),
-            (
-                "Sherlock Holmes",
-                "The masterfully structured mysteries and deductions of London's finest consulting detective alongside his trusted companion, Dr. Watson. From the foggy streets of London to grand English estates, the duo untangle complex crimes using Holmes's unparalleled powers of observation, logical deduction, and forensic science."
-            ),
-            (
-                "War of the Worlds",
-                "A pioneering science fiction thriller depicting a sudden, highly advanced Martian invasion of Earth and humanity's frantic fight for survival. Featuring towering tripod war machines and deadly heat-rays, the story follows an unnamed narrator navigating a devastated landscape, exploring the vulnerability of human empire and technology."
-            ),
-            (
-                "Romeo and Juliet",
-                "The timeless tragedy of two young, star-crossed lovers whose ill-fated romance ultimately heals the deep rift between their feuding families of Verona. Defying their parents' ancient grudge, their passionate but brief union ends in heartbreak, serving as the ultimate monument to the power of young love and the cost of hate."
-            ),
-            (
-                "The Metamorphosis",
-                "Gregor Samsa wakes up one morning to find himself inexplicably transformed into a monstrous, giant insect, upending his isolated family dynamics. Struggling to adapt to his new physical reality, Gregor experiences profound alienation and rejection, reflecting existential themes of guilt, absurdity, and the burden of societal expectations."
-            )
-        ]
-        for title, desc in ebooks_updates:
-            cur.execute("UPDATE books SET summary = %s WHERE title = %s", (desc, title))
-        conn.commit()
 
         cur.close()
         conn.close()
@@ -485,88 +408,13 @@ def init_db():
                 cur.execute("INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)",
                             ("User Two","user2@library.test","reader123","user"))
 
+        # If the database was partially seeded with only the 2 default books,
+        # clear the books table so that seed_books.py can run a full fresh seeding.
         cur.execute("SELECT COUNT(*) FROM books")
-        if cur.fetchone()[0] == 0:
-            cur.executemany("""
-                INSERT INTO books (title,author,type,total_copies,ebook_source,ebook_text,summary,cover_image_url,category)
-                VALUES (?,?,?,?,?,?,?,?,?)
-            """, [
-                (
-                    "Pride and Prejudice", "Jane Austen", "ebook", 0, "Project Gutenberg",
-                    "It is a truth universally acknowledged...",
-                    "A classic romantic novel of manners exploring the emotional growth of Elizabeth Bennet as she navigates societal pressures.",
-                    "https://covers.openlibrary.org/b/id/14571901-L.jpg", "Fiction"
-                ),
-                (
-                    "Frankenstein", "Mary Shelley", "ebook", 0, "Project Gutenberg",
-                    "You will rejoice to hear that no disaster...",
-                    "The chilling tale of Victor Frankenstein, a brilliant scientist who succeeds in bringing an artificial creature to life, with tragic consequences.",
-                    "https://covers.openlibrary.org/b/id/14539129-L.jpg", "Sci-Fi"
-                ),
-                (
-                    "Clean Code", "Robert C. Martin", "hardcover", 4, None, None,
-                    "Even bad code can function. But if code isn't clean, it can bring a development organization to its knees. This book teaches software craftsmen how to write better code.",
-                    None, "Tech"
-                ),
-                (
-                    "Designing Data-Intensive Applications", "Martin Kleppmann", "hardcover", 3, None, None,
-                    "An excellent guide to the principles and architectures underlying modern data systems like databases, streams, and processing pipelines.",
-                    None, "Tech"
-                ),
-                (
-                    "The Pragmatic Programmer", "Andrew Hunt and David Thomas", "hardcover", 5, None, None,
-                    "Direct advice ranging from career development to architectural techniques for writing clean, flexible, and maintainable code.",
-                    None, "Tech"
-                )
-            ])
-        conn.commit()
-
-        # Ensure all ebooks have the latest long summaries
-        ebooks_updates = [
-            (
-                "Pride and Prejudice",
-                "A classic romantic novel of manners exploring the emotional growth of Elizabeth Bennet as she navigates societal pressures, class divisions, and hasty judgments. In her quest for love and independence in Regency-era England, she clashes with the wealthy, proud Mr. Darcy, leading to a timeless struggle between social expectations and personal integrity."
-            ),
-            (
-                "Frankenstein",
-                "The chilling tale of Victor Frankenstein, a brilliant scientist who succeeds in bringing an artificial creature to life, with tragic consequences. As the monster seeks connection but receives only rejection, it embarks on a destructive path of revenge, raising profound philosophical questions about creation, responsibility, and what it truly means to be human."
-            ),
-            (
-                "Moby Dick",
-                "Captain Ahab's obsessive and self-destructive pursuit of the legendary white whale that crippled him on a previous voyage. Narrated by the sailor Ishmael, this epic maritime adventure dives deep into themes of obsession, fate, and nature, exploring the crew's dangerous journey aboard the Pequod into the heart of darkness."
-            ),
-            (
-                "The Great Gatsby",
-                "Set in the roaring twenties, the story follows the lavish, mysterious lifestyle of Jay Gatsby and his unyielding obsession with Daisy Buchanan. Narrated by Nick Carraway, the novel exposes the tragic disillusionment of the American Dream amidst jazz, bootlegging, and the moral decadence of high society."
-            ),
-            (
-                "Alice in Wonderland",
-                "A young girl named Alice tumbles down a rabbit hole into a surreal, whimsical underground world filled with bizarre logic and talking creatures. In this fantastical dreamscape, she encounters iconic characters like the anxious White Rabbit, the eccentric Mad Hatter, the enigmatic Cheshire Cat, and the tyrannical Queen of Hearts. As Alice navigates through a series of absurd adventures, the novel brilliantly satirizes Victorian culture and parodies contemporary children's literature, creating a masterpiece of literary nonsense."
-            ),
-            (
-                "Dracula",
-                "The legendary gothic horror novel documenting Count Dracula's attempt to move from Transylvania to England to find fresh blood and spread his curse. Told through letters and diaries, it follows a band of brave companions led by Professor Van Helsing as they fight to destroy the ancient vampire and save humanity from his shadow."
-            ),
-            (
-                "Sherlock Holmes",
-                "The masterfully structured mysteries and deductions of London's finest consulting detective alongside his trusted companion, Dr. Watson. From the foggy streets of London to grand English estates, the duo untangle complex crimes using Holmes's unparalleled powers of observation, logical deduction, and forensic science."
-            ),
-            (
-                "War of the Worlds",
-                "A pioneering science fiction thriller depicting a sudden, highly advanced Martian invasion of Earth and humanity's frantic fight for survival. Featuring towering tripod war machines and deadly heat-rays, the story follows an unnamed narrator navigating a devastated landscape, exploring the vulnerability of human empire and technology."
-            ),
-            (
-                "Romeo and Juliet",
-                "The timeless tragedy of two young, star-crossed lovers whose ill-fated romance ultimately heals the deep rift between their feuding families of Verona. Defying their parents' ancient grudge, their passionate but brief union ends in heartbreak, serving as the ultimate monument to the power of young love and the cost of hate."
-            ),
-            (
-                "The Metamorphosis",
-                "Gregor Samsa wakes up one morning to find himself inexplicably transformed into a monstrous, giant insect, upending his isolated family dynamics. Struggling to adapt to his new physical reality, Gregor experiences profound alienation and rejection, reflecting existential themes of guilt, absurdity, and the burden of societal expectations."
-            )
-        ]
-        for title, desc in ebooks_updates:
-            cur.execute("UPDATE books SET summary = ? WHERE title = ?", (desc, title))
-        conn.commit()
+        if cur.fetchone()[0] < 5:
+            cur.execute("DELETE FROM books")
+            cur.execute("DELETE FROM sqlite_sequence WHERE name='books'")
+            conn.commit()
         conn.close()    
 def current_user():
     token = request.headers.get("Authorization", "").replace("Bearer ", "", 1).strip()
